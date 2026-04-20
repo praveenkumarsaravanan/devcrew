@@ -1,0 +1,15 @@
+extends: phoenix
+require_resolution: project-wins
+
+# dependencies:
+#   allow:
+#     - "mi-org/*"
+#     - "microsoft/*"
+#   deny:
+#     - "*/malicious-*"
+#     - "*/deprecated-*"
+#   require:
+#     - mi-org/security-baseline@v1
+
+enforcement:
+  level: warn

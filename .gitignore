@@ -1,0 +1,17 @@
+# APM output (apm compile / apm pack / apm install)
+build/
+AGENTS.md
+CLAUDE.md
+.cursor-plugin/
+.github/copilot-instructions.md
+.copilot/
+
+# Dependencies
+node_modules/
+
+# Environment / secrets
+.env
+.env.*
+
+# Logs
+*.log
