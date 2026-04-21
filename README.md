@@ -42,6 +42,7 @@ MI Engineer Agent is a single-source-of-truth package that defines engineering s
 | Skill       | `commit-message`    | Construct commit messages matching org commitlint hook     |
 | Skill       | `branch-creation`   | Create branches with org naming conventions                |
 | Skill       | `pull-request`      | PR creation with JIRA validation and discrepancy detection |
+| Skill       | `documentation`     | Write and maintain READMEs, guides, runbooks, and ADRs     |
 | Agent       | `backend-reviewer`  | Automated PR reviewer for backend services                 |
 | Agent       | `architect`         | Architecture decision support agent                        |
 | Instruction | `coding-standards`  | Organization coding conventions and style                  |
