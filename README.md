@@ -353,35 +353,15 @@ dependencies:
 
 > **Why the `git:` object form?** This package lives on GitHub Enterprise (`git.marriott.com`), not public GitHub. The explicit `git:` URL with `ref:` is the most reliable format for private GHE repos. The `ref` field pins to a branch (`trunk`), tag (`v1.0.0`), or commit SHA.
 
-**Step 2 — Create target directories so APM knows which IDEs to deploy for:**
-
-```sh
-mkdir -p .cursor .github
-```
-
-APM auto-detects targets based on which directories exist. Without `.cursor/` or `.github/`, it has no target to deploy to. Alternatively, declare targets explicitly in `apm.yml`:
-
-```yaml
-name: my-service
-version: "1.0.0"
-target:
-  - cursor
-  - copilot
-dependencies:
-  apm:
-    - git: "https://git.marriott.com/phoenix/mi-engineer-agent.git"
-      ref: trunk
-```
-
-**Step 3 — Install:**
+**Step 2 — Install:**
 
 ```sh
 apm install
 ```
 
-This clones the package, resolves dependencies, and deploys skills, agents, instructions, prompts, hooks, and MCP servers into the project's `.cursor/` and `.github/` directories.
+APM clones the package, resolves dependencies, and deploys skills, agents, instructions, prompts, hooks, and MCP servers into the project. It automatically creates the necessary IDE directories (`.cursor/`, `.github/`) based on the targets defined in the package.
 
-**Step 4 — Run the environment setup (first time only):**
+**Step 3 — Run the environment setup (first time only):**
 
 ```sh
 apm run setup
@@ -389,7 +369,7 @@ apm run setup
 
 This checks your local environment: installs `gh` CLI if missing, authenticates against GitHub Enterprise, verifies `GITHUB_TOKEN`, and confirms APM is available. You only need to run this once per machine.
 
-**Step 5 — Verify the install:**
+**Step 4 — Verify the install:**
 
 ```sh
 ls .cursor/rules/     # Should contain .mdc instruction files
