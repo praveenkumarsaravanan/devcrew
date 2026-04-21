@@ -23,11 +23,11 @@ Activate this skill when:
 
 Every decision in this skill flows from five rules:
 
-1. **Audience first** — identify who will read this before writing a single line. Different readers need different sections.
-2. **One fact, one place** — never state the same information twice. Repetition causes drift when one copy is updated and the other isn't.
-3. **Scannable over readable** — use headings, tables, and code blocks. Walls of prose lose readers. A doc that isn't scanned is a doc that isn't read.
-4. **Concrete over abstract** — show a working command or code snippet instead of describing what someone "should" do. Copy-paste-ready examples beat paragraphs of explanation.
-5. **Maintain ruthlessly** — every section must earn its place. If a section is stale, wrong, or adds no value, remove it. Shorter docs are more accurate docs.
+1. **Audience first** — identify who will read this before writing a single line. Different readers need different sections. The Diátaxis framework [1] formalizes this: documentation splits into tutorials, how-to guides, reference, and explanation — each serving a different user need.
+2. **One fact, one place** — never state the same information twice. Repetition causes drift when one copy is updated and the other isn't. This is the DRY principle applied to prose — Google's style guide [2] calls it "write once, reference often."
+3. **Scannable over readable** — use headings, tables, and code blocks. Walls of prose lose readers. Nielsen Norman Group eye-tracking research [3] shows users read at most 28% of words on a page and scan in an F-shaped pattern guided by headings and bold text.
+4. **Concrete over abstract** — show a working command or code snippet instead of describing what someone "should" do. Copy-paste-ready examples beat paragraphs of explanation. Google's style guide [2] and Microsoft's Writing Style Guide [4] both mandate working code samples over narrative descriptions.
+5. **Maintain ruthlessly** — every section must earn its place. If a section is stale, wrong, or adds no value, remove it. Shorter docs are more accurate docs. The "docs as code" approach [5] treats documentation with the same review and maintenance rigor as source code.
 
 ## Workflow
 
@@ -51,21 +51,21 @@ If a single document serves multiple audiences, use clearly labeled sections —
 | **README** | Every repo's front door | About → Getting Started → Contributing → Reference |
 | **Guide / Tutorial** | Walk through a multi-step process | Prerequisites → Steps → Verify → Troubleshooting |
 | **Runbook** | Operational procedure for incidents | Symptoms → Diagnosis → Resolution → Escalation |
-| **ADR** | Record an architecture decision | Context → Decision → Consequences → Status |
+| **ADR** | Record an architecture decision | Context → Decision → Consequences → Status [6] |
 | **API Reference** | Document endpoints or interfaces | Endpoint → Parameters → Request/Response → Errors |
-| **Changelog** | Track what changed per release | Version → Date → Added/Changed/Fixed/Removed |
+| **Changelog** | Track what changed per release | Version → Date → Added/Changed/Fixed/Removed [7] |
 
 ### 3. Draft the Content
 
 Follow these rules while writing:
 
-**Structure:**
+**Structure** (follows Diátaxis [1] and Google [2] patterns):
 - Lead with a one-line summary that tells the reader what this is and why it exists
 - Use a table of contents for documents with 4+ sections
 - Keep heading hierarchy clean — never skip levels (h2 → h4)
 - One topic per section. If a section covers two things, split it.
 
-**Language:**
+**Language** (per Google [2] and Microsoft [4] style guides):
 - Use imperative mood for instructions: "Run the setup script", not "You should run the setup script"
 - Write in present tense: "APM deploys files to...", not "APM will deploy files to..."
 - Avoid weasel words: "simply", "just", "easy", "straightforward" — these are subjective and unhelpful to someone who is stuck
@@ -131,3 +131,17 @@ When editing an existing document rather than creating one from scratch:
 - **Never leave placeholder sections.** "TBD", "TODO", and empty sections signal an unfinished doc and erode trust. Either write it or omit it.
 - **Never assume the reader's environment.** State the OS, tool versions, and prerequisites explicitly. "Works on my machine" is not documentation.
 - **Always include a way to verify.** After any install or config step, show how the reader can confirm it worked.
+
+## References
+
+Sources grounding the principles and patterns in this skill:
+
+| # | Source | What it informs |
+| --- | --- | --- |
+| [1] | [Diátaxis — A systematic framework for technical documentation authoring](https://diataxis.fr/) by Daniele Procida | Audience-first structure: tutorials, how-to guides, reference, explanation as four distinct documentation modes |
+| [2] | [Google Developer Documentation Style Guide](https://developers.google.com/style) | Language rules (imperative mood, present tense, no weasel words), code sample standards, heading hierarchy, one-topic-per-section |
+| [3] | [How People Read Online: New and Old Findings](https://www.nngroup.com/articles/how-people-read-online/) — Nielsen Norman Group | Scannability: F-pattern reading, 28% word-read rate, layer-cake scanning of headings, frontloading key terms |
+| [4] | [Microsoft Writing Style Guide](https://learn.microsoft.com/en-us/style-guide/welcome/) | Tone (clear, concise, conversational), global audience awareness, UI text and code example conventions |
+| [5] | [Docs as Code](https://www.writethedocs.org/guide/docs-as-code/) — Write the Docs community | Treating documentation with the same version control, review, and CI rigor as source code |
+| [6] | [Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions) by Michael Nygard (2011) | ADR format: Context → Decision → Consequences → Status; immutable records, lightweight Markdown storage |
+| [7] | [Keep a Changelog](https://keepachangelog.com/) | Changelog format: Added / Changed / Deprecated / Removed / Fixed / Security per version entry |
