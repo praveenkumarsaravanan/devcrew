@@ -6,3 +6,4 @@ target:
   - cursor
 scripts:
   setup: "bash scripts/setup.sh"
+  release: "bash .apm/skills/release/scripts/release.sh"

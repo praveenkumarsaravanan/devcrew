@@ -1,60 +1,40 @@
 # MI Engineer Agent
 
-Organization-wide agent package distributing engineering skills, agents, rules, and MCP server configs across Cursor and GitHub Copilot via Microsoft APM.
-
----
-
-## Table of Contents
-
-- [About the Project](#about-the-project)
-  - [What's Included](#whats-included)
-  - [IDE Compatibility](#ide-compatibility)
-  - [Project Structure](#project-structure)
-- [Contributing](#contributing)
-  - [Prerequisites](#prerequisites)
-  - [Local Setup](#local-setup)
-  - [Development Workflow](#development-workflow)
-  - [Validating Changes](#validating-changes)
-  - [Submitting a Pull Request](#submitting-a-pull-request)
-  - [Releasing New Versions](#releasing-new-versions)
-  - [Adding Custom MCP Servers](#adding-custom-mcp-servers)
-- [Consumer Guide](#consumer-guide)
-  - [Prerequisites](#consumer-prerequisites)
-  - [Global Install (recommended)](#global-install-recommended)
-  - [Per-Project Install](#per-project-install)
-  - [Understanding `apm.yml` and `apm.lock.yaml`](#understanding-apmyml-and-apmlockyaml)
-  - [Where Files Land](#where-files-land)
-  - [Version Management](#version-management)
-  - [Overriding and Governance](#overriding-and-governance)
+Organization-wide agent package distributing engineering skills, agents, rules, and MCP server configs across Cursor and GitHub Copilot via [Microsoft APM](https://microsoft.github.io/apm/).
 
 ---
 
 ## About the Project
 
-MI Engineer Agent is a single-source-of-truth package that defines engineering skills, AI agents, coding instructions, prompt templates, hooks, and MCP server configurations in one place (`.apm/`). APM compiles and distributes the correct format for each target IDE so teams get consistent tooling regardless of their editor.
+MI Engineer Agent defines all engineering primitives — skills, agents, instructions, prompts, hooks, and MCP servers — in a single `.apm/` directory. APM compiles and deploys the correct format for each target IDE so teams get consistent tooling regardless of their editor.
 
 ### What's Included
 
-| Type        | Name                | Description                                                |
-| ----------- | ------------------- | ---------------------------------------------------------- |
-| Skill       | `code-review`       | Structured code review with severity levels                |
-| Skill       | `api-design`        | REST/gRPC API design guidance and validation               |
-| Skill       | `commit-message`    | Construct commit messages matching org commitlint hook     |
-| Skill       | `branch-creation`   | Create branches with org naming conventions                |
-| Skill       | `pull-request`      | PR creation with JIRA validation and discrepancy detection |
-| Skill       | `documentation`     | Write and maintain READMEs, guides, runbooks, and ADRs     |
-| Agent       | `backend-reviewer`  | Automated PR reviewer for backend services                 |
-| Agent       | `architect`         | Architecture decision support agent                        |
-| Instruction | `coding-standards`  | Organization coding conventions and style                  |
-| Instruction | `security-baseline` | Security requirements and baseline controls                |
-| Prompt      | `design-review`     | Prompt template for design review sessions                 |
-| Prompt      | `incident-response` | Prompt template for incident triage                        |
-| Hook        | `pre-commit-lint`   | Lint check + security guard on pre-commit                  |
-| MCP         | `playwright`        | Browser automation and E2E testing                         |
-| MCP         | `github`            | Repository, PR, and issue management                       |
-| MCP         | `atlassian`         | Jira, Confluence, and Compass via Atlassian Rovo           |
+
+| Type        | Name                | Description                                                 |
+| ----------- | ------------------- | ----------------------------------------------------------- |
+| Skill       | `code-review`       | Structured code review with severity levels                 |
+| Skill       | `api-design`        | REST/gRPC API design guidance and validation                |
+| Skill       | `commit-message`    | Construct commit messages matching org commitlint hook      |
+| Skill       | `branch-creation`   | Create branches with org naming conventions                 |
+| Skill       | `pull-request`      | PR creation with JIRA validation and discrepancy detection  |
+| Skill       | `documentation`     | Write and maintain READMEs, guides, runbooks, and ADRs      |
+| Skill       | `release`           | Tag and publish new versions with auto-increment and guards |
+| Skill       | `skill-authoring`   | Create and maintain skills following agentskills.io spec    |
+| Agent       | `backend-reviewer`  | Automated PR reviewer for backend services                  |
+| Agent       | `architect`         | Architecture decision support agent                         |
+| Instruction | `coding-standards`  | Organization coding conventions and style                   |
+| Instruction | `security-baseline` | Security requirements and baseline controls                 |
+| Prompt      | `design-review`     | Prompt template for design review sessions                  |
+| Prompt      | `incident-response` | Prompt template for incident triage                         |
+| Hook        | `pre-commit-lint`   | Lint check + security guard on pre-commit                   |
+| MCP         | `playwright`        | Browser automation and E2E testing                          |
+| MCP         | `github`            | Repository, PR, and issue management                        |
+| MCP         | `atlassian`         | Jira, Confluence, and Compass via Atlassian Rovo            |
+
 
 ### IDE Compatibility
+
 
 | Component    | Cursor | GitHub Copilot |
 | ------------ | ------ | -------------- |
@@ -65,46 +45,33 @@ MI Engineer Agent is a single-source-of-truth package that defines engineering s
 | Hooks        | ✓      | N/A            |
 | MCP          | ✓      | ✓              |
 
+
 ### Project Structure
 
 ```
-.apm/                              # Single source of truth
-  skills/                          # SKILL.md files
-    code-review/SKILL.md
-    api-design/SKILL.md
+.apm/                              # Source of truth for all primitives
+  skills/                          # SKILL.md files (+ scripts/, references/)
   agents/                          # .agent.md definitions
-    backend-reviewer.agent.md
-    architect.agent.md
   instructions/                    # .instructions.md files
-    coding-standards.instructions.md
-    security-baseline.instructions.md
   prompts/                         # .prompt.md templates
-    design-review.prompt.md
-    incident-response.prompt.md
   hooks/                           # Hook definitions
-    pre-commit-lint.json
 .mcp.json                          # MCP server definitions
 apm.yml                            # Package manifest (name, version, targets)
 apm-policy.yml                     # Governance policy
+scripts/                           # Repo-level scripts (setup, etc.)
 ```
 
 ---
 
 ## Contributing
 
-This section is for anyone who wants to add skills, agents, prompts, hooks, or other primitives to this package.
+For anyone adding or modifying skills, agents, prompts, hooks, or other primitives in this package.
 
 ### Prerequisites
 
-- **APM CLI** — install via Homebrew:
-
-```sh
-brew tap microsoft/apm
-brew install apm
-```
-
-- **gh CLI** — version 2.40.0 or later (the setup script installs it if missing)
-- **`GITHUB_TOKEN`** — a PAT from `git.marriott.com` with `repo` and `read:org` scopes. Generate one at https://git.marriott.com/settings/tokens and export it in your shell profile:
+- **APM CLI** — `brew tap microsoft/apm && brew install apm`
+- **gh CLI** — version 2.40.0+ (the setup script installs it if missing)
+- `**GITHUB_TOKEN`** — a PAT from `git.marriott.com` with `repo` and `read:org` scopes. Generate one at [git.marriott.com/settings/tokens](https://git.marriott.com/settings/tokens) and export it:
 
 ```sh
 # ~/.zshrc or ~/.bashrc
@@ -113,70 +80,86 @@ export GITHUB_TOKEN="ghp_your_token_here"
 
 ### Local Setup
 
-1. Fork and clone the repository:
+1. Clone the repository:
 
 ```sh
 git clone https://git.marriott.com/phoenix/mi-engineer-agent.git
 cd mi-engineer-agent
 ```
 
-2. Run the setup script to configure your local environment:
+1. Run the setup script:
 
 ```sh
 apm run setup
 ```
 
-The script checks and configures: `gh` CLI installation/version, GitHub Enterprise auth against `git.marriott.com`, `GITHUB_TOKEN` env var, and APM CLI availability.
+This checks `gh` CLI version, GitHub Enterprise auth, `GITHUB_TOKEN`, and APM availability.
+
+1. Compile the package so your IDE can use the skills and instructions:
+
+```sh
+apm compile
+```
+
+The `.apm/` directory holds **source primitives**. Your IDE reads from compiled output directories (`.cursor/skills/`, `.github/instructions/`, etc.). Without this step, the agent has no access to the skills defined in this repo. Re-run `apm compile` after adding or modifying any primitive.
 
 ### Development Workflow
 
-1. Create a feature branch following org conventions:
+1. Create a feature branch:
 
 ```sh
 git checkout -b feat/DXP-12345-add-new-skill
 ```
 
-2. Edit files under `.apm/` — skills, agents, instructions, prompts, hooks, or MCP configs in `.mcp.json`.
-3. Validate, pack, and test (see below).
-4. Commit using conventional commits:
-
-```sh
-git commit -m "feat(skills): DXP-12345, add terraform-plan skill"
-```
-
-### Validating Changes
+1. Edit files under `.apm/` — skills, agents, instructions, prompts, hooks, or MCP configs in `.mcp.json`.
+2. Validate and pack:
 
 ```sh
 apm compile                    # Validate package structure
 apm pack --target cursor       # Pack for Cursor
 apm pack --target copilot      # Pack for Copilot
-ls -la build/                  # Inspect output
 ```
 
-Or pack all targets at once:
+1. Commit using conventional commits:
 
 ```sh
-apm pack --format plugin
+git commit -m "feat(skills): DXP-12345, add terraform-plan skill"
 ```
 
 ### Submitting a Pull Request
 
-1. Push your branch and open a pull request against `main`.
+1. Push your branch and open a PR against `trunk`.
 2. All files are owned by `@phoenix/mi-platform-dev-squad` (see `.github/CODEOWNERS`), so a review from that team is required.
-3. PRs are squash-merged to keep the commit history linear.
-4. The PR title should follow conventional commit format, since it becomes the merge commit message.
+3. PRs are squash-merged. The PR title becomes the merge commit message and must follow conventional commit format.
 
 ### Releasing New Versions
 
-Update the `version` field in `apm.yml` following semantic versioning:
+This package has no registry — consumers pull directly from the Git repo. A "release" is a **git tag** that consumers pin to via `ref:` in their `apm.yml`.
 
-- **Patch** (`1.0.1`) — fixes to existing skills, instructions, or prompts
-- **Minor** (`1.1.0`) — new skills, agents, prompts, or hooks
-- **Major** (`2.0.0`) — breaking changes to existing primitives that consumers may have overridden
+Run the release script from `trunk`:
 
-Once merged to `main`, consumers pull the new version by re-running `apm install -g` or `apm deps update`.
+```sh
+git checkout trunk && git pull
+bash .apm/skills/release/scripts/release.sh patch    # or minor, or major
+```
 
-### Adding Custom MCP Servers
+The script reads the current version from `apm.yml`, computes the next version, blocks duplicate tags, and pushes with confirmation. Preview first with `--dry-run`:
+
+```sh
+bash .apm/skills/release/scripts/release.sh minor --dry-run
+```
+
+**Increment guide:**
+
+
+| Increment | When to use                                                       |
+| --------- | ----------------------------------------------------------------- |
+| `patch`   | Fixes to existing skills, instructions, or prompts                |
+| `minor`   | New skills, agents, prompts, hooks, or non-breaking additions     |
+| `major`   | Breaking changes to primitives that consumers may have overridden |
+
+
+### Adding MCP Servers
 
 Edit `.mcp.json` in the package root:
 
@@ -198,30 +181,25 @@ Edit `.mcp.json` in the package root:
 }
 ```
 
-Two connection types are supported:
-
-- **`http`** — for remote MCP servers your org already hosts
-- **`command`** — for local servers that run as a child process via `npx`, `node`, `python`, etc.
-
-APM handles converting this into the correct format for each target IDE.
+Two connection types: `**http**` for remote servers, `**command**` for local servers run as child processes. APM converts this into the correct format for each target IDE.
 
 ---
 
 ## Consumer Guide
 
-This section is for teams adopting MI Engineer Agent in their own repositories. There are two ways to install: **global** (applies to all projects on your machine) and **per-project** (version-pinned, committed to the repo). Both can coexist — project-level always takes precedence.
+For teams adopting MI Engineer Agent in their own repositories. Two installation methods: **global** (all projects on your machine) and **per-project** (version-pinned, committed to the repo). Both can coexist — project-level always takes precedence.
 
-### Consumer Prerequisites
+### Prerequisites
 
 1. **APM CLI** — `brew tap microsoft/apm && brew install apm`
 2. **gh CLI** (v2.40.0+) — `brew install gh`
-3. **GitHub Enterprise auth**:
+3. **GitHub Enterprise auth:**
 
 ```sh
 gh auth login --hostname git.marriott.com --web --git-protocol https
 ```
 
-4. **`GITHUB_TOKEN`** — needed at runtime by the GitHub MCP server. Generate a PAT at [git.marriott.com/settings/tokens](https://git.marriott.com/settings/tokens) with `repo` and `read:org` scopes:
+1. `**GITHUB_TOKEN**` — needed by the GitHub MCP server at runtime. Generate a PAT at [git.marriott.com/settings/tokens](https://git.marriott.com/settings/tokens) with `repo` and `read:org` scopes:
 
 ```sh
 # ~/.zshrc or ~/.bashrc
@@ -236,21 +214,13 @@ The `atlassian` MCP uses OAuth 2.1 — it opens a browser on first connection. N
 apm install -g git.marriott.com/phoenix/mi-engineer-agent
 ```
 
-This deploys skills, agents, instructions, prompts, and MCP servers to user-level directories (`~/.cursor/`, `~/.copilot/`). Your IDE picks them up automatically in every project — no per-repo configuration required.
+Deploys skills, agents, instructions, prompts, and MCP servers to user-level directories (`~/.cursor/`, `~/.copilot/`). Your IDE picks them up in every project — no per-repo config required.
 
-To update later:
-
-```sh
-apm deps update -g
-```
-
-> **What global install does not include:** `AGENTS.md` (compiled context file), hooks, version pinning, and project-specific overrides. If you need any of these, use per-project install.
->
-> This is rarely a concern — individual instruction files (`.cursor/rules/*.mdc`, `.github/instructions/*.instructions.md`) are the primary mechanism for delivering instructions and are fully deployed globally. `AGENTS.md` is a lower-priority compatibility layer that loads all instructions unconditionally.
+Update later with `apm deps update -g`.
 
 ### Per-Project Install
 
-Use per-project install when a repo needs version pinning, hooks, overrides, or team-consistent setup committed to source control.
+Use when a repo needs version pinning, hooks, overrides, or team-consistent setup committed to source control.
 
 **Step 1 — Create `apm.yml` in the project root:**
 
@@ -263,7 +233,7 @@ dependencies:
       ref: trunk
 ```
 
-The `git:` object form with explicit `ref:` is the required format for GitHub Enterprise repos. The `ref` field accepts a branch name (`trunk`), tag (`v1.0.0`), or commit SHA.
+The `ref` field accepts a branch name (`trunk`), a release tag (`v1.1.0`), or a commit SHA. Tags are created by maintainers — see [Releasing New Versions](#releasing-new-versions).
 
 **Step 2 — Install:**
 
@@ -271,7 +241,7 @@ The `git:` object form with explicit `ref:` is the required format for GitHub En
 apm install
 ```
 
-APM clones the package, resolves dependencies, and deploys all primitives into the project. It automatically creates the IDE directories (`.cursor/`, `.github/`).
+APM clones the package, resolves dependencies, and deploys all primitives. It creates the IDE directories (`.cursor/`, `.github/`) automatically.
 
 **Step 3 — Verify:**
 
@@ -281,22 +251,20 @@ ls .github/agents/    # Should contain .agent.md files
 cat apm.lock.yaml     # Should show resolved commit SHA
 ```
 
-To update to the latest upstream version:
+Update to the latest upstream version with `apm deps update`.
 
-```sh
-apm deps update
-```
+### Key Files
 
-### Understanding `apm.yml` and `apm.lock.yaml`
+Both files belong in source control:
 
-These two files work together and **both belong in source control**:
 
-| File | Purpose |
-| --- | --- |
-| **`apm.yml`** | The manifest you author. Declares dependencies and which branch/tag to track. Without it, `apm install` does nothing. |
-| **`apm.lock.yaml`** | Generated by `apm install`. Pins the exact commit SHA and file hashes. Without it, two developers installing a week apart could get different versions. |
+| File                | Purpose                                                                                          |
+| ------------------- | ------------------------------------------------------------------------------------------------ |
+| `**apm.yml**`       | The manifest you author. Declares dependencies and which branch/tag to track.                    |
+| `**apm.lock.yaml**` | Generated by `apm install`. Pins the exact commit SHA and file hashes for reproducible installs. |
 
-Everything else APM generates (`.cursor/`, `.github/`, `AGENTS.md`, `.mcp.json`) should be **gitignored** — each developer regenerates them locally by running `apm install`.
+
+Everything else APM generates (`.cursor/`, `.github/`, `AGENTS.md`, `.mcp.json`) should be **gitignored** — each developer regenerates them locally with `apm install`.
 
 ### Where Files Land
 
@@ -308,15 +276,13 @@ Everything else APM generates (`.cursor/`, `.github/`, `AGENTS.md`, `.mcp.json`)
   rules/*.mdc                              #   Instructions
   agents/*.md                              #   Agents
   skills/{name}/                           #   Skills
-~/.copilot/                                # GitHub Copilot
+~/.copilot/                                # GitHub Copilot (user-level, not ~/.github/)
   copilot-instructions.md                  #   Instructions
   agents/*.md                              #   Agents
   mcp-config.json                          #   MCP config
 ```
 
-Copilot's user-level directory is `~/.copilot/`, **not** `~/.github/` (that path is project-level only).
-
-**Project** (`apm install` with `apm.yml`):
+**Per-project** (`apm install`):
 
 ```
 your-repo/
@@ -337,18 +303,6 @@ your-repo/
   .mcp.json                                # MCP servers (gitignored)
 ```
 
-### Version Management
-
-Each repo controls which version it tracks via the `ref` field in `apm.yml`. Examples:
-
-```yaml
-ref: trunk          # Always latest (track a branch)
-ref: v2.0.0         # Pin to a release tag
-ref: abc123def456   # Pin to an exact commit SHA
-```
-
-Each repo resolves independently — a legacy service can stay pinned to an older tag while a new service tracks `trunk`. The lockfile (`apm.lock.yaml`) ensures reproducible installs regardless of when `apm install` runs.
-
 ### Overriding and Governance
 
 APM resolves with this precedence (highest first):
@@ -357,23 +311,11 @@ APM resolves with this precedence (highest first):
 2. **Project dependencies** — packages in the project's `apm.yml`
 3. **Global packages** — packages installed with `-g`
 
-To override any primitive, mirror the file path locally:
+Override any primitive by mirroring the file path locally:
 
 ```
 .apm/skills/code-review/SKILL.md        # Your version wins over the package's
 .apm/instructions/coding-standards.md   # Same for instructions, agents, prompts
 ```
 
-The `apm-policy.yml` file controls what consumers can change:
-
-- **Skills, Instructions, Prompts, Agents** — fully overridable at the project level
-- **Hooks** — overridable in Cursor (Copilot does not support hooks)
-- **MCP Servers** — add your own alongside shipped ones, or replace a shipped server by defining one with the same key in your local `.mcp.json`
-
-The governance policy is set to `warn` enforcement — policy violations produce warnings rather than blocking installs.
-
----
-
-## License
-
-MIT
+The governance policy (`apm-policy.yml`) is set to `warn` — policy violations produce warnings rather than blocking installs.
