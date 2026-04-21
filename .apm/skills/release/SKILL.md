@@ -4,7 +4,8 @@
 description: >
   Tag and publish a new version of the package. Reads the current version from
   apm.yml, auto-increments it (patch, minor, or major), blocks duplicate tags,
-  and pushes the release — all with explicit user confirmation.
+  creates a GitHub release with changelog, and pushes — all with explicit user
+  confirmation.
 
 # Release
 
@@ -19,7 +20,7 @@ Activate this skill when:
 
 ## Available Scripts
 
-- `**scripts/release.sh**` — Reads the current version from `apm.yml`, computes the next version, blocks duplicate tags, updates the file, commits, tags, and pushes.
+- `**scripts/release.sh**` — Reads the current version from `apm.yml`, computes the next version, generates a changelog from commits since the last tag, blocks duplicate tags, updates the file, commits, tags, pushes, and creates a GitHub release.
 
 ## Workflow
 
@@ -56,19 +57,21 @@ git fetch --tags
 Always run a dry run first so the user can see the plan and confirm:
 
 ```bash
-bash scripts/release.sh --dry-run --json
+bash scripts/release.sh --dry-run --json --ticket DXP-XXXXX
 ```
 
 When the user specifies `minor` or `major`:
 
 ```bash
-bash scripts/release.sh minor --dry-run --json
+bash scripts/release.sh minor --dry-run --json --ticket DXP-XXXXX
 ```
+
+The `--ticket` flag embeds the JIRA ticket ID in the version bump commit message to satisfy the org commitlint hook. Always include it.
 
 The `--json` flag outputs a structured summary to stdout:
 
 ```json
-{"increment":"minor","current_version":"1.0.0","next_version":"1.1.0","tag":"v1.1.0","branch":"trunk","dry_run":true}
+{"increment":"patch","current_version":"1.1.2","next_version":"1.1.3","tag":"v1.1.3","branch":"trunk","dry_run":true,"changes":"- feat: ..."}
 ```
 
 Present the plan to the user and ask for explicit confirmation before proceeding.
@@ -78,40 +81,50 @@ Present the plan to the user and ask for explicit confirmation before proceeding
 After the user confirms the dry-run plan, run the script with `--confirm` to skip interactive prompts (agents cannot respond to TTY input):
 
 ```bash
-bash scripts/release.sh --confirm
+bash scripts/release.sh --confirm --ticket DXP-XXXXX
 ```
 
 When the user specifies `minor` or `major`:
 
 ```bash
-bash scripts/release.sh minor --confirm
+bash scripts/release.sh minor --confirm --ticket DXP-XXXXX
 ```
 
 The script will:
 
 1. Update `apm.yml` with the new version
-2. Commit: `chore(release): bump version to X.Y.Z`
-3. Create an annotated tag `vX.Y.Z`
-4. Push the commit and tag to origin
+2. Commit: `chore(release): DXP-XXXXX, bump version to X.Y.Z`
+3. Generate a changelog from commits since the previous tag
+4. Create an annotated tag `vX.Y.Z` with the changelog in the tag message
+5. Push the commit and tag to origin
+6. Create a GitHub release with the changelog as the release body
 
 If the user wants to tag without pushing (e.g., to review first), add `--no-push`:
 
 ```bash
-bash scripts/release.sh --confirm --no-push
+bash scripts/release.sh --confirm --no-push --ticket DXP-XXXXX
+```
+
+If the user wants to skip the GitHub release (tag only), add `--no-release`:
+
+```bash
+bash scripts/release.sh --confirm --no-release --ticket DXP-XXXXX
 ```
 
 ### 5. Post-Release Verification
 
-After the script completes, confirm the tag exists on the remote:
+After the script completes, confirm the tag and release exist on the remote:
 
 ```bash
 git ls-remote --tags origin | grep "vX.Y.Z"
+gh release view vX.Y.Z
 ```
 
 Inform the user how consumers receive the update:
 
 - Consumers on `ref: trunk` get it automatically on next `apm deps update`
 - Consumers pinned to a tag must update their `apm.yml` to `ref: vX.Y.Z`
+- Consumers watching the repo will receive a GitHub notification about the new release
 
 ### Exit Codes
 
@@ -132,8 +145,10 @@ If exit code is `3`, inform the user that this version is already tagged and sug
 
 - **Never run without a dry run first.** Always preview the release plan and get user confirmation before executing.
 - **Always pass `--confirm` when executing.** The agent cannot respond to interactive prompts. Omitting `--confirm` will hang the session.
+- **Always pass `--ticket` with the JIRA ticket ID.** The org commitlint hook rejects commits without a ticket. Omitting `--ticket` will cause the push to fail.
 - **Never tag from a feature branch.** Releases come from `trunk` or `main` only. If the user insists on tagging from another branch, warn them explicitly and require double confirmation.
 - **Never re-tag an existing version.** If the tag already exists (exit code `3`), do not bypass it. Increment to a new version instead.
 - **Never force-push tags.** If a tag needs correction, create a new version. Deleting and re-creating tags breaks consumers who already resolved the old tag.
 - **Always verify the push succeeded.** After execution, confirm the tag is visible on the remote before reporting success.
+- **Never delete a GitHub release.** If a release has incorrect notes, edit it with `gh release edit`. Deletion confuses consumers who already saw the notification.
 

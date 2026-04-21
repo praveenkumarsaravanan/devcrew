@@ -19,7 +19,7 @@ MI Engineer Agent defines all engineering primitives — skills, agents, instruc
 | Skill       | `branch-creation`   | Create branches with org naming conventions                 |
 | Skill       | `pull-request`      | PR creation with JIRA validation and discrepancy detection  |
 | Skill       | `documentation`     | Write and maintain READMEs, guides, runbooks, and ADRs      |
-| Skill       | `release`           | Tag and publish new versions with auto-increment and guards |
+| Skill       | `release`           | Tag, release, and publish new versions with changelog           |
 | Skill       | `skill-authoring`   | Create and maintain skills following agentskills.io spec    |
 | Agent       | `backend-reviewer`  | Automated PR reviewer for backend services                  |
 | Agent       | `architect`         | Architecture decision support agent                         |
@@ -71,7 +71,7 @@ For anyone adding or modifying skills, agents, prompts, hooks, or other primitiv
 
 - **APM CLI** — `brew tap microsoft/apm && brew install apm`
 - **gh CLI** — version 2.40.0+ (the setup script installs it if missing)
-- `**GITHUB_TOKEN`** — a PAT from `git.marriott.com` with `repo` and `read:org` scopes. Generate one at [git.marriott.com/settings/tokens](https://git.marriott.com/settings/tokens) and export it:
+- **`GITHUB_TOKEN`** — a PAT from `git.marriott.com` with `repo` and `read:org` scopes. Generate one at [git.marriott.com/settings/tokens](https://git.marriott.com/settings/tokens) and export it:
 
 ```sh
 # ~/.zshrc or ~/.bashrc
@@ -87,7 +87,7 @@ git clone https://git.marriott.com/phoenix/mi-engineer-agent.git
 cd mi-engineer-agent
 ```
 
-1. Run the setup script:
+2. Run the setup script:
 
 ```sh
 apm run setup
@@ -95,7 +95,7 @@ apm run setup
 
 This checks `gh` CLI version, GitHub Enterprise auth, `GITHUB_TOKEN`, and APM availability.
 
-1. Compile the package so your IDE can use the skills and instructions:
+3. Compile the package so your IDE can use the skills and instructions:
 
 ```sh
 apm compile
@@ -111,8 +111,8 @@ The `.apm/` directory holds **source primitives**. Your IDE reads from compiled 
 git checkout -b feat/DXP-12345-add-new-skill
 ```
 
-1. Edit files under `.apm/` — skills, agents, instructions, prompts, hooks, or MCP configs in `.mcp.json`.
-2. Validate and pack:
+2. Edit files under `.apm/` — skills, agents, instructions, prompts, hooks, or MCP configs in `.mcp.json`.
+3. Validate and pack:
 
 ```sh
 apm compile                    # Validate package structure
@@ -120,7 +120,7 @@ apm pack --target cursor       # Pack for Cursor
 apm pack --target copilot      # Pack for Copilot
 ```
 
-1. Commit using conventional commits:
+4. Commit using conventional commits:
 
 ```sh
 git commit -m "feat(skills): DXP-12345, add terraform-plan skill"
@@ -134,26 +134,28 @@ git commit -m "feat(skills): DXP-12345, add terraform-plan skill"
 
 ### Releasing New Versions
 
-This package has no registry — consumers pull directly from the Git repo. A "release" is a **git tag** that consumers pin to via `ref:` in their `apm.yml`.
+This package has no registry — consumers pull directly from the Git repo. A "release" is a **git tag + GitHub release** that consumers pin to via `ref:` in their `apm.yml`.
 
 Run the release script from `trunk`:
 
 ```sh
 git checkout trunk && git pull
-bash .apm/skills/release/scripts/release.sh    # defaults to patch
+bash .apm/skills/release/scripts/release.sh --ticket DXP-XXXXX    # defaults to patch
 ```
 
-The script reads the current version from `apm.yml`, computes the next version, blocks duplicate tags, and pushes with confirmation. Preview first with `--dry-run`:
+The script reads the current version from `apm.yml`, computes the next version, generates a changelog from commits since the last tag, creates an annotated tag with the changelog, pushes, and creates a GitHub release. The `--ticket` flag is required — the org commitlint hook rejects commits without a JIRA ticket.
+
+Preview first with `--dry-run`:
 
 ```sh
-bash .apm/skills/release/scripts/release.sh --dry-run
+bash .apm/skills/release/scripts/release.sh --dry-run --ticket DXP-XXXXX
 ```
 
 For minor or major releases, pass the increment explicitly:
 
 ```sh
-bash .apm/skills/release/scripts/release.sh minor
-bash .apm/skills/release/scripts/release.sh major
+bash .apm/skills/release/scripts/release.sh minor --ticket DXP-XXXXX
+bash .apm/skills/release/scripts/release.sh major --ticket DXP-XXXXX
 ```
 
 **Increment guide:**
@@ -164,6 +166,9 @@ bash .apm/skills/release/scripts/release.sh major
 | `patch`   | Default. Fixes to existing skills, instructions, or prompts       |
 | `minor`   | New skills, agents, prompts, hooks, or non-breaking additions     |
 | `major`   | Breaking changes to primitives that consumers may have overridden |
+
+
+**Additional flags:** `--no-push` (tag locally without pushing), `--no-release` (push tag but skip GitHub release), `--json` (structured output for CI/agents), `--confirm` (skip interactive prompts for agent/CI use).
 
 
 ### Adding MCP Servers
@@ -188,7 +193,7 @@ Edit `.mcp.json` in the package root:
 }
 ```
 
-Two connection types: `**http**` for remote servers, `**command**` for local servers run as child processes. APM converts this into the correct format for each target IDE.
+Two connection types: **`http`** for remote servers, **`command`** for local servers run as child processes. APM converts this into the correct format for each target IDE.
 
 ---
 
@@ -206,7 +211,7 @@ For teams adopting MI Engineer Agent in their own repositories. Two installation
 gh auth login --hostname git.marriott.com --web --git-protocol https
 ```
 
-1. `**GITHUB_TOKEN**` — needed by the GitHub MCP server at runtime. Generate a PAT at [git.marriott.com/settings/tokens](https://git.marriott.com/settings/tokens) with `repo` and `read:org` scopes:
+4. **`GITHUB_TOKEN`** — needed by the GitHub MCP server at runtime. Generate a PAT at [git.marriott.com/settings/tokens](https://git.marriott.com/settings/tokens) with `repo` and `read:org` scopes:
 
 ```sh
 # ~/.zshrc or ~/.bashrc
@@ -267,8 +272,8 @@ Both files belong in source control:
 
 | File                | Purpose                                                                                          |
 | ------------------- | ------------------------------------------------------------------------------------------------ |
-| `**apm.yml**`       | The manifest you author. Declares dependencies and which branch/tag to track.                    |
-| `**apm.lock.yaml**` | Generated by `apm install`. Pins the exact commit SHA and file hashes for reproducible installs. |
+| **`apm.yml`**       | The manifest you author. Declares dependencies and which branch/tag to track.                    |
+| **`apm.lock.yaml`** | Generated by `apm install`. Pins the exact commit SHA and file hashes for reproducible installs. |
 
 
 Everything else APM generates (`.cursor/`, `.github/`, `AGENTS.md`, `.mcp.json`) should be **gitignored** — each developer regenerates them locally with `apm install`.
