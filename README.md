@@ -10,7 +10,6 @@ Organization-wide agent package distributing engineering skills, agents, rules, 
   - [What's Included](#whats-included)
   - [IDE Compatibility](#ide-compatibility)
   - [Project Structure](#project-structure)
-  - [Environment Variables](#environment-variables)
 - [Contributing](#contributing)
   - [Prerequisites](#prerequisites)
   - [Local Setup](#local-setup)
@@ -20,17 +19,13 @@ Organization-wide agent package distributing engineering skills, agents, rules, 
   - [Releasing New Versions](#releasing-new-versions)
   - [Adding Custom MCP Servers](#adding-custom-mcp-servers)
 - [Consumer Guide](#consumer-guide)
-  - [Getting Started](#getting-started)
-  - [Per-Project Setup](#per-project-setup-when-you-need-more-control)
-    - [Walkthrough: adding MI Engineer Agent to an existing repo](#walkthrough-adding-mi-engineer-agent-to-an-existing-repo)
-    - [Understanding `apm.yml` and `apm.lock.yaml`](#understanding-apmyml-and-apmlockyaml)
-  - [How the Two Scopes Interact](#how-the-two-scopes-interact)
+  - [Prerequisites](#consumer-prerequisites)
+  - [Global Install (recommended)](#global-install-recommended)
+  - [Per-Project Install](#per-project-install)
+  - [Understanding `apm.yml` and `apm.lock.yaml`](#understanding-apmyml-and-apmlockyaml)
   - [Where Files Land](#where-files-land)
-  - [Version Management Across Repos](#version-management-across-repos)
-  - [Alternative Installation Methods](#alternative-installation-methods)
-  - [IDE-Specific Behavior](#ide-specific-behavior)
-  - [Overriding Defaults](#overriding-defaults)
-  - [Access Levels and Governance](#access-levels-and-governance)
+  - [Version Management](#version-management)
+  - [Overriding and Governance](#overriding-and-governance)
 
 ---
 
@@ -39,7 +34,6 @@ Organization-wide agent package distributing engineering skills, agents, rules, 
 MI Engineer Agent is a single-source-of-truth package that defines engineering skills, AI agents, coding instructions, prompt templates, hooks, and MCP server configurations in one place (`.apm/`). APM compiles and distributes the correct format for each target IDE so teams get consistent tooling regardless of their editor.
 
 ### What's Included
-
 
 | Type        | Name                | Description                                                |
 | ----------- | ------------------- | ---------------------------------------------------------- |
@@ -59,9 +53,7 @@ MI Engineer Agent is a single-source-of-truth package that defines engineering s
 | MCP         | `github`            | Repository, PR, and issue management                       |
 | MCP         | `atlassian`         | Jira, Confluence, and Compass via Atlassian Rovo           |
 
-
 ### IDE Compatibility
-
 
 | Component    | Cursor | GitHub Copilot |
 | ------------ | ------ | -------------- |
@@ -71,7 +63,6 @@ MI Engineer Agent is a single-source-of-truth package that defines engineering s
 | Prompts      | ✓      | ✓              |
 | Hooks        | ✓      | N/A            |
 | MCP          | ✓      | ✓              |
-
 
 ### Project Structure
 
@@ -96,29 +87,6 @@ apm.yml                            # Package manifest (name, version, targets)
 apm-policy.yml                     # Governance policy
 ```
 
-### Environment Variables
-
-The MCP servers that connect to external services need these environment variables set locally:
-
-
-| Variable         | Used By      | Description                                                                                                       |
-| ---------------- | ------------ | ----------------------------------------------------------------------------------------------------------------- |
-| `GITHUB_TOKEN`   | `github` MCP | GitHub Personal Access Token with `repo`, `read:org` scopes                                                       |
-| `GITHUB_API_URL` | `github` MCP | API base URL for GitHub Enterprise (default: [https://git.marriott.com/api/v3](https://git.marriott.com/api/v3) ) |
-
-
-The `github` MCP is pre-configured to connect to the enterprise instance at `git.marriott.com`. The `GITHUB_TOKEN` must be a Personal Access Token generated on **git.marriott.com** (not github.com) with `repo` and `read:org` scopes.
-
-To point at a different GitHub instance, override `GITHUB_API_URL` in your environment:
-
-```sh
-export GITHUB_API_URL="https://git.marriott.com/api/v3"
-```
-
-The `atlassian` MCP uses OAuth 2.1 — on first connection it opens a browser for authentication. No API token needed.
-
-These are resolved from your shell environment at runtime. The package itself contains no secrets.
-
 ---
 
 ## Contributing
@@ -128,73 +96,67 @@ This section is for anyone who wants to add skills, agents, prompts, hooks, or o
 ### Prerequisites
 
 - **APM CLI** — install via Homebrew:
-  ```sh
-  brew tap microsoft/apm
-  brew install apm
-  ```
+
+```sh
+brew tap microsoft/apm
+brew install apm
+```
+
 - **gh CLI** — version 2.40.0 or later (the setup script installs it if missing)
-- `**GITHUB_TOKEN`** — a PAT from `git.marriott.com` with `repo` and `read:org` scopes, exported in your shell profile:
-  ```sh
-  # ~/.zshrc or ~/.bashrc
-  export GITHUB_TOKEN="ghp_your_token_here"
-  ```
-  Generate the token at https://git.marriott.com/settings/tokens.
+- **`GITHUB_TOKEN`** — a PAT from `git.marriott.com` with `repo` and `read:org` scopes. Generate one at https://git.marriott.com/settings/tokens and export it in your shell profile:
+
+```sh
+# ~/.zshrc or ~/.bashrc
+export GITHUB_TOKEN="ghp_your_token_here"
+```
 
 ### Local Setup
 
 1. Fork and clone the repository:
-  ```sh
-   git clone https://git.marriott.com/phoenix/mi-engineer-agent.git
-   cd mi-engineer-agent
-  ```
+
+```sh
+git clone https://git.marriott.com/phoenix/mi-engineer-agent.git
+cd mi-engineer-agent
+```
+
 2. Run the setup script to configure your local environment:
-  ```sh
-   apm run setup
-  ```
-   Or run it directly:
-   The script checks and configures:
-  - **gh CLI** — installs via Homebrew if missing, verifies minimum version
-  - **GitHub Enterprise auth** — authenticates `gh` against `git.marriott.com` (opens a browser for OAuth)
-  - **GITHUB_TOKEN** — checks the env var is set for the GitHub MCP server
-  - **APM** — verifies the APM CLI is installed
+
+```sh
+apm run setup
+```
+
+The script checks and configures: `gh` CLI installation/version, GitHub Enterprise auth against `git.marriott.com`, `GITHUB_TOKEN` env var, and APM CLI availability.
 
 ### Development Workflow
 
 1. Create a feature branch following org conventions:
-  ```sh
-   git checkout -b feat/DXP-12345-add-new-skill
-  ```
+
+```sh
+git checkout -b feat/DXP-12345-add-new-skill
+```
+
 2. Edit files under `.apm/` — skills, agents, instructions, prompts, hooks, or MCP configs in `.mcp.json`.
 3. Validate, pack, and test (see below).
 4. Commit using conventional commits:
-  ```sh
-   git commit -m "feat(skills): DXP-12345, add terraform-plan skill"
-  ```
+
+```sh
+git commit -m "feat(skills): DXP-12345, add terraform-plan skill"
+```
 
 ### Validating Changes
 
-Validate the package structure:
-
 ```sh
-apm compile
-```
-
-Pack and test for a specific IDE target:
-
-```sh
-apm pack --target cursor
-apm pack --target copilot
-ls -la build/
+apm compile                    # Validate package structure
+apm pack --target cursor       # Pack for Cursor
+apm pack --target copilot      # Pack for Copilot
+ls -la build/                  # Inspect output
 ```
 
 Or pack all targets at once:
 
 ```sh
 apm pack --format plugin
-ls -la build/
 ```
-
-APM generates the correct IDE-specific files from your `.apm/` source into the `build/` directory.
 
 ### Submitting a Pull Request
 
@@ -211,7 +173,7 @@ Update the `version` field in `apm.yml` following semantic versioning:
 - **Minor** (`1.1.0`) — new skills, agents, prompts, or hooks
 - **Major** (`2.0.0`) — breaking changes to existing primitives that consumers may have overridden
 
-Once merged to `main`, consumers can pull the new version by re-running `apm install -g` or `apm deps update` — APM resolves directly from the GitHub Enterprise repo.
+Once merged to `main`, consumers pull the new version by re-running `apm install -g` or `apm deps update`.
 
 ### Adding Custom MCP Servers
 
@@ -237,8 +199,8 @@ Edit `.mcp.json` in the package root:
 
 Two connection types are supported:
 
-- `**http**` — for remote MCP servers your org already hosts
-- `**command**` — for local servers that run as a child process via `npx`, `node`, `python`, etc.
+- **`http`** — for remote MCP servers your org already hosts
+- **`command`** — for local servers that run as a child process via `npx`, `node`, `python`, etc.
 
 APM handles converting this into the correct format for each target IDE.
 
@@ -246,99 +208,48 @@ APM handles converting this into the correct format for each target IDE.
 
 ## Consumer Guide
 
-This section is for teams adopting MI Engineer Agent in their own repositories.
+This section is for teams adopting MI Engineer Agent in their own repositories. There are two ways to install: **global** (applies to all projects on your machine) and **per-project** (version-pinned, committed to the repo). Both can coexist — project-level always takes precedence.
 
-### Installation Scopes
+### Consumer Prerequisites
 
-APM supports two installation scopes. Choose based on how you want the package to apply:
+1. **APM CLI** — `brew tap microsoft/apm && brew install apm`
+2. **gh CLI** (v2.40.0+) — `brew install gh`
+3. **GitHub Enterprise auth**:
 
+```sh
+gh auth login --hostname git.marriott.com --web --git-protocol https
+```
 
-| Scope                          | Command          | Where Files Land                                                | Best For                                               |
-| ------------------------------ | ---------------- | --------------------------------------------------------------- | ------------------------------------------------------ |
-| **Global** (recommended start) | `apm install -g` | `~/.apm/` → deployed to `~/.cursor/`, `~/.copilot/`            | One-time setup, works across all repos on your machine |
-| **Project** (opt-in)           | `apm install`    | Project root (`AGENTS.md`, `.cursor/`, `.github/`, `.mcp.json`) | Version pinning, project-specific overrides            |
+4. **`GITHUB_TOKEN`** — needed at runtime by the GitHub MCP server. Generate a PAT at [git.marriott.com/settings/tokens](https://git.marriott.com/settings/tokens) with `repo` and `read:org` scopes:
 
+```sh
+# ~/.zshrc or ~/.bashrc
+export GITHUB_TOKEN="ghp_your_token_here"
+```
 
-Both scopes can coexist. Project-level always takes precedence over global when both are present.
+The `atlassian` MCP uses OAuth 2.1 — it opens a browser on first connection. No token needed.
 
-### Getting Started
-
-#### Step 1 — Prerequisites for installation
-
-APM pulls the package from a private GitHub Enterprise repo, so it needs credentials to download it:
-
-1. `**gh` CLI** (v2.40.0+) — install with `brew install gh` if missing.
-2. **GitHub Enterprise auth** — authenticate so APM can access the package:
-  ```sh
-   gh auth login --hostname git.marriott.com --web --git-protocol https
-  ```
-
-#### Step 2 — Install globally
+### Global Install (recommended)
 
 ```sh
 apm install -g git.marriott.com/phoenix/mi-engineer-agent
 ```
 
-This installs the package to your user scope (`~/.apm/`) and deploys skills, agents, prompts, and MCP servers to user-level directories (`~/.cursor/`, `~/.copilot/`). Your IDE picks these up automatically in every project you open — no per-repo configuration required.
+This deploys skills, agents, instructions, prompts, and MCP servers to user-level directories (`~/.cursor/`, `~/.copilot/`). Your IDE picks them up automatically in every project — no per-repo configuration required.
 
-> **What you get vs. what you miss with global install:**
->
->
-> |                                              | Global (`-g`) | Project (`apm.yml`) |
-> | -------------------------------------------- | ------------- | ------------------- |
-> | Skills (code-review, api-design, etc.)       | ✓             | ✓                   |
-> | Agents (architect, backend-reviewer)         | ✓             | ✓                   |
-> | Prompts (design-review, incident-response)   | ✓             | ✓                   |
-> | MCP servers (GitHub, Atlassian, Playwright)  | ✓             | ✓                   |
-> | Instructions deployed to IDE-native paths    | ✓             | ✓                   |
-> | `AGENTS.md` — compiled context               | —             | ✓                   |
-> | Hooks (pre-commit lint, security guard)      | —             | ✓                   |
-> | Version pinning per repo                     | —             | ✓                   |
-> | Project-specific overrides                   | —             | ✓                   |
->
-
-#### `AGENTS.md` — do you need it?
-
-APM deploys instructions in **two forms**, and understanding the difference matters:
-
-1. **Individual instruction files** (e.g., `.cursor/rules/*.mdc`, `.github/instructions/*.instructions.md`) — these are the IDE-native format. Each IDE loads them directly with full support for scoping, activation modes, and priority. In Cursor, `.mdc` rules support four activation modes: always apply, apply intelligently (AI decides based on task), apply to specific file globs, or apply only when mentioned. These are the **primary mechanism** for delivering instructions to the agent.
-2. **`AGENTS.md`** — a compiled roll-up of all instructions into a single markdown file at the project root. It acts as **passive, always-loaded context**. The entire file is fed to the agent on every interaction. It exists for compatibility — `AGENTS.md` is a convention that Cursor, Copilot, Codex, and other tools all recognize as a baseline context file.
-
-**In practice, the individual files do the heavy lifting.** They offer granular control (file-scoped rules, smart activation) and are higher priority in the IDE's rule hierarchy. `AGENTS.md` sits at the lowest priority and loads everything unconditionally, which can waste tokens in large projects.
-
-**What this means for global install:** Global install deploys the individual instruction files to user-level directories (e.g., `~/.cursor/rules/`), so the agent **does** pick up coding standards and security baselines. You lose `AGENTS.md`, but since the individual files are the more capable mechanism, the practical impact is minimal. The main reasons to use project-level install are version pinning, overrides, and hooks — not `AGENTS.md` itself.
-
-#### Step 3 — Configure tokens for runtime tools
-
-The installed skills and MCP servers interact with GitHub at runtime. Set `GITHUB_TOKEN` so they can authenticate:
-
-1. Generate a Personal Access Token at [https://git.marriott.com/settings/tokens](https://git.marriott.com/settings/tokens) with `repo` and `read:org` scopes.
-2. Export it in your shell profile:
-  ```sh
-   # ~/.zshrc or ~/.bashrc
-   export GITHUB_TOKEN="ghp_your_token_here"
-  ```
-
-Without this token the GitHub MCP server won't be able to create PRs, read issues, or perform other GitHub operations on your behalf.
-
-#### Updating
-
-To pull the latest version later:
+To update later:
 
 ```sh
 apm deps update -g
 ```
 
-### Per-Project Setup (when you need more control)
+> **What global install does not include:** `AGENTS.md` (compiled context file), hooks, version pinning, and project-specific overrides. If you need any of these, use per-project install.
+>
+> This is rarely a concern — individual instruction files (`.cursor/rules/*.mdc`, `.github/instructions/*.instructions.md`) are the primary mechanism for delivering instructions and are fully deployed globally. `AGENTS.md` is a lower-priority compatibility layer that loads all instructions unconditionally.
 
-The global install covers most developers. Add a project-level `apm.yml` when a repo needs:
+### Per-Project Install
 
-- **Version pinning** — lock a specific branch or tag so all developers on the repo use the same one.
-- **Project-specific overrides** — replace a shipped skill or instruction with a custom version for that repo.
-- **Hooks** — pre-commit hooks only deploy at project scope, not global.
-- **Team consistency** — the `apm.yml` is committed to source control, so `apm install` after clone reproduces the exact setup.
-
-#### Walkthrough: adding MI Engineer Agent to an existing repo
+Use per-project install when a repo needs version pinning, hooks, overrides, or team-consistent setup committed to source control.
 
 **Step 1 — Create `apm.yml` in the project root:**
 
@@ -351,7 +262,7 @@ dependencies:
       ref: trunk
 ```
 
-> **Why the `git:` object form?** This package lives on GitHub Enterprise (`git.marriott.com`), not public GitHub. The explicit `git:` URL with `ref:` is the most reliable format for private GHE repos. The `ref` field pins to a branch (`trunk`), tag (`v1.0.0`), or commit SHA.
+The `git:` object form with explicit `ref:` is the required format for GitHub Enterprise repos. The `ref` field accepts a branch name (`trunk`), tag (`v1.0.0`), or commit SHA.
 
 **Step 2 — Install:**
 
@@ -359,17 +270,9 @@ dependencies:
 apm install
 ```
 
-APM clones the package, resolves dependencies, and deploys skills, agents, instructions, prompts, hooks, and MCP servers into the project. It automatically creates the necessary IDE directories (`.cursor/`, `.github/`) based on the targets defined in the package.
+APM clones the package, resolves dependencies, and deploys all primitives into the project. It automatically creates the IDE directories (`.cursor/`, `.github/`).
 
-**Step 3 — Run the environment setup (first time only):**
-
-```sh
-apm run setup
-```
-
-This checks your local environment: installs `gh` CLI if missing, authenticates against GitHub Enterprise, verifies `GITHUB_TOKEN`, and confirms APM is available. You only need to run this once per machine.
-
-**Step 4 — Verify the install:**
+**Step 3 — Verify:**
 
 ```sh
 ls .cursor/rules/     # Should contain .mdc instruction files
@@ -377,198 +280,96 @@ ls .github/agents/    # Should contain .agent.md files
 cat apm.lock.yaml     # Should show resolved commit SHA
 ```
 
-#### Understanding `apm.yml` and `apm.lock.yaml`
-
-These two files work together and both belong in source control:
-
-| File | Purpose | Commit to git? |
-| --- | --- | --- |
-| **`apm.yml`** | The manifest. Declares what your project depends on and which branch/tag to track. This is what you author and maintain. | **Yes** — this is the source of truth for your project's agent configuration. |
-| **`apm.lock.yaml`** | The lockfile. Generated by `apm install`. Records the exact commit SHA, deployed file paths, and content hashes for every dependency. | **Yes** — this guarantees every developer on the team gets the exact same files, regardless of when they run `apm install`. |
-
-**Why both matter:**
-
-- Without `apm.yml`, APM doesn't know what to install. Running `apm install` in a repo with no manifest does nothing.
-- Without `apm.lock.yaml`, installs are not reproducible. Two developers running `apm install` a week apart could get different versions if the upstream branch moved. The lockfile pins the exact commit.
-- To update to the latest upstream version: run `apm deps update`. This re-resolves from `apm.yml`, downloads new content, and regenerates `apm.lock.yaml` with the updated SHA.
-
-Everything else APM generates (`.cursor/`, `.github/`, `AGENTS.md`, `.mcp.json`) should be **gitignored**. These are build artifacts — each developer regenerates them locally by running `apm install`.
-
-### How the Two Scopes Interact
-
-When both global and project-level installations exist, APM resolves with this precedence (highest first):
-
-1. **Project-local files** — anything in the project's own `.apm/` directory
-2. **Project dependencies** — packages in the project's `apm.yml`
-3. **Global packages** — packages installed with `-g`
-
-A project `apm.yml` always wins. If repo-A pins `mi-engineer-agent@1.0.0` but your global install has `2.0.0`, repo-A uses `1.0.0` when you work inside it. Outside any APM-configured project, the global `2.0.0` applies.
-
-### Where Files Land
-
-**Global scope** (from `apm install -g`) — primitives deploy to user-level directories in your home folder. Each IDE has its own path:
-
-```
-~/.apm/                                    # Package storage (shared)
-│
-├── ~/.cursor/                             # ── Cursor ──
-│   ├── rules/*.mdc                        #   Instructions as Cursor rules
-│   ├── agents/*.md                        #   Agent definitions
-│   ├── skills/{name}/                     #   Skill folders
-│   └── hooks.json                         #   Hook definitions
-│
-└── ~/.copilot/                            # ── GitHub Copilot / VS Code ──
-    ├── copilot-instructions.md            #   User-level instructions
-    ├── agents/*.md                        #   Agent definitions
-    └── mcp-config.json                    #   MCP server config
-```
-
-Note: Copilot's user-level directory is `~/.copilot/`, **not** `~/.github/`. The `.github/` path is project-level only. No `AGENTS.md` is generated at global scope.
-
-**Project scope** (from `apm install` with `apm.yml`) — files are generated into the project root, organized by IDE target:
-
-```
-your-repo/
-├── apm.yml                                # Committed to source control
-├── apm.lock.yaml                          # Committed — pins exact versions
-├── AGENTS.md                              # Compiled instructions — Cursor and Copilot read this
-│
-├── .cursor/                               # ── Cursor ──
-│   ├── rules/*.mdc                        #   Instructions as Cursor rules
-│   ├── agents/*.md                        #   Agent definitions
-│   ├── skills/{name}/                     #   Skill folders
-│   └── hooks.json                         #   Hook definitions
-│
-├── .github/                               # ── GitHub Copilot / VS Code ──
-│   ├── instructions/*.instructions.md     #   Instruction files
-│   ├── prompts/*.prompt.md                #   Prompt templates
-│   ├── agents/*.agent.md                  #   Agent definitions
-│   ├── skills/{name}/                     #   Skill folders
-│   └── hooks/*.json                       #   Hook definitions
-│
-├── .mcp.json                              # MCP server definitions (all IDEs)
-└── ... your existing project files
-```
-
-All generated files should be **gitignored**. Each developer runs `apm install` locally after cloning a repo that has an `apm.yml`. Only `apm.yml` and `apm.lock.yaml` are committed to source control.
-
-### Version Management Across Repos
-
-Each repo controls which version it tracks via the `ref` field in `apm.yml`:
-
-```yaml
-# repo-a/apm.yml — track the trunk branch (always latest)
-dependencies:
-  apm:
-    - git: "https://git.marriott.com/phoenix/mi-engineer-agent.git"
-      ref: trunk
-
-# repo-b/apm.yml — pin to a release tag
-dependencies:
-  apm:
-    - git: "https://git.marriott.com/phoenix/mi-engineer-agent.git"
-      ref: v2.0.0
-
-# repo-c/apm.yml — pin to an exact commit SHA
-dependencies:
-  apm:
-    - git: "https://git.marriott.com/phoenix/mi-engineer-agent.git"
-      ref: abc123def456
-```
-
-There is no conflict — each repo resolves independently. A legacy service can stay pinned to an older tag while a new service tracks `trunk`. The `apm.lock.yaml` in each repo records the exact commit SHA at the time of install, so builds are reproducible regardless of new upstream releases.
-
-To pull the latest version within your pinned ref:
+To update to the latest upstream version:
 
 ```sh
 apm deps update
 ```
 
-### Alternative Installation Methods
+### Understanding `apm.yml` and `apm.lock.yaml`
 
-The primary install method is the GitHub Enterprise repo URL shown in [Getting Started](#getting-started). These alternatives exist for specific situations:
+These two files work together and **both belong in source control**:
 
+| File | Purpose |
+| --- | --- |
+| **`apm.yml`** | The manifest you author. Declares dependencies and which branch/tag to track. Without it, `apm install` does nothing. |
+| **`apm.lock.yaml`** | Generated by `apm install`. Pins the exact commit SHA and file hashes. Without it, two developers installing a week apart could get different versions. |
 
-| Method              | Best For                             | Command                                                            |
-| ------------------- | ------------------------------------ | ------------------------------------------------------------------ |
-| **Plugin format**   | Marketplace or manual plugin install | `apm pack --format plugin`                                         |
-| **Git clone**       | Fork for full customization          | `git clone https://git.marriott.com/phoenix/mi-engineer-agent.git` |
+Everything else APM generates (`.cursor/`, `.github/`, `AGENTS.md`, `.mcp.json`) should be **gitignored** — each developer regenerates them locally by running `apm install`.
 
+### Where Files Land
 
-Git Clone
+**Global** (`apm install -g`):
 
-```sh
-git clone https://git.marriott.com/phoenix/mi-engineer-agent.git
-apm install --plugin ./mi-engineer-agent
+```
+~/.apm/                                    # Package storage
+~/.cursor/                                 # Cursor
+  rules/*.mdc                              #   Instructions
+  agents/*.md                              #   Agents
+  skills/{name}/                           #   Skills
+~/.copilot/                                # GitHub Copilot
+  copilot-instructions.md                  #   Instructions
+  agents/*.md                              #   Agents
+  mcp-config.json                          #   MCP config
 ```
 
-Direct Download
+Copilot's user-level directory is `~/.copilot/`, **not** `~/.github/` (that path is project-level only).
 
-Copy the `.apm/` directory and `.mcp.json` directly into your project.
+**Project** (`apm install` with `apm.yml`):
 
-Regardless of install method, always run `apm run setup` on first use.
+```
+your-repo/
+  apm.yml                                  # ← commit
+  apm.lock.yaml                            # ← commit
+  AGENTS.md                                # Compiled context (gitignored)
+  .cursor/                                 # Cursor (gitignored)
+    rules/*.mdc
+    agents/*.md
+    skills/{name}/
+    hooks.json
+  .github/                                 # Copilot (gitignored)
+    instructions/*.instructions.md
+    prompts/*.prompt.md
+    agents/*.agent.md
+    skills/{name}/
+    hooks/*.json
+  .mcp.json                                # MCP servers (gitignored)
+```
 
-### IDE-Specific Behavior
+### Version Management
 
-APM deploys primitives into the native directory structure each IDE expects. `apm install` handles this automatically — you define nothing extra.
-
-
-| IDE                | Target   | Generated Paths                                                                                                  |
-| ------------------ | -------- | ---------------------------------------------------------------------------------------------------------------- |
-| **Cursor**         | `cursor` | `AGENTS.md`, `.cursor/rules/`, `.cursor/agents/`, `.cursor/skills/`, `.cursor/hooks.json`                        |
-| **GitHub Copilot** | `copilot` | `AGENTS.md`, `.github/instructions/`, `.github/prompts/`, `.github/agents/`, `.github/skills/`, `.github/hooks/` |
-
-
-APM auto-detects which targets to generate based on your project structure (e.g., `.cursor/` exists → Cursor target is enabled). You can also set the target explicitly in `apm.yml`:
+Each repo controls which version it tracks via the `ref` field in `apm.yml`. Examples:
 
 ```yaml
-target:
-  - cursor
-  - copilot
+ref: trunk          # Always latest (track a branch)
+ref: v2.0.0         # Pin to a release tag
+ref: abc123def456   # Pin to an exact commit SHA
 ```
 
-After installation, your IDE's AI agent automatically picks up the skills, instructions, agents, prompts, hooks, and MCP servers shipped in this package.
+Each repo resolves independently — a legacy service can stay pinned to an older tag while a new service tracks `trunk`. The lockfile (`apm.lock.yaml`) ensures reproducible installs regardless of when `apm install` runs.
 
-### Overriding Defaults
+### Overriding and Governance
 
-APM resolves configuration using a layered precedence system:
+APM resolves with this precedence (highest first):
 
-1. **Project-local files** — highest priority. Any file you place directly in your repo takes precedence.
-2. **Direct dependencies** — packages listed in your `apm.yml`.
-3. **Transitive dependencies** — packages pulled in by your dependencies (lowest priority).
+1. **Project-local files** — anything in the project's own `.apm/` directory
+2. **Project dependencies** — packages in the project's `apm.yml`
+3. **Global packages** — packages installed with `-g`
 
-To override a skill, create the same file path in your project:
-
-```
-# The package ships:
-#   .apm/skills/code-review/SKILL.md
-#
-# Override it locally:
-.apm/skills/code-review/SKILL.md   ← your version wins
-```
-
-To override an instruction:
+To override any primitive, mirror the file path locally:
 
 ```
-# Package default:
-#   .apm/instructions/coding-standards.md
-#
-# Your project-level override:
-.apm/instructions/coding-standards.md
+.apm/skills/code-review/SKILL.md        # Your version wins over the package's
+.apm/instructions/coding-standards.md   # Same for instructions, agents, prompts
 ```
 
-APM merges the rest and only replaces the specific files you override. The same pattern works for agents, prompts, hooks, and MCP configs — mirror the file path locally and your version takes precedence.
+The `apm-policy.yml` file controls what consumers can change:
 
-### Access Levels and Governance
+- **Skills, Instructions, Prompts, Agents** — fully overridable at the project level
+- **Hooks** — overridable in Cursor (Copilot does not support hooks)
+- **MCP Servers** — add your own alongside shipped ones, or replace a shipped server by defining one with the same key in your local `.mcp.json`
 
-The `apm-policy.yml` file controls what consumers can and cannot change:
-
-- **Skills, Instructions, Prompts** — fully overridable at the project level. Place a file at the same path and your version wins.
-- **Hooks** — overridable in Cursor. GitHub Copilot does not support hooks.
-- **MCP Servers** — consumers can add their own MCP servers alongside the ones shipped in this package. To replace a shipped server, define one with the same key in your local `.mcp.json`.
-- **Agents** — overridable by placing a matching `.agent.md` at the same path.
-
-The governance policy is set to `warn` enforcement, meaning policy violations produce warnings rather than blocking installs. This allows teams to iterate while the org converges on standards.
+The governance policy is set to `warn` enforcement — policy violations produce warnings rather than blocking installs.
 
 ---
 
