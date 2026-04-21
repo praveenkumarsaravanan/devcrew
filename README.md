@@ -20,9 +20,8 @@ Organization-wide agent package distributing engineering skills, agents, rules, 
   - [Releasing New Versions](#releasing-new-versions)
   - [Adding Custom MCP Servers](#adding-custom-mcp-servers)
 - [Consumer Guide](#consumer-guide)
-  - [Installation Scopes](#installation-scopes)
-  - [Getting Started — Per-Project (recommended)](#getting-started--per-project-recommended)
-  - [Getting Started — Global](#getting-started--global)
+  - [Getting Started](#getting-started)
+  - [Per-Project Setup](#per-project-setup-when-you-need-more-control)
   - [How the Two Scopes Interact](#how-the-two-scopes-interact)
   - [Where Files Land](#where-files-land)
   - [Version Management Across Repos](#version-management-across-repos)
@@ -255,54 +254,57 @@ This section is for teams adopting MI Engineer Agent in their own repositories.
 APM supports two installation scopes. Choose based on how you want the package to apply:
 
 
-| Scope                  | Command          | Where Files Land                                                              | Best For                                             |
-| ---------------------- | ---------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------- |
-| **Project** (default)  | `apm install`    | Project root (`.cursor-plugin/`, `AGENTS.md`, `CLAUDE.md`, `.copilot/`, etc.) | Version pinning per repo, project-specific overrides |
-| **Global** (user-wide) | `apm install -g` | `~/.apm/` → deployed to `~/.copilot/`, `~/.claude/`, etc.                     | Personal baseline across all repos on your machine   |
+| Scope                          | Command          | Where Files Land                                                              | Best For                                               |
+| ------------------------------ | ---------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------ |
+| **Global** (recommended start) | `apm install -g` | `~/.apm/` → deployed to `~/.copilot/`, `~/.claude/`, etc.                     | One-time setup, works across all repos on your machine |
+| **Project** (opt-in)           | `apm install`    | Project root (`.cursor-plugin/`, `AGENTS.md`, `CLAUDE.md`, `.copilot/`, etc.) | Version pinning, project-specific overrides            |
 
 
 Both scopes can coexist. Project-level always takes precedence over global when both are present.
 
-### Getting Started — Per-Project (recommended)
+### Getting Started
 
-The recommended approach for teams is per-project installation. This way the `apm.yml` is committed to the repo, so every developer who clones it gets the same agent setup.
-
-**Step 1 — Add the dependency.** Create or edit `apm.yml` in your project root:
-
-```yaml
-dependencies:
-  mi-engineer-agent: "^1.0.0"
-```
-
-**Step 2 — Install and set up.**
-
-```sh
-apm install
-apm run setup
-```
-
-`apm install` pulls the package and generates IDE-specific files into the project root. `apm run setup` ensures your local environment is ready — it checks for the `gh` CLI (installs via Homebrew if missing), authenticates against GitHub Enterprise (`git.marriott.com`), verifies your `GITHUB_TOKEN`, and confirms APM is available.
-
-You need `GITHUB_TOKEN` exported in your shell profile for the GitHub MCP server to work (see [Environment Variables](#environment-variables)).
-
-> **Tip:** `apm run setup` only needs to run once per machine. After that, new repos just need `apm install`.
-
-### Getting Started — Global
-
-If you want the package available across every project on your machine without adding `apm.yml` to each repo:
+One command to get up and running across all your projects:
 
 ```sh
 apm install -g phoenix/mi-engineer-agent
 apm run setup
 ```
 
-This installs to `~/.apm/` and deploys primitives to user-level directories (`~/.copilot/`, `~/.claude/`, etc.) that your IDE reads automatically regardless of which project you have open.
+`apm install -g` installs the package to your user scope (`~/.apm/`) and deploys skills, agents, instructions, prompts, and MCP servers to user-level directories (`~/.copilot/`, `~/.claude/`, etc.). Your IDE picks these up automatically in every project you open — no per-repo configuration required.
 
-Global install is useful for:
+`apm run setup` ensures your local environment is ready. It checks for the `gh` CLI (installs via Homebrew if missing), authenticates against GitHub Enterprise (`git.marriott.com`), verifies your `GITHUB_TOKEN`, and confirms APM is available. This only needs to run **once per machine**.
 
-- Personal productivity — get skills and agents everywhere without per-repo setup.
-- Trying out the package before rolling it out to a team's repos.
-- Repos you don't own or can't commit `apm.yml` changes to.
+You need `GITHUB_TOKEN` exported in your shell profile for the GitHub MCP server to work (see [Environment Variables](#environment-variables)).
+
+To update to the latest version later:
+
+```sh
+apm deps update -g
+```
+
+### Per-Project Setup (when you need more control)
+
+The global install covers most developers. Add a project-level `apm.yml` when a repo needs:
+
+- **Version pinning** — lock a specific version so all developers on the repo use the same one.
+- **Project-specific overrides** — replace a shipped skill or instruction with a custom version for that repo.
+- **Team consistency** — the `apm.yml` is committed to source control, so `apm install` after clone reproduces the exact setup.
+
+**Step 1 — Add `apm.yml` to the project root:**
+
+```yaml
+dependencies:
+  mi-engineer-agent: "^1.0.0"
+```
+
+**Step 2 — Install:**
+
+```sh
+apm install
+```
+
+This generates IDE-specific files into the project root. The generated files should be gitignored — only `apm.yml` and `apm.lock.yaml` are committed.
 
 ### How the Two Scopes Interact
 
@@ -312,32 +314,31 @@ When both global and project-level installations exist, APM resolves with this p
 2. **Project dependencies** — packages in the project's `apm.yml`
 3. **Global packages** — packages installed with `-g`
 
-This means a project `apm.yml` always wins. If repo-A pins `mi-engineer-agent@1.0.0` but your global install has `2.0.0`, repo-A uses `1.0.0` when you work inside it. Outside any APM-configured project, the global `2.0.0` applies.
+A project `apm.yml` always wins. If repo-A pins `mi-engineer-agent@1.0.0` but your global install has `2.0.0`, repo-A uses `1.0.0` when you work inside it. Outside any APM-configured project, the global `2.0.0` applies.
 
 ### Where Files Land
 
-**Project scope** — generated files appear in the project root:
+**Global scope** (from `apm install -g`):
+
+```
+~/.apm/                                # Package storage
+~/.copilot/                            # GitHub Copilot picks these up
+~/.claude/                             # Claude Code picks these up
+```
+
+**Project scope** (from `apm install` with `apm.yml`):
 
 ```
 your-repo/
-├── apm.yml                            # You created this (committed)
-├── .mcp.json                          # MCP server definitions (generated)
+├── apm.yml                            # Committed to source control
+├── apm.lock.yaml                      # Committed — pins exact versions
+├── .mcp.json                          # Generated — MCP server definitions
 ├── AGENTS.md                          # Generated — Cursor reads this
 ├── CLAUDE.md                          # Generated — Claude Code reads this
 ├── .cursor-plugin/                    # Generated — Cursor plugin format
 ├── .github/copilot-instructions.md    # Generated — GitHub Copilot reads this
 ├── .copilot/                          # Generated — Copilot agents/skills
 └── ... your existing project files
-```
-
-The generated files should be **gitignored** — they are not committed. Each developer runs `apm install` locally after cloning. Only `apm.yml` and `apm.lock.yaml` are committed to source control.
-
-**Global scope** — files land in your home directory:
-
-```
-~/.apm/                                # Package storage
-~/.copilot/                            # GitHub Copilot picks these up
-~/.claude/                             # Claude Code picks these up
 ```
 
 Your IDE detects the files automatically at both levels. No additional IDE configuration is needed.
