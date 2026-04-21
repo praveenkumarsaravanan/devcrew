@@ -1,5 +1,5 @@
 name: mi-engineer-agent
-version: "1.0.0"
+version: "1.1.0"
 description: "Phoenix - Organization-wide engineering agent -- skills, MCP servers, rules, hooks, and agents for Cursor and GitHub Copilot"
 target:
   - copilot
