@@ -135,11 +135,28 @@ if git tag -l "$NEXT_TAG" | grep -q "$NEXT_TAG"; then
   fail "Tag $NEXT_TAG already exists. Cannot re-tag an existing release. Increment to a new version instead." 3
 fi
 
+# ── Build changelog ──────────────────────────────────────────────────────────
+
+PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+if [[ -n "$PREV_TAG" ]]; then
+  CHANGELOG=$(git log "${PREV_TAG}..HEAD" --pretty=format:"- %s" --no-merges)
+  CHANGELOG_RANGE="${PREV_TAG}..HEAD"
+else
+  CHANGELOG=$(git log --pretty=format:"- %s" --no-merges)
+  CHANGELOG_RANGE="(all commits)"
+fi
+
+if [[ -z "$CHANGELOG" ]]; then
+  CHANGELOG="- No changes since ${PREV_TAG:-initial commit}"
+fi
+
 # ── Show summary ──────────────────────────────────────────────────────────────
 
 if [[ "$JSON_OUTPUT" == true ]]; then
+  CHANGELOG_JSON=$(echo "$CHANGELOG" | python3 -c "import sys,json; print(json.dumps(sys.stdin.read().strip()))" 2>/dev/null || echo "\"$CHANGELOG\"")
   cat <<JSON
-{"increment":"$INCREMENT","current_version":"$CURRENT_VERSION","next_version":"$NEXT_VERSION","tag":"$NEXT_TAG","branch":"$CURRENT_BRANCH","dry_run":$DRY_RUN}
+{"increment":"$INCREMENT","current_version":"$CURRENT_VERSION","next_version":"$NEXT_VERSION","tag":"$NEXT_TAG","branch":"$CURRENT_BRANCH","dry_run":$DRY_RUN,"changes":$CHANGELOG_JSON}
 JSON
 else
   echo "" >&2
@@ -152,10 +169,15 @@ else
   echo "  Branch:          $CURRENT_BRANCH" >&2
   echo "  ─────────────────────────────────────────" >&2
   echo "" >&2
+  echo "  Changes since ${PREV_TAG:-beginning}:" >&2
+  echo "$CHANGELOG" | while IFS= read -r line; do
+    echo "    $line" >&2
+  done
+  echo "" >&2
 fi
 
 if [[ "$DRY_RUN" == true ]]; then
-  info "[dry-run] Would update apm.yml, commit, tag $NEXT_TAG, and push."
+  info "[dry-run] Would update apm.yml, commit, tag $NEXT_TAG (with changelog), and push."
   exit 0
 fi
 
@@ -197,7 +219,13 @@ ok "Committed version bump"
 
 # ── Tag ───────────────────────────────────────────────────────────────────────
 
-git tag -a "$NEXT_TAG" -m "Release ${NEXT_VERSION}"
+TAG_MESSAGE="Release ${NEXT_VERSION}
+
+Changes since ${PREV_TAG:-beginning}:
+
+${CHANGELOG}"
+
+git tag -a "$NEXT_TAG" -m "$TAG_MESSAGE"
 ok "Created tag $NEXT_TAG"
 
 # ── Push ──────────────────────────────────────────────────────────────────────
