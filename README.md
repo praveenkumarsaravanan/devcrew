@@ -43,7 +43,6 @@ MI Engineer Agent is a single-source-of-truth package that defines engineering s
 | ----------- | ------------------- | ---------------------------------------------------------- |
 | Skill       | `code-review`       | Structured code review with severity levels                |
 | Skill       | `api-design`        | REST/gRPC API design guidance and validation               |
-| Skill       | `db-migration`      | Safe database migration planning and execution             |
 | Skill       | `commit-message`    | Construct commit messages matching org commitlint hook     |
 | Skill       | `branch-creation`   | Create branches with org naming conventions                |
 | Skill       | `pull-request`      | PR creation with JIRA validation and discrepancy detection |
@@ -79,7 +78,6 @@ MI Engineer Agent is a single-source-of-truth package that defines engineering s
   skills/                          # SKILL.md files
     code-review/SKILL.md
     api-design/SKILL.md
-    db-migration/SKILL.md
   agents/                          # .agent.md definitions
     backend-reviewer.agent.md
     architect.agent.md
