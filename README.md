@@ -99,10 +99,10 @@ apm-policy.yml                     # Governance policy
 The MCP servers that connect to external services need these environment variables set locally:
 
 
-| Variable         | Used By      | Description                                                            |
-| ---------------- | ------------ | ---------------------------------------------------------------------- |
-| `GITHUB_TOKEN`   | `github` MCP | GitHub Personal Access Token with `repo`, `read:org` scopes            |
-| `GITHUB_API_URL` | `github` MCP | API base URL for GitHub Enterprise (default: `https://api.github.com`) |
+| Variable         | Used By      | Description                                                                                                       |
+| ---------------- | ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `GITHUB_TOKEN`   | `github` MCP | GitHub Personal Access Token with `repo`, `read:org` scopes                                                       |
+| `GITHUB_API_URL` | `github` MCP | API base URL for GitHub Enterprise (default: [https://git.marriott.com/api/v3](https://git.marriott.com/api/v3) ) |
 
 
 The `github` MCP is pre-configured to connect to the enterprise instance at `git.marriott.com`. The `GITHUB_TOKEN` must be a Personal Access Token generated on **git.marriott.com** (not github.com) with `repo` and `read:org` scopes.
@@ -266,12 +266,11 @@ Both scopes can coexist. Project-level always takes precedence over global when 
 
 APM pulls the package from a private GitHub Enterprise repo, so it needs credentials to download it:
 
-1. **`gh` CLI** (v2.40.0+) — install with `brew install gh` if missing.
+1. `**gh` CLI** (v2.40.0+) — install with `brew install gh` if missing.
 2. **GitHub Enterprise auth** — authenticate so APM can access the package:
-
-   ```sh
+  ```sh
    gh auth login --hostname git.marriott.com --web --git-protocol https
-   ```
+  ```
 
 #### Step 2 — Install globally
 
@@ -279,19 +278,45 @@ APM pulls the package from a private GitHub Enterprise repo, so it needs credent
 apm install -g git.marriott.com/phoenix/mi-engineer-agent
 ```
 
-This installs the package to your user scope (`~/.apm/`) and deploys skills, agents, instructions, prompts, and MCP servers to user-level directories (`~/.copilot/`, `~/.claude/`, etc.). Your IDE picks these up automatically in every project you open — no per-repo configuration required.
+This installs the package to your user scope (`~/.apm/`) and deploys skills, agents, prompts, and MCP servers to user-level directories (`~/.copilot/`, `~/.claude/`, etc.). Your IDE picks these up automatically in every project you open — no per-repo configuration required.
+
+> **What you get vs. what you miss with global install:**
+>
+>
+> |                                              | Global (`-g`) | Project (`apm.yml`) |
+> | -------------------------------------------- | ------------- | ------------------- |
+> | Skills (code-review, api-design, etc.)       | ✓             | ✓                   |
+> | Agents (architect, backend-reviewer)         | ✓             | ✓                   |
+> | Prompts (design-review, incident-response)   | ✓             | ✓                   |
+> | MCP servers (GitHub, Atlassian, Playwright)  | ✓             | ✓                   |
+> | Instructions deployed to IDE-native paths    | ✓             | ✓                   |
+> | `AGENTS.md` / `CLAUDE.md` — compiled context | —             | ✓                   |
+> | Hooks (pre-commit lint, security guard)      | —             | ✓                   |
+> | Version pinning per repo                     | —             | ✓                   |
+> | Project-specific overrides                   | —             | ✓                   |
+>
+
+#### `AGENTS.md` and `CLAUDE.md` — do you need them?
+
+APM deploys instructions in **two forms**, and understanding the difference matters:
+
+1. **Individual instruction files** (e.g., `.cursor/rules/*.mdc`, `.github/instructions/*.instructions.md`) — these are the IDE-native format. Each IDE loads them directly with full support for scoping, activation modes, and priority. In Cursor, `.mdc` rules support four activation modes: always apply, apply intelligently (AI decides based on task), apply to specific file globs, or apply only when mentioned. These are the **primary mechanism** for delivering instructions to the agent.
+2. `**AGENTS.md` / `CLAUDE.md`** — these are compiled roll-ups of all instructions into a single markdown file at the project root. They act as **passive, always-loaded context**. The entire file is fed to the agent on every interaction. They exist for compatibility — `AGENTS.md` is a convention that Cursor, Copilot, Codex, and other tools all recognize as a baseline context file.
+
+**In practice, the individual files do the heavy lifting.** They offer granular control (file-scoped rules, smart activation) and are higher priority in the IDE's rule hierarchy. `AGENTS.md` sits at the lowest priority and loads everything unconditionally, which can waste tokens in large projects.
+
+**What this means for global install:** Global install deploys the individual instruction files to user-level directories (e.g., `~/.cursor/rules/`), so the agent **does** pick up coding standards and security baselines. You lose `AGENTS.md`, but since the individual files are the more capable mechanism, the practical impact is minimal. The main reasons to use project-level install are version pinning, overrides, and hooks — not `AGENTS.md` itself.
 
 #### Step 3 — Configure tokens for runtime tools
 
 The installed skills and MCP servers interact with GitHub at runtime. Set `GITHUB_TOKEN` so they can authenticate:
 
-1. Generate a Personal Access Token at https://git.marriott.com/settings/tokens with `repo` and `read:org` scopes.
+1. Generate a Personal Access Token at [https://git.marriott.com/settings/tokens](https://git.marriott.com/settings/tokens) with `repo` and `read:org` scopes.
 2. Export it in your shell profile:
-
-   ```sh
+  ```sh
    # ~/.zshrc or ~/.bashrc
    export GITHUB_TOKEN="ghp_your_token_here"
-   ```
+  ```
 
 Without this token the GitHub MCP server won't be able to create PRs, read issues, or perform other GitHub operations on your behalf.
 
@@ -338,30 +363,62 @@ A project `apm.yml` always wins. If repo-A pins `mi-engineer-agent@1.0.0` but yo
 
 ### Where Files Land
 
-**Global scope** (from `apm install -g`):
+**Global scope** (from `apm install -g`) — primitives deploy to user-level directories in your home folder. Each IDE has its own path:
 
 ```
-~/.apm/                                # Package storage
-~/.copilot/                            # GitHub Copilot picks these up
-~/.claude/                             # Claude Code picks these up
+~/.apm/                                    # Package storage (shared)
+│
+├── ~/.cursor/                             # ── Cursor ──
+│   ├── rules/*.mdc                        #   Instructions as Cursor rules
+│   ├── agents/*.md                        #   Agent definitions
+│   ├── skills/{name}/                     #   Skill folders
+│   └── hooks.json                         #   Hook definitions
+│
+├── ~/.copilot/                            # ── GitHub Copilot / VS Code ──
+│   ├── copilot-instructions.md            #   User-level instructions
+│   ├── agents/*.md                        #   Agent definitions
+│   └── mcp-config.json                    #   MCP server config
+│
+└── ~/.claude/                             # ── Claude Code ──
+    ├── commands/*.md                      #   Prompts as slash commands
+    ├── agents/*.md                        #   Agent definitions
+    └── skills/{name}/                     #   Skill folders
 ```
 
-**Project scope** (from `apm install` with `apm.yml`):
+Note: Copilot's user-level directory is `~/.copilot/`, **not** `~/.github/`. The `.github/` path is project-level only. No `AGENTS.md` or `CLAUDE.md` is generated at global scope.
+
+**Project scope** (from `apm install` with `apm.yml`) — files are generated into the project root, organized by IDE target:
 
 ```
 your-repo/
-├── apm.yml                            # Committed to source control
-├── apm.lock.yaml                      # Committed — pins exact versions
-├── .mcp.json                          # Generated — MCP server definitions
-├── AGENTS.md                          # Generated — Cursor reads this
-├── CLAUDE.md                          # Generated — Claude Code reads this
-├── .cursor-plugin/                    # Generated — Cursor plugin format
-├── .github/copilot-instructions.md    # Generated — GitHub Copilot reads this
-├── .copilot/                          # Generated — Copilot agents/skills
+├── apm.yml                                # Committed to source control
+├── apm.lock.yaml                          # Committed — pins exact versions
+├── AGENTS.md                              # Compiled instructions — Cursor and Copilot read this
+│
+├── .cursor/                               # ── Cursor ──
+│   ├── rules/*.mdc                        #   Instructions as Cursor rules
+│   ├── agents/*.md                        #   Agent definitions
+│   ├── skills/{name}/                     #   Skill folders
+│   └── hooks.json                         #   Hook definitions
+│
+├── .github/                               # ── GitHub Copilot / VS Code ──
+│   ├── instructions/*.instructions.md     #   Instruction files
+│   ├── prompts/*.prompt.md                #   Prompt templates
+│   ├── agents/*.agent.md                  #   Agent definitions
+│   ├── skills/{name}/                     #   Skill folders
+│   └── hooks/*.json                       #   Hook definitions
+│
+├── .claude/                               # ── Claude Code ──
+│   ├── CLAUDE.md                          #   Compiled instructions
+│   ├── commands/*.md                      #   Prompts as slash commands
+│   ├── agents/*.md                        #   Agent definitions
+│   └── skills/{name}/                     #   Skill folders
+│
+├── .mcp.json                              # MCP server definitions (all IDEs)
 └── ... your existing project files
 ```
 
-Your IDE detects the files automatically at both levels. No additional IDE configuration is needed.
+All generated files should be **gitignored**. Each developer runs `apm install` locally after cloning a repo that has an `apm.yml`. Only `apm.yml` and `apm.lock.yaml` are committed to source control.
 
 ### Version Management Across Repos
 
@@ -394,10 +451,10 @@ apm deps update
 If the APM registry isn't an option, choose one of these:
 
 
-| Method              | Best For                             | Command                                                      |
-| ------------------- | ------------------------------------ | ------------------------------------------------------------ |
+| Method              | Best For                             | Command                                                            |
+| ------------------- | ------------------------------------ | ------------------------------------------------------------------ |
 | **GitHub repo URL** | Install from repo without registry   | `apm install https://git.marriott.com/phoenix/mi-engineer-agent`   |
-| **Plugin format**   | Marketplace or manual plugin install | `apm pack --format plugin`                                   |
+| **Plugin format**   | Marketplace or manual plugin install | `apm pack --format plugin`                                         |
 | **Git clone**       | Fork for full customization          | `git clone https://git.marriott.com/phoenix/mi-engineer-agent.git` |
 
 
@@ -423,8 +480,6 @@ dependencies:
   mi-engineer-agent: "https://git.marriott.com/phoenix/mi-engineer-agent#v1.0.0"
 ```
 
-
-
 Git Clone
 
 ```sh
@@ -432,27 +487,32 @@ git clone https://git.marriott.com/phoenix/mi-engineer-agent.git
 apm install --plugin ./mi-engineer-agent
 ```
 
-
-
 Direct Download
 
 Copy the `.apm/` directory and `.mcp.json` directly into your project.
-
-
 
 Regardless of install method, always run `apm run setup` on first use.
 
 ### IDE-Specific Behavior
 
-APM compiles the package into the native format for each IDE. You define nothing extra — `apm install` handles everything.
+APM deploys primitives into the native directory structure each IDE expects. `apm install` handles this automatically — you define nothing extra.
 
 
-| IDE                | Generated Files                                   | How the IDE Reads Them                        |
-| ------------------ | ------------------------------------------------- | --------------------------------------------- |
-| **Cursor**         | `.cursor-plugin/` and `AGENTS.md`                 | Auto-detected from project root               |
-| **Claude Code**    | `CLAUDE.md`                                       | Auto-detected from project root               |
-| **GitHub Copilot** | `.github/copilot-instructions.md` and `.copilot/` | Auto-detected from `.github/` and `.copilot/` |
+| IDE                | Target   | Generated Paths                                                                                                  |
+| ------------------ | -------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Cursor**         | `cursor` | `AGENTS.md`, `.cursor/rules/`, `.cursor/agents/`, `.cursor/skills/`, `.cursor/hooks.json`                        |
+| **GitHub Copilot** | `vscode` | `AGENTS.md`, `.github/instructions/`, `.github/prompts/`, `.github/agents/`, `.github/skills/`, `.github/hooks/` |
+| **Claude Code**    | `claude` | `CLAUDE.md`, `.claude/commands/`, `.claude/agents/`, `.claude/skills/`                                           |
 
+
+APM auto-detects which targets to generate based on your project structure (e.g., `.cursor/` exists → Cursor target is enabled). You can also set the target explicitly in `apm.yml`:
+
+```yaml
+target:
+  - cursor
+  - copilot
+  - claude
+```
 
 After installation, your IDE's AI agent automatically picks up the skills, instructions, agents, prompts, hooks, and MCP servers shipped in this package.
 

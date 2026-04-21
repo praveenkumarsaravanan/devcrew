@@ -2,9 +2,19 @@
 build/
 AGENTS.md
 CLAUDE.md
-.cursor-plugin/
-.github/copilot-instructions.md
-.copilot/
+.cursor/rules/
+.cursor/agents/
+.cursor/skills/
+.cursor/hooks.json
+.github/instructions/*-apm.instructions.md
+.github/prompts/
+.github/agents/
+.github/skills/
+.github/hooks/
+.claude/commands/
+.claude/agents/
+.claude/skills/
+apm_modules/
 
 # Dependencies
 node_modules/
