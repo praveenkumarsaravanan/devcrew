@@ -142,7 +142,7 @@ This section is for anyone who wants to add skills, agents, prompts, hooks, or o
 
 1. Fork and clone the repository:
   ```sh
-   git clone https://github.com/phoenix/mi-engineer-agent.git
+   git clone https://git.marriott.com/phoenix/mi-engineer-agent.git
    cd mi-engineer-agent
   ```
 2. Run the setup script to configure your local environment:
@@ -265,7 +265,7 @@ Both scopes can coexist. Project-level always takes precedence over global when 
 One command to get up and running across all your projects:
 
 ```sh
-apm install -g phoenix/mi-engineer-agent
+apm install -g git.marriott.com/phoenix/mi-engineer-agent
 apm run setup
 ```
 
@@ -374,9 +374,9 @@ If the APM registry isn't an option, choose one of these:
 
 | Method              | Best For                             | Command                                                      |
 | ------------------- | ------------------------------------ | ------------------------------------------------------------ |
-| **GitHub repo URL** | Install from repo without registry   | `apm install https://github.com/phoenix/mi-engineer-agent`   |
+| **GitHub repo URL** | Install from repo without registry   | `apm install https://git.marriott.com/phoenix/mi-engineer-agent`   |
 | **Plugin format**   | Marketplace or manual plugin install | `apm pack --format plugin`                                   |
-| **Git clone**       | Fork for full customization          | `git clone https://github.com/phoenix/mi-engineer-agent.git` |
+| **Git clone**       | Fork for full customization          | `git clone https://git.marriott.com/phoenix/mi-engineer-agent.git` |
 
 
 GitHub Repo URL
@@ -384,21 +384,21 @@ GitHub Repo URL
 Install directly:
 
 ```sh
-apm install https://github.com/phoenix/mi-engineer-agent
+apm install https://git.marriott.com/phoenix/mi-engineer-agent
 ```
 
 Or add the repo URL to your `apm.yml`:
 
 ```yaml
 dependencies:
-  mi-engineer-agent: "https://github.com/phoenix/mi-engineer-agent"
+  mi-engineer-agent: "https://git.marriott.com/phoenix/mi-engineer-agent"
 ```
 
 To pin a specific version or branch, append a ref:
 
 ```yaml
 dependencies:
-  mi-engineer-agent: "https://github.com/phoenix/mi-engineer-agent#v1.0.0"
+  mi-engineer-agent: "https://git.marriott.com/phoenix/mi-engineer-agent#v1.0.0"
 ```
 
 
@@ -406,7 +406,7 @@ dependencies:
 Git Clone
 
 ```sh
-git clone https://github.com/phoenix/mi-engineer-agent.git
+git clone https://git.marriott.com/phoenix/mi-engineer-agent.git
 apm install --plugin ./mi-engineer-agent
 ```
 
