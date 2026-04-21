@@ -32,6 +32,7 @@ Options:
   --confirm         Skip interactive prompts (required for agent/CI use)
   --no-push         Create the tag locally but do not push to origin
   --json            Output the release summary as JSON to stdout
+  --ticket TICKET   JIRA ticket ID to include in commit message (e.g., DXP-39314)
 
 Exit codes:
   0  Success
@@ -44,6 +45,7 @@ Examples:
   bash scripts/release.sh minor --dry-run          # Preview a minor bump
   bash scripts/release.sh major --confirm          # Non-interactive major release
   bash scripts/release.sh patch --confirm --json   # Agent-friendly: no prompts, JSON output
+  bash scripts/release.sh minor --ticket DXP-123   # Include JIRA ticket in commit
 USAGE
   exit 0
 }
@@ -55,17 +57,24 @@ CONFIRM=false
 NO_PUSH=false
 JSON_OUTPUT=false
 INCREMENT="patch"
+TICKET=""
 
-for arg in "$@"; do
-  case "$arg" in
+while [[ $# -gt 0 ]]; do
+  case "$1" in
     -h|--help)    usage ;;
     --dry-run)    DRY_RUN=true ;;
     --confirm)    CONFIRM=true ;;
     --no-push)    NO_PUSH=true ;;
     --json)       JSON_OUTPUT=true ;;
-    patch|minor|major) INCREMENT="$arg" ;;
-    *) fail "Unknown argument: $arg. Run with --help for usage." 1 ;;
+    --ticket)
+      shift
+      [[ -z "${1:-}" ]] && fail "--ticket requires a JIRA ticket ID (e.g., DXP-39314)" 1
+      TICKET="$1"
+      ;;
+    patch|minor|major) INCREMENT="$1" ;;
+    *) fail "Unknown argument: $1. Run with --help for usage." 1 ;;
   esac
+  shift
 done
 
 # ── Pre-flight checks ────────────────────────────────────────────────────────
@@ -179,7 +188,11 @@ ok "Updated apm.yml → $NEXT_VERSION"
 # ── Commit ────────────────────────────────────────────────────────────────────
 
 git add "$APM_YML"
-git commit -m "chore(release): bump version to ${NEXT_VERSION}"
+if [[ -n "$TICKET" ]]; then
+  git commit -m "chore(release): ${TICKET}, bump version to ${NEXT_VERSION}"
+else
+  git commit -m "chore(release): bump version to ${NEXT_VERSION}"
+fi
 ok "Committed version bump"
 
 # ── Tag ───────────────────────────────────────────────────────────────────────
