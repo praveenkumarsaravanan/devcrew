@@ -209,7 +209,7 @@ Update the `version` field in `apm.yml` following semantic versioning:
 - **Minor** (`1.1.0`) — new skills, agents, prompts, or hooks
 - **Major** (`2.0.0`) — breaking changes to existing primitives that consumers may have overridden
 
-Once merged to `main`, the CI pipeline publishes the new version to the APM registry.
+Once merged to `main`, consumers can pull the new version by re-running `apm install -g` or `apm deps update` — APM resolves directly from the GitHub Enterprise repo.
 
 ### Adding Custom MCP Servers
 
@@ -436,37 +436,14 @@ apm deps update
 
 ### Alternative Installation Methods
 
-If the APM registry isn't an option, choose one of these:
+The primary install method is the GitHub Enterprise repo URL shown in [Getting Started](#getting-started). These alternatives exist for specific situations:
 
 
 | Method              | Best For                             | Command                                                            |
 | ------------------- | ------------------------------------ | ------------------------------------------------------------------ |
-| **GitHub repo URL** | Install from repo without registry   | `apm install https://git.marriott.com/phoenix/mi-engineer-agent`   |
 | **Plugin format**   | Marketplace or manual plugin install | `apm pack --format plugin`                                         |
 | **Git clone**       | Fork for full customization          | `git clone https://git.marriott.com/phoenix/mi-engineer-agent.git` |
 
-
-GitHub Repo URL
-
-Install directly:
-
-```sh
-apm install https://git.marriott.com/phoenix/mi-engineer-agent
-```
-
-Or add the repo URL to your `apm.yml`:
-
-```yaml
-dependencies:
-  mi-engineer-agent: "https://git.marriott.com/phoenix/mi-engineer-agent"
-```
-
-To pin a specific version or branch, append a ref:
-
-```yaml
-dependencies:
-  mi-engineer-agent: "https://git.marriott.com/phoenix/mi-engineer-agent#v1.0.0"
-```
 
 Git Clone
 
