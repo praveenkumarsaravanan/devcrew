@@ -1,0 +1,216 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ── Exit codes ────────────────────────────────────────────────────────────────
+# 0  Success
+# 1  General / usage error
+# 2  Pre-flight check failed (dirty tree, wrong branch, missing apm.yml)
+# 3  Tag already exists (duplicate release blocked)
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+info()  { printf "\033[1;34m▸ %s\033[0m\n" "$1" >&2; }
+ok()    { printf "\033[1;32m✓ %s\033[0m\n" "$1" >&2; }
+warn()  { printf "\033[1;33m⚠ %s\033[0m\n" "$1" >&2; }
+fail()  { printf "\033[1;31m✗ %s\033[0m\n" "$1" >&2; exit "${2:-1}"; }
+
+usage() {
+  cat <<'USAGE'
+Usage: bash scripts/release.sh [OPTIONS] [patch|minor|major]
+
+Reads the current version from apm.yml, auto-increments it, updates the file,
+commits, tags, and optionally pushes.
+
+Arguments:
+  patch             Increment patch version: 1.0.0 → 1.0.1 (default)
+  minor             Increment minor version: 1.0.0 → 1.1.0
+  major             Increment major version: 1.0.0 → 2.0.0
+
+Options:
+  -h, --help        Show this help message
+  --dry-run         Show the release plan without making changes
+  --confirm         Skip interactive prompts (required for agent/CI use)
+  --no-push         Create the tag locally but do not push to origin
+  --json            Output the release summary as JSON to stdout
+
+Exit codes:
+  0  Success
+  1  Usage error or unexpected failure
+  2  Pre-flight check failed (dirty tree, wrong branch, missing apm.yml)
+  3  Tag already exists
+
+Examples:
+  bash scripts/release.sh patch                   # Interactive patch release
+  bash scripts/release.sh minor --dry-run          # Preview a minor bump
+  bash scripts/release.sh major --confirm          # Non-interactive major release
+  bash scripts/release.sh patch --confirm --json   # Agent-friendly: no prompts, JSON output
+USAGE
+  exit 0
+}
+
+# ── Parse arguments ───────────────────────────────────────────────────────────
+
+DRY_RUN=false
+CONFIRM=false
+NO_PUSH=false
+JSON_OUTPUT=false
+INCREMENT="patch"
+
+for arg in "$@"; do
+  case "$arg" in
+    -h|--help)    usage ;;
+    --dry-run)    DRY_RUN=true ;;
+    --confirm)    CONFIRM=true ;;
+    --no-push)    NO_PUSH=true ;;
+    --json)       JSON_OUTPUT=true ;;
+    patch|minor|major) INCREMENT="$arg" ;;
+    *) fail "Unknown argument: $arg. Run with --help for usage." 1 ;;
+  esac
+done
+
+# ── Pre-flight checks ────────────────────────────────────────────────────────
+
+APM_YML="apm.yml"
+
+[[ -f "$APM_YML" ]] || fail "apm.yml not found in $(pwd). Run this from the repo root." 2
+
+if ! git diff --quiet HEAD 2>/dev/null; then
+  fail "Working tree is dirty. Commit or stash changes before releasing." 2
+fi
+
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$CURRENT_BRANCH" != "trunk" && "$CURRENT_BRANCH" != "main" ]]; then
+  fail "Releases must be tagged from trunk or main. Currently on: $CURRENT_BRANCH" 2
+fi
+
+git fetch --tags --quiet
+
+# ── Read current version ──────────────────────────────────────────────────────
+
+CURRENT_VERSION=$(grep -E '^version:' "$APM_YML" | head -1 | sed 's/version:[[:space:]]*"\{0,1\}\([^"]*\)"\{0,1\}/\1/')
+
+if [[ -z "$CURRENT_VERSION" ]]; then
+  fail "Could not read version from $APM_YML" 2
+fi
+
+IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+
+if [[ -z "$MAJOR" || -z "$MINOR" || -z "$PATCH" ]]; then
+  fail "Version '$CURRENT_VERSION' is not valid semver (expected X.Y.Z)" 2
+fi
+
+info "Current version: $CURRENT_VERSION"
+
+# ── Check if current version tag already exists ──────────────────────────────
+
+CURRENT_TAG="v${CURRENT_VERSION}"
+if git tag -l "$CURRENT_TAG" | grep -q "$CURRENT_TAG"; then
+  ok "Tag $CURRENT_TAG already exists (current version is released)"
+else
+  warn "Tag $CURRENT_TAG does not exist yet — current version is unreleased"
+fi
+
+# ── Compute next version ─────────────────────────────────────────────────────
+
+case "$INCREMENT" in
+  patch) NEXT_VERSION="$MAJOR.$MINOR.$((PATCH + 1))" ;;
+  minor) NEXT_VERSION="$MAJOR.$((MINOR + 1)).0" ;;
+  major) NEXT_VERSION="$((MAJOR + 1)).0.0" ;;
+esac
+
+NEXT_TAG="v${NEXT_VERSION}"
+
+# ── Block if the target tag already exists ────────────────────────────────────
+
+if git tag -l "$NEXT_TAG" | grep -q "$NEXT_TAG"; then
+  fail "Tag $NEXT_TAG already exists. Cannot re-tag an existing release. Increment to a new version instead." 3
+fi
+
+# ── Show summary ──────────────────────────────────────────────────────────────
+
+if [[ "$JSON_OUTPUT" == true ]]; then
+  cat <<JSON
+{"increment":"$INCREMENT","current_version":"$CURRENT_VERSION","next_version":"$NEXT_VERSION","tag":"$NEXT_TAG","branch":"$CURRENT_BRANCH","dry_run":$DRY_RUN}
+JSON
+else
+  echo "" >&2
+  echo "  Release plan:" >&2
+  echo "  ─────────────────────────────────────────" >&2
+  echo "  Increment:       $INCREMENT" >&2
+  echo "  Current version: $CURRENT_VERSION" >&2
+  echo "  Next version:    $NEXT_VERSION" >&2
+  echo "  Tag:             $NEXT_TAG" >&2
+  echo "  Branch:          $CURRENT_BRANCH" >&2
+  echo "  ─────────────────────────────────────────" >&2
+  echo "" >&2
+fi
+
+if [[ "$DRY_RUN" == true ]]; then
+  info "[dry-run] Would update apm.yml, commit, tag $NEXT_TAG, and push."
+  exit 0
+fi
+
+# ── Confirm (interactive only) ────────────────────────────────────────────────
+
+if [[ "$CONFIRM" != true ]]; then
+  printf "\033[1;33m? Proceed with release %s? [y/N] \033[0m" "$NEXT_VERSION" >&2
+  read -r RESPONSE
+  if [[ "$RESPONSE" != "y" && "$RESPONSE" != "Y" ]]; then
+    info "Aborted."
+    exit 0
+  fi
+fi
+
+# ── Update apm.yml ────────────────────────────────────────────────────────────
+
+if [[ "$(uname)" == "Darwin" ]]; then
+  sed -i '' "s/^version:.*$/version: \"${NEXT_VERSION}\"/" "$APM_YML"
+else
+  sed -i "s/^version:.*$/version: \"${NEXT_VERSION}\"/" "$APM_YML"
+fi
+
+UPDATED_VERSION=$(grep -E '^version:' "$APM_YML" | head -1 | sed 's/version:[[:space:]]*"\{0,1\}\([^"]*\)"\{0,1\}/\1/')
+if [[ "$UPDATED_VERSION" != "$NEXT_VERSION" ]]; then
+  fail "Failed to update version in $APM_YML. Expected $NEXT_VERSION, got $UPDATED_VERSION"
+fi
+
+ok "Updated apm.yml → $NEXT_VERSION"
+
+# ── Commit ────────────────────────────────────────────────────────────────────
+
+git add "$APM_YML"
+git commit -m "chore(release): bump version to ${NEXT_VERSION}"
+ok "Committed version bump"
+
+# ── Tag ───────────────────────────────────────────────────────────────────────
+
+git tag -a "$NEXT_TAG" -m "Release ${NEXT_VERSION}"
+ok "Created tag $NEXT_TAG"
+
+# ── Push ──────────────────────────────────────────────────────────────────────
+
+if [[ "$NO_PUSH" == true ]]; then
+  warn "Tag created locally (--no-push). Push manually:"
+  echo "  git push origin $CURRENT_BRANCH && git push origin $NEXT_TAG" >&2
+  exit 0
+fi
+
+if [[ "$CONFIRM" != true ]]; then
+  printf "\033[1;33m? Push commit and tag to origin? [y/N] \033[0m" >&2
+  read -r PUSH_RESPONSE
+  if [[ "$PUSH_RESPONSE" != "y" && "$PUSH_RESPONSE" != "Y" ]]; then
+    warn "Tag created locally but NOT pushed. Run manually:"
+    echo "  git push origin $CURRENT_BRANCH && git push origin $NEXT_TAG" >&2
+    exit 0
+  fi
+fi
+
+git push origin "$CURRENT_BRANCH"
+git push origin "$NEXT_TAG"
+ok "Pushed $CURRENT_BRANCH and $NEXT_TAG to origin"
+
+echo "" >&2
+ok "Release $NEXT_VERSION ($NEXT_TAG) complete!"
+echo "" >&2
+echo "  Consumers tracking 'ref: $CURRENT_BRANCH' will get this on next 'apm deps update'." >&2
+echo "  Consumers pinned to a tag should update their apm.yml to: ref: $NEXT_TAG" >&2

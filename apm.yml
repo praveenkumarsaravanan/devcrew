@@ -1,9 +1,9 @@
 name: mi-engineer-agent
 version: "1.0.0"
-description: "Phoenix - Organization-wide engineering agent -- skills, MCP servers, rules, hooks, and agents for Cursor, Claude Code, and GitHub Copilot"
+description: "Phoenix - Organization-wide engineering agent -- skills, MCP servers, rules, hooks, and agents for Cursor and GitHub Copilot"
 target:
   - copilot
-  - claude
   - cursor
 scripts:
   setup: "bash scripts/setup.sh"
+  release: "bash .apm/skills/release/scripts/release.sh"
