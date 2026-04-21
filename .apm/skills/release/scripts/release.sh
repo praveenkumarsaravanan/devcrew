@@ -19,7 +19,7 @@ usage() {
 Usage: bash scripts/release.sh [OPTIONS] [patch|minor|major]
 
 Reads the current version from apm.yml, auto-increments it, updates the file,
-commits, tags, and optionally pushes.
+commits, tags, pushes, and creates a GitHub release.
 
 Arguments:
   patch             Increment patch version: 1.0.0 → 1.0.1 (default)
@@ -31,6 +31,7 @@ Options:
   --dry-run         Show the release plan without making changes
   --confirm         Skip interactive prompts (required for agent/CI use)
   --no-push         Create the tag locally but do not push to origin
+  --no-release      Push the tag but skip GitHub release creation
   --json            Output the release summary as JSON to stdout
   --ticket TICKET   JIRA ticket ID to include in commit message (e.g., DXP-39314)
 
@@ -55,6 +56,7 @@ USAGE
 DRY_RUN=false
 CONFIRM=false
 NO_PUSH=false
+NO_RELEASE=false
 JSON_OUTPUT=false
 INCREMENT="patch"
 TICKET=""
@@ -65,6 +67,7 @@ while [[ $# -gt 0 ]]; do
     --dry-run)    DRY_RUN=true ;;
     --confirm)    CONFIRM=true ;;
     --no-push)    NO_PUSH=true ;;
+    --no-release) NO_RELEASE=true ;;
     --json)       JSON_OUTPUT=true ;;
     --ticket)
       shift
@@ -249,6 +252,32 @@ fi
 git push origin "$CURRENT_BRANCH"
 git push origin "$NEXT_TAG"
 ok "Pushed $CURRENT_BRANCH and $NEXT_TAG to origin"
+
+# ── GitHub Release ────────────────────────────────────────────────────────────
+
+if [[ "$NO_RELEASE" == true ]]; then
+  warn "Skipping GitHub release (--no-release). Create manually:"
+  echo "  gh release create $NEXT_TAG --title \"$NEXT_TAG\" --notes \"<changelog>\"" >&2
+else
+  if command -v gh &>/dev/null; then
+    RELEASE_BODY="## Changes since ${PREV_TAG:-beginning}
+
+${CHANGELOG}"
+
+    if gh release create "$NEXT_TAG" \
+        --title "$NEXT_TAG" \
+        --notes "$RELEASE_BODY" \
+        --target "$CURRENT_BRANCH" 2>/dev/null; then
+      ok "Created GitHub release for $NEXT_TAG"
+    else
+      warn "Failed to create GitHub release. Create manually:"
+      echo "  gh release create $NEXT_TAG --title \"$NEXT_TAG\" --notes \"<changelog>\"" >&2
+    fi
+  else
+    warn "gh CLI not found — skipping GitHub release. Install gh and run:"
+    echo "  gh release create $NEXT_TAG --title \"$NEXT_TAG\" --notes \"<changelog>\"" >&2
+  fi
+fi
 
 echo "" >&2
 ok "Release $NEXT_VERSION ($NEXT_TAG) complete!"
