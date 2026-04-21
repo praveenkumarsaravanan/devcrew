@@ -262,20 +262,42 @@ Both scopes can coexist. Project-level always takes precedence over global when 
 
 ### Getting Started
 
-One command to get up and running across all your projects:
+#### Step 1 — Prerequisites for installation
+
+APM pulls the package from a private GitHub Enterprise repo, so it needs credentials to download it:
+
+1. **`gh` CLI** (v2.40.0+) — install with `brew install gh` if missing.
+2. **GitHub Enterprise auth** — authenticate so APM can access the package:
+
+   ```sh
+   gh auth login --hostname git.marriott.com --web --git-protocol https
+   ```
+
+#### Step 2 — Install globally
 
 ```sh
 apm install -g git.marriott.com/phoenix/mi-engineer-agent
-apm run setup
 ```
 
-`apm install -g` installs the package to your user scope (`~/.apm/`) and deploys skills, agents, instructions, prompts, and MCP servers to user-level directories (`~/.copilot/`, `~/.claude/`, etc.). Your IDE picks these up automatically in every project you open — no per-repo configuration required.
+This installs the package to your user scope (`~/.apm/`) and deploys skills, agents, instructions, prompts, and MCP servers to user-level directories (`~/.copilot/`, `~/.claude/`, etc.). Your IDE picks these up automatically in every project you open — no per-repo configuration required.
 
-`apm run setup` ensures your local environment is ready. It checks for the `gh` CLI (installs via Homebrew if missing), authenticates against GitHub Enterprise (`git.marriott.com`), verifies your `GITHUB_TOKEN`, and confirms APM is available. This only needs to run **once per machine**.
+#### Step 3 — Configure tokens for runtime tools
 
-You need `GITHUB_TOKEN` exported in your shell profile for the GitHub MCP server to work (see [Environment Variables](#environment-variables)).
+The installed skills and MCP servers interact with GitHub at runtime. Set `GITHUB_TOKEN` so they can authenticate:
 
-To update to the latest version later:
+1. Generate a Personal Access Token at https://git.marriott.com/settings/tokens with `repo` and `read:org` scopes.
+2. Export it in your shell profile:
+
+   ```sh
+   # ~/.zshrc or ~/.bashrc
+   export GITHUB_TOKEN="ghp_your_token_here"
+   ```
+
+Without this token the GitHub MCP server won't be able to create PRs, read issues, or perform other GitHub operations on your behalf.
+
+#### Updating
+
+To pull the latest version later:
 
 ```sh
 apm deps update -g
@@ -302,7 +324,7 @@ dependencies:
 apm install
 ```
 
-This generates IDE-specific files into the project root. The generated files should be gitignored — only `apm.yml` and `apm.lock.yaml` are committed.
+This pulls the package and generates IDE-specific files into the project root. The generated files should be gitignored — only `apm.yml` and `apm.lock.yaml` are committed.
 
 ### How the Two Scopes Interact
 
