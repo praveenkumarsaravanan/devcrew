@@ -1,7 +1,6 @@
 # APM output (apm compile / apm pack / apm install)
 build/
 AGENTS.md
-CLAUDE.md
 .cursor/rules/
 .cursor/agents/
 .cursor/skills/
@@ -11,9 +10,6 @@ CLAUDE.md
 .github/agents/
 .github/skills/
 .github/hooks/
-.claude/commands/
-.claude/agents/
-.claude/skills/
 apm_modules/
 
 # Dependencies

@@ -1,6 +1,6 @@
 # MI Engineer Agent
 
-Organization-wide agent package distributing engineering skills, agents, rules, and MCP server configs across Cursor, Claude Code, and GitHub Copilot via Microsoft APM.
+Organization-wide agent package distributing engineering skills, agents, rules, and MCP server configs across Cursor and GitHub Copilot via Microsoft APM.
 
 ---
 
@@ -61,14 +61,14 @@ MI Engineer Agent is a single-source-of-truth package that defines engineering s
 ### IDE Compatibility
 
 
-| Component    | Cursor | Claude Code | GitHub Copilot |
-| ------------ | ------ | ----------- | -------------- |
-| Skills       | ✓      | ✓           | ✓              |
-| Agents       | ✓      | ✓           | ✓              |
-| Instructions | ✓      | ✓           | ✓              |
-| Prompts      | ✓      | ✓           | ✓              |
-| Hooks        | ✓      | ✓           | N/A            |
-| MCP          | ✓      | ✓           | ✓              |
+| Component    | Cursor | GitHub Copilot |
+| ------------ | ------ | -------------- |
+| Skills       | ✓      | ✓              |
+| Agents       | ✓      | ✓              |
+| Instructions | ✓      | ✓              |
+| Prompts      | ✓      | ✓              |
+| Hooks        | ✓      | N/A            |
+| MCP          | ✓      | ✓              |
 
 
 ### Project Structure
@@ -182,7 +182,6 @@ Pack and test for a specific IDE target:
 ```sh
 apm pack --target cursor
 apm pack --target copilot
-apm pack --target claude
 ls -la build/
 ```
 
@@ -252,10 +251,10 @@ This section is for teams adopting MI Engineer Agent in their own repositories.
 APM supports two installation scopes. Choose based on how you want the package to apply:
 
 
-| Scope                          | Command          | Where Files Land                                                              | Best For                                               |
-| ------------------------------ | ---------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------ |
-| **Global** (recommended start) | `apm install -g` | `~/.apm/` → deployed to `~/.copilot/`, `~/.claude/`, etc.                     | One-time setup, works across all repos on your machine |
-| **Project** (opt-in)           | `apm install`    | Project root (`.cursor-plugin/`, `AGENTS.md`, `CLAUDE.md`, `.copilot/`, etc.) | Version pinning, project-specific overrides            |
+| Scope                          | Command          | Where Files Land                                                | Best For                                               |
+| ------------------------------ | ---------------- | --------------------------------------------------------------- | ------------------------------------------------------ |
+| **Global** (recommended start) | `apm install -g` | `~/.apm/` → deployed to `~/.cursor/`, `~/.copilot/`            | One-time setup, works across all repos on your machine |
+| **Project** (opt-in)           | `apm install`    | Project root (`AGENTS.md`, `.cursor/`, `.github/`, `.mcp.json`) | Version pinning, project-specific overrides            |
 
 
 Both scopes can coexist. Project-level always takes precedence over global when both are present.
@@ -278,7 +277,7 @@ APM pulls the package from a private GitHub Enterprise repo, so it needs credent
 apm install -g git.marriott.com/phoenix/mi-engineer-agent
 ```
 
-This installs the package to your user scope (`~/.apm/`) and deploys skills, agents, prompts, and MCP servers to user-level directories (`~/.copilot/`, `~/.claude/`, etc.). Your IDE picks these up automatically in every project you open — no per-repo configuration required.
+This installs the package to your user scope (`~/.apm/`) and deploys skills, agents, prompts, and MCP servers to user-level directories (`~/.cursor/`, `~/.copilot/`). Your IDE picks these up automatically in every project you open — no per-repo configuration required.
 
 > **What you get vs. what you miss with global install:**
 >
@@ -290,18 +289,18 @@ This installs the package to your user scope (`~/.apm/`) and deploys skills, age
 > | Prompts (design-review, incident-response)   | ✓             | ✓                   |
 > | MCP servers (GitHub, Atlassian, Playwright)  | ✓             | ✓                   |
 > | Instructions deployed to IDE-native paths    | ✓             | ✓                   |
-> | `AGENTS.md` / `CLAUDE.md` — compiled context | —             | ✓                   |
+> | `AGENTS.md` — compiled context               | —             | ✓                   |
 > | Hooks (pre-commit lint, security guard)      | —             | ✓                   |
 > | Version pinning per repo                     | —             | ✓                   |
 > | Project-specific overrides                   | —             | ✓                   |
 >
 
-#### `AGENTS.md` and `CLAUDE.md` — do you need them?
+#### `AGENTS.md` — do you need it?
 
 APM deploys instructions in **two forms**, and understanding the difference matters:
 
 1. **Individual instruction files** (e.g., `.cursor/rules/*.mdc`, `.github/instructions/*.instructions.md`) — these are the IDE-native format. Each IDE loads them directly with full support for scoping, activation modes, and priority. In Cursor, `.mdc` rules support four activation modes: always apply, apply intelligently (AI decides based on task), apply to specific file globs, or apply only when mentioned. These are the **primary mechanism** for delivering instructions to the agent.
-2. `**AGENTS.md` / `CLAUDE.md`** — these are compiled roll-ups of all instructions into a single markdown file at the project root. They act as **passive, always-loaded context**. The entire file is fed to the agent on every interaction. They exist for compatibility — `AGENTS.md` is a convention that Cursor, Copilot, Codex, and other tools all recognize as a baseline context file.
+2. **`AGENTS.md`** — a compiled roll-up of all instructions into a single markdown file at the project root. It acts as **passive, always-loaded context**. The entire file is fed to the agent on every interaction. It exists for compatibility — `AGENTS.md` is a convention that Cursor, Copilot, Codex, and other tools all recognize as a baseline context file.
 
 **In practice, the individual files do the heavy lifting.** They offer granular control (file-scoped rules, smart activation) and are higher priority in the IDE's rule hierarchy. `AGENTS.md` sits at the lowest priority and loads everything unconditionally, which can waste tokens in large projects.
 
@@ -374,18 +373,13 @@ A project `apm.yml` always wins. If repo-A pins `mi-engineer-agent@1.0.0` but yo
 │   ├── skills/{name}/                     #   Skill folders
 │   └── hooks.json                         #   Hook definitions
 │
-├── ~/.copilot/                            # ── GitHub Copilot / VS Code ──
-│   ├── copilot-instructions.md            #   User-level instructions
-│   ├── agents/*.md                        #   Agent definitions
-│   └── mcp-config.json                    #   MCP server config
-│
-└── ~/.claude/                             # ── Claude Code ──
-    ├── commands/*.md                      #   Prompts as slash commands
+└── ~/.copilot/                            # ── GitHub Copilot / VS Code ──
+    ├── copilot-instructions.md            #   User-level instructions
     ├── agents/*.md                        #   Agent definitions
-    └── skills/{name}/                     #   Skill folders
+    └── mcp-config.json                    #   MCP server config
 ```
 
-Note: Copilot's user-level directory is `~/.copilot/`, **not** `~/.github/`. The `.github/` path is project-level only. No `AGENTS.md` or `CLAUDE.md` is generated at global scope.
+Note: Copilot's user-level directory is `~/.copilot/`, **not** `~/.github/`. The `.github/` path is project-level only. No `AGENTS.md` is generated at global scope.
 
 **Project scope** (from `apm install` with `apm.yml`) — files are generated into the project root, organized by IDE target:
 
@@ -407,12 +401,6 @@ your-repo/
 │   ├── agents/*.agent.md                  #   Agent definitions
 │   ├── skills/{name}/                     #   Skill folders
 │   └── hooks/*.json                       #   Hook definitions
-│
-├── .claude/                               # ── Claude Code ──
-│   ├── CLAUDE.md                          #   Compiled instructions
-│   ├── commands/*.md                      #   Prompts as slash commands
-│   ├── agents/*.md                        #   Agent definitions
-│   └── skills/{name}/                     #   Skill folders
 │
 ├── .mcp.json                              # MCP server definitions (all IDEs)
 └── ... your existing project files
@@ -502,7 +490,6 @@ APM deploys primitives into the native directory structure each IDE expects. `ap
 | ------------------ | -------- | ---------------------------------------------------------------------------------------------------------------- |
 | **Cursor**         | `cursor` | `AGENTS.md`, `.cursor/rules/`, `.cursor/agents/`, `.cursor/skills/`, `.cursor/hooks.json`                        |
 | **GitHub Copilot** | `vscode` | `AGENTS.md`, `.github/instructions/`, `.github/prompts/`, `.github/agents/`, `.github/skills/`, `.github/hooks/` |
-| **Claude Code**    | `claude` | `CLAUDE.md`, `.claude/commands/`, `.claude/agents/`, `.claude/skills/`                                           |
 
 
 APM auto-detects which targets to generate based on your project structure (e.g., `.cursor/` exists → Cursor target is enabled). You can also set the target explicitly in `apm.yml`:
@@ -511,7 +498,6 @@ APM auto-detects which targets to generate based on your project structure (e.g.
 target:
   - cursor
   - copilot
-  - claude
 ```
 
 After installation, your IDE's AI agent automatically picks up the skills, instructions, agents, prompts, hooks, and MCP servers shipped in this package.
@@ -551,7 +537,7 @@ APM merges the rest and only replaces the specific files you override. The same 
 The `apm-policy.yml` file controls what consumers can and cannot change:
 
 - **Skills, Instructions, Prompts** — fully overridable at the project level. Place a file at the same path and your version wins.
-- **Hooks** — overridable in Cursor and Claude Code. GitHub Copilot does not support hooks.
+- **Hooks** — overridable in Cursor. GitHub Copilot does not support hooks.
 - **MCP Servers** — consumers can add their own MCP servers alongside the ones shipped in this package. To replace a shipped server, define one with the same key in your local `.mcp.json`.
 - **Agents** — overridable by placing a matching `.agent.md` at the same path.
 
