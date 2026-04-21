@@ -140,13 +140,20 @@ Run the release script from `trunk`:
 
 ```sh
 git checkout trunk && git pull
-bash .apm/skills/release/scripts/release.sh patch    # or minor, or major
+bash .apm/skills/release/scripts/release.sh    # defaults to patch
 ```
 
 The script reads the current version from `apm.yml`, computes the next version, blocks duplicate tags, and pushes with confirmation. Preview first with `--dry-run`:
 
 ```sh
-bash .apm/skills/release/scripts/release.sh minor --dry-run
+bash .apm/skills/release/scripts/release.sh --dry-run
+```
+
+For minor or major releases, pass the increment explicitly:
+
+```sh
+bash .apm/skills/release/scripts/release.sh minor
+bash .apm/skills/release/scripts/release.sh major
 ```
 
 **Increment guide:**
@@ -154,7 +161,7 @@ bash .apm/skills/release/scripts/release.sh minor --dry-run
 
 | Increment | When to use                                                       |
 | --------- | ----------------------------------------------------------------- |
-| `patch`   | Fixes to existing skills, instructions, or prompts                |
+| `patch`   | Default. Fixes to existing skills, instructions, or prompts       |
 | `minor`   | New skills, agents, prompts, hooks, or non-breaking additions     |
 | `major`   | Breaking changes to primitives that consumers may have overridden |
 

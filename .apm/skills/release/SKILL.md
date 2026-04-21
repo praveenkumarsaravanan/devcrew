@@ -25,17 +25,13 @@ Activate this skill when:
 
 ### 1. Determine the Increment Type
 
-Ask the user which increment to apply unless they have already specified it:
-
+Default to **patch** unless the user explicitly requests `minor` or `major`. Do not ask — just use `patch`. Only use a different increment when the user names it directly (e.g., "minor release", "major bump").
 
 | Type      | When to use                                                       |
 | --------- | ----------------------------------------------------------------- |
-| **patch** | Fixes to existing skills, instructions, prompts, or documentation |
-| **minor** | New skills, agents, prompts, hooks, or non-breaking additions     |
-| **major** | Breaking changes to primitives that consumers may have overridden |
-
-
-If the user describes their changes but doesn't name an increment, infer it from the table above and confirm before proceeding.
+| **patch** | Default. Fixes, updates, documentation, or any unlabeled release  |
+| **minor** | Only when user explicitly requests. New skills, agents, prompts, hooks, or non-breaking additions |
+| **major** | Only when user explicitly requests. Breaking changes to primitives that consumers may have overridden |
 
 ### 2. Pre-flight Checks
 
@@ -60,7 +56,13 @@ git fetch --tags
 Always run a dry run first so the user can see the plan and confirm:
 
 ```bash
-bash scripts/release.sh <patch|minor|major> --dry-run --json
+bash scripts/release.sh --dry-run --json
+```
+
+When the user specifies `minor` or `major`:
+
+```bash
+bash scripts/release.sh minor --dry-run --json
 ```
 
 The `--json` flag outputs a structured summary to stdout:
@@ -76,7 +78,13 @@ Present the plan to the user and ask for explicit confirmation before proceeding
 After the user confirms the dry-run plan, run the script with `--confirm` to skip interactive prompts (agents cannot respond to TTY input):
 
 ```bash
-bash scripts/release.sh <patch|minor|major> --confirm
+bash scripts/release.sh --confirm
+```
+
+When the user specifies `minor` or `major`:
+
+```bash
+bash scripts/release.sh minor --confirm
 ```
 
 The script will:
@@ -89,7 +97,7 @@ The script will:
 If the user wants to tag without pushing (e.g., to review first), add `--no-push`:
 
 ```bash
-bash scripts/release.sh <patch|minor|major> --confirm --no-push
+bash scripts/release.sh --confirm --no-push
 ```
 
 ### 5. Post-Release Verification
