@@ -18,23 +18,36 @@ Activate this skill when:
 
 ## Workflow
 
-### 1. Gather Context
+### 1. Determine the Base Branch
 
-Run these commands in parallel to understand the full scope of changes:
+The base branch is **`trunk`** unless:
+
+1. **The user explicitly specifies a different base** (e.g., "create a PR against `release/2.0`").
+2. **A PR already exists for the current branch** — check with `gh pr view --json baseRefName` first. If a PR is open, use its existing base branch.
+
+```bash
+# Check if a PR already exists for this branch
+gh pr view --json baseRefName,url 2>/dev/null
+```
+
+If the command returns a result, use that PR's base branch and URL. Otherwise default to `trunk`.
+
+### 2. Gather Context
+
+Run these commands in parallel to understand the full scope of changes (substitute the resolved base branch):
 
 ```bash
 git status
-git log origin/trunk..HEAD --oneline
-git diff origin/trunk...HEAD --stat
-git diff origin/trunk...HEAD
+git log origin/<base>..HEAD --oneline
+git diff origin/<base>...HEAD --stat
+git diff origin/<base>...HEAD
 ```
 
 Identify:
 - All commits included in the PR (not just the latest)
 - All files changed, added, or deleted
-- The base branch (default: `trunk`)
 
-### 2. Extract the JIRA Ticket
+### 3. Extract the JIRA Ticket
 
 Find the JIRA ticket from:
 1. The branch name (e.g., `feat/ENG-456-add-auth` → `ENG-456`)
@@ -43,7 +56,7 @@ Find the JIRA ticket from:
 
 If no ticket is found, ask the user before proceeding.
 
-### 3. Fetch JIRA Ticket Details
+### 4. Fetch JIRA Ticket Details
 
 If the Atlassian MCP or Jira API is available, fetch the ticket:
 - Summary / title
@@ -54,7 +67,7 @@ If the Atlassian MCP or Jira API is available, fetch the ticket:
 
 If the MCP is not available, ask the user to provide the ticket summary and acceptance criteria.
 
-### 4. Analyze Implementation vs. JIRA Ticket
+### 5. Analyze Implementation vs. JIRA Ticket
 
 Compare what was implemented (from the diff) against what the ticket describes:
 
@@ -78,7 +91,7 @@ Compare what was implemented (from the diff) against what the ticket describes:
    - Hold the PR until the gaps are addressed
 4. Only proceed with PR creation after the user acknowledges the discrepancies
 
-### 5. Identify Test Coverage
+### 6. Identify Test Coverage
 
 Scan the diff for test-related changes:
 - New or modified test files
@@ -89,7 +102,7 @@ If no tests are found in the diff:
 - Flag this explicitly in the PR description
 - Ask the user whether tests are tracked separately or were intentionally omitted
 
-### 6. Construct the PR Description
+### 7. Construct the PR Description
 
 Use the following template:
 
@@ -140,25 +153,25 @@ Use the following template:
 - [ ] Breaking changes documented (if applicable)
 ```
 
-### 7. Create the PR
+### 8. Create the PR
 
-Push the branch and create the PR:
+Push the branch and create the PR using the base branch resolved in Step 1:
 
 ```bash
 git push -u origin HEAD
 
 gh pr create \
-  --base trunk \
+  --base <base> \
   --title "<type>(<scope>): <JIRA-ticket>, <short description>" \
   --body "$(cat <<'EOF'
-<constructed PR description from Step 6>
+<constructed PR description from Step 7>
 EOF
 )"
 ```
 
 The PR title must follow the same commitlint format as commit messages since squash merges use the PR title as the commit message.
 
-### 8. Post-Creation
+### 9. Post-Creation
 
 After the PR is created:
 - Return the PR URL to the user
@@ -172,5 +185,5 @@ After the PR is created:
 - **Flag missing tests explicitly.** Do not silently skip the testing section.
 - **Do not suppress discrepancies.** Always surface mismatches between the ticket and the implementation, even if minor. Let the user decide how to handle them.
 - **PR title must match commitlint format.** The server-side hook applies to squash merge commits which use the PR title.
-- **Never push to trunk directly.** Always create the PR against trunk from a feature branch.
+- **Never push to trunk directly.** Always create the PR from a feature branch. Default base branch is `trunk` unless the user specifies otherwise or a PR already exists for the branch with a different base.
 - **Include the full checklist.** Do not remove checklist items — leave them unchecked if not applicable so reviewers can see what was considered.
