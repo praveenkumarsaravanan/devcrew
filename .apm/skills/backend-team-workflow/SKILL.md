@@ -3,7 +3,7 @@ name: backend-team-workflow
 description: >
   Orchestrates a full backend development lifecycle by guiding the agent through
   sequential team phases — requirements, architecture, implementation, review,
-  quality assurance (QA Lead + SDET), DevOps, release, and monitoring. Uses
+  quality assurance (QA Lead + Test Engineer), DevOps, release, and monitoring. Uses
   subagent isolation, structured handoff artifacts, adversarial prompting, and
   automatic re-routing to simulate a real cross-functional backend team.
 ---
@@ -23,7 +23,7 @@ Activate this skill when the user:
 Do NOT activate for:
 - Frontend, UI, or client-side work (a future `frontend-team-workflow` will cover those)
 - Projects classified as Infrastructure by `project-detection` (use `devops-engineer` and `sre` agents directly)
-- Isolated tasks like "review this PR" (use `code-review`), "release a new version" (use `release`), or "write tests for X" (invoke `sdet` directly)
+- Isolated tasks like "review this PR" (use `code-review`), "release a new version" (use `release`), or "write tests for X" (invoke `test-engineer` directly)
 
 ## Overview
 
@@ -254,18 +254,18 @@ This keeps the agent sharp in later phases. Without compression, Phase 7–8 qua
 
 ---
 
-#### Phase 5b: Test Implementation (SDET) + Phase 6: DevOps Readiness (Parallel)
+#### Phase 5b: Test Implementation (Test Engineer) + Phase 6: DevOps Readiness (Parallel)
 
-> **Phase 5b and Phase 6 run in parallel.** The SDET implements tests from the QA Lead's plan while the DevOps Engineer designs the deployment strategy. Spawn both as concurrent subagents.
+> **Phase 5b and Phase 6 run in parallel.** The Test Engineer implements tests from the QA Lead's plan while the DevOps Engineer designs the deployment strategy. Spawn both as concurrent subagents.
 
 ##### Phase 5b: Test Implementation
 
-**Role:** SDET (`sdet`)
+**Role:** Test Engineer (`test-engineer`)
 
-**Execution:** **Subagent** — spawn using the Task tool with `subagent_type="generalPurpose"`. Pass it the Phase 5a test plan handoff, Phase 3 implementation handoff, and the list of changed files. The SDET subagent needs full tool access (file read/write, terminal) to write and run test code. This must be a **separate subagent from Phase 3** — the test author has no shared context with the code author.
+**Execution:** **Subagent** — spawn using the Task tool with `subagent_type="generalPurpose"`. Pass it the Phase 5a test plan handoff, Phase 3 implementation handoff, and the list of changed files. The Test Engineer subagent needs full tool access (file read/write, terminal) to write and run test code. This must be a **separate subagent from Phase 3** — the test author has no shared context with the code author.
 
 **Prompt for subagent:**
-> You are the SDET agent. Implement the test cases from the following test plan as executable test code. Scan the codebase for existing test conventions and follow them exactly. Write integration tests, contract tests, and backend E2E tests. Run the full suite and report results. Flag application bugs — do not fix them. [Attach Phase 5a test plan handoff, Phase 3 handoff, and list of changed files]
+> You are the Test Engineer agent. Implement the test cases from the following test plan as executable test code. Scan the codebase for existing test conventions and follow them exactly. Write integration tests, contract tests, and backend E2E tests. Run the full suite and report results. Flag application bugs — do not fix them. [Attach Phase 5a test plan handoff, Phase 3 handoff, and list of changed files]
 
 **Actions:**
 1. Scan the codebase for test conventions (framework, file location, naming, setup/teardown, assertion style).
@@ -319,19 +319,19 @@ This keeps the agent sharp in later phases. Without compression, Phase 7–8 qua
 **Execution:** **Subagent** — spawn after Phase 5b and Phase 6 complete. Pass it the Phase 5a test plan, Phase 5b execution report and test files, and Phase 6 DevOps handoff.
 
 **Prompt for subagent:**
-> You are the QA Lead agent. Review the SDET's test implementation against your test plan. Verify coverage, test quality, and execution results. Make the quality go/no-go decision. [Attach Phase 5a test plan, Phase 5b execution report, test files]
+> You are the QA Lead agent. Review the Test Engineer's test implementation against your test plan. Verify coverage, test quality, and execution results. Make the quality go/no-go decision. [Attach Phase 5a test plan, Phase 5b execution report, test files]
 
 **Actions:**
 1. **Coverage check:** Map every TC-ID from the plan to a test file. Flag any missing test cases.
 2. **Quality check:** Review test code for anti-patterns (implementation testing, weak assertions, flaky patterns, mock-heavy tests).
 3. **Execution validation:** Verify all tests pass. Classify any failures as test bugs or application bugs.
-4. **Gap analysis:** Identify scenarios the SDET discovered during implementation that should be added to the plan.
+4. **Gap analysis:** Identify scenarios the Test Engineer discovered during implementation that should be added to the plan.
 5. **Make the quality decision:**
 
 | Decision | When | Action |
 |---|---|---|
 | **Quality Approved** | All quality gates pass, coverage sufficient, no critical gaps | Proceed to Phase 7 |
-| **Tests Need Rework** | Test code has quality issues, missing coverage, or flaky tests | Route back to SDET (Phase 5b) with specific findings. Max 2 cycles. |
+| **Tests Need Rework** | Test code has quality issues, missing coverage, or flaky tests | Route back to Test Engineer (Phase 5b) with specific findings. Max 2 cycles. |
 | **Code Needs Rework** | Tests reveal application bugs or untestable code | Route back to Phase 3 with findings. Max 2 cycles. |
 
 **Quality gate — do not advance until:**
@@ -414,7 +414,7 @@ When a review phase identifies issues that require changes to an earlier phase:
 |---|---|---|
 | Phase 4 (Code Review) | Critical | Automatically loop to Phase 3, fix, then re-run Phase 4. Max 2 cycles. |
 | Phase 4 (Code Review) | Warning | Present to user. Fix if user agrees, otherwise accept and document. |
-| Phase 5b (Test Impl) | Test code quality issues | QA Lead (5c) routes back to SDET (5b) with findings. Max 2 cycles. |
+| Phase 5b (Test Impl) | Test code quality issues | QA Lead (5c) routes back to Test Engineer (5b) with findings. Max 2 cycles. |
 | Phase 5b (Test Impl) | Application bugs found | QA Lead (5c) routes back to Phase 3. Max 2 cycles. |
 | Phase 5b (Test Impl) | Untestable code | QA Lead (5c) flags to user. Recommend Phase 3 refactor. User decides. |
 | Phase 7 (Release) | No-go | Present blockers. User decides whether to loop back or abort. |
@@ -465,7 +465,7 @@ At the end of the full workflow (or when the user stops early), produce a summar
 | 3. Implementation | Completed | Subagent | X files changed, Y new files created |
 | 4. Code Review | Completed | Subagent (N cycles) | X critical, Y warnings, Z suggestions |
 | 5a. Test Strategy | Completed | Subagent (QA Lead) | X test cases, Y quality gates |
-| 5b. Test Implementation | Completed | Subagent (SDET, parallel w/6) | X test files, Y tests passing |
+| 5b. Test Implementation | Completed | Subagent (Test Engineer, parallel w/6) | X test files, Y tests passing |
 | 5c. Quality Review | Completed | Subagent (QA Lead) | Quality [Approved/Rework] |
 | 6. DevOps | Completed | Subagent (parallel w/5b) | [Deployment strategy] chosen |
 | 7. Release | Completed | Subagent (parallel) | [Go/No-Go] — risk: [Low/Medium/High] |
