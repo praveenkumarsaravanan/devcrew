@@ -64,16 +64,18 @@ Before marking work as complete:
 
 ## Code Quality Checklist
 
-| Check | Details |
-|---|---|
-| Naming | Variables and functions describe what they hold or do |
-| Error handling | Every external call has error handling; errors include context |
-| Input validation | User-facing inputs are validated at the entry point |
-| Null safety | Nullable values are checked before use |
-| Resource cleanup | Database connections, file handles, and streams are closed |
-| Logging | Key operations log at INFO; failures log at ERROR with context |
-| No magic values | Constants are named and documented, not inline numbers or strings |
-| Tests exist | New code has corresponding tests that cover happy + error paths |
+
+| Check            | Details                                                           |
+| ---------------- | ----------------------------------------------------------------- |
+| Naming           | Variables and functions describe what they hold or do             |
+| Error handling   | Every external call has error handling; errors include context    |
+| Input validation | User-facing inputs are validated at the entry point               |
+| Null safety      | Nullable values are checked before use                            |
+| Resource cleanup | Database connections, file handles, and streams are closed        |
+| Logging          | Key operations log at INFO; failures log at ERROR with context    |
+| No magic values  | Constants are named and documented, not inline numbers or strings |
+| Tests exist      | New code has corresponding tests that cover happy + error paths   |
+
 
 ## When to Escalate
 

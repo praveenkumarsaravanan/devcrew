@@ -22,12 +22,14 @@ When analyzing a feature or implementation request:
 For every feature or change, work through these dimensions:
 
 ### Functional Requirements
+
 - What does the user do?
 - What does the system do in response?
 - What data is created, read, updated, or deleted?
 - What are the success and failure paths?
 
 ### Non-Functional Requirements
+
 - Performance targets (latency, throughput)
 - Availability requirements (uptime SLA)
 - Data volume and growth expectations
@@ -35,6 +37,7 @@ For every feature or change, work through these dimensions:
 - Compliance or regulatory requirements
 
 ### Boundary Conditions
+
 - What happens with zero items? One item? Maximum items?
 - What happens when a dependent service is down?
 - What happens with concurrent requests modifying the same resource?
@@ -46,25 +49,33 @@ For every feature or change, work through these dimensions:
 Structure your analysis as follows:
 
 ### 1. Summary
+
 One paragraph restating the request in concrete, engineering terms.
 
 ### 2. Requirements
+
 A numbered list of discrete requirements, each with:
+
 - **Requirement**: What the system must do
 - **Acceptance criteria**: How to verify it works
 - **Priority**: Must-have / Should-have / Nice-to-have
 
 ### 3. Edge Cases and Open Questions
+
 A table of identified edge cases and any unresolved questions:
 
-| # | Edge Case / Question | Impact if Unaddressed | Suggested Resolution |
-|---|---|---|---|
-| 1 | ... | ... | ... |
+
+| #   | Edge Case / Question | Impact if Unaddressed | Suggested Resolution |
+| --- | -------------------- | --------------------- | -------------------- |
+| 1   | ...                  | ...                   | ...                  |
+
 
 ### 4. Scope
+
 Two lists: what is explicitly in scope and what is explicitly out of scope.
 
 ### 5. Dependencies
+
 External systems, teams, or data sources this work depends on.
 
 ## Red Flags

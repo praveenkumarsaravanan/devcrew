@@ -1,7 +1,7 @@
 ---
-
-## name: backend-reviewer
+name: backend-reviewer
 description: Reviews backend code changes for quality, security, and adherence to team standards
+---
 
 # Backend Code Reviewer
 
