@@ -1,11 +1,11 @@
 ---
 name: backend-team-workflow
 description: >
-  Orchestrates a full backend development lifecycle by guiding the agent through
-  sequential team phases — requirements, architecture, implementation, review,
-  quality assurance (QA Lead + Test Engineer), DevOps, release, and monitoring. Uses
-  subagent isolation, structured handoff artifacts, adversarial prompting, and
-  automatic re-routing to simulate a real cross-functional backend team.
+  Orchestrates the pre-merge backend development lifecycle — requirements,
+  architecture, implementation, review, and testing. Uses subagent isolation,
+  structured handoff artifacts, adversarial prompting, and automatic re-routing
+  to simulate a cross-functional backend team. Post-merge activities (DevOps,
+  release, monitoring) are available as separate prompts.
 ---
 
 # Backend Team Workflow
@@ -28,18 +28,19 @@ Do NOT activate for:
 
 ## Overview
 
-This skill simulates a cross-functional backend engineering team by running 8 phases. Key mechanics:
+This skill simulates a cross-functional backend engineering team by running 5 phases focused on the pre-merge lifecycle. Key mechanics:
 
 - **Subagent isolation:** Phases 2, 4, and 5 spawn separate subagents (via the Task tool) so review and architecture happen in an independent context window, eliminating self-agreement bias.
 - **Handoff artifacts:** Each phase produces a structured handoff document. The next phase receives only the handoff (not the full conversation history), keeping context tight.
 - **Adversarial prompting:** Review phases (4 and 5) are explicitly adversarial — they assume the code has defects and actively look for them.
 - **Automatic re-routing:** Critical findings in review phases trigger an automatic loop back to implementation. No manual "redo" needed.
-- **Parallel execution:** Independent phases (5+6 and 7+8) run in parallel via concurrent subagents.
 - **Quality gates:** Each phase has concrete exit criteria that must be met before advancing.
+
+Post-merge activities (DevOps readiness, release management, production monitoring) are available as separate prompts (`/devops-plan`, `/release-readiness`, `/monitoring-plan`) that developers invoke when they are ready for that work.
 
 The user may:
 
-- **Skip phases** — "skip DevOps" or "skip to implementation" jumps past phases.
+- **Skip phases** — "skip to implementation" jumps past phases.
 - **Repeat phases** — "redo the architecture phase" re-runs a phase with updated context.
 - **Stop early** — "that's enough" or "stop here" ends the workflow at the current phase.
 
@@ -220,9 +221,9 @@ This keeps the agent sharp in later phases. Without compression, Phase 7–8 qua
 
 ---
 
-### Phase 5: Quality Assurance + Phase 6: DevOps Readiness
+### Phase 5: Quality Assurance
 
-> **Phase 5 has three sub-phases (5a → 5b → 5c). Phase 6 runs in parallel with Phase 5b (test implementation) since the deployment plan and test code are independent.**
+> **Phase 5 has two sub-phases (5a → 5b). The QA Lead designs the test strategy, then the Test Engineer implements tests, runs them, and reports results directly.**
 
 #### Phase 5a: Test Strategy (QA Lead)
 
@@ -272,11 +273,7 @@ This keeps the agent sharp in later phases. Without compression, Phase 7–8 qua
 
 ---
 
-#### Phase 5b: Test Implementation (Test Engineer) + Phase 6: DevOps Readiness (Parallel)
-
-> **Phase 5b and Phase 6 run in parallel.** The Test Engineer implements tests from the QA Lead's plan while the DevOps Engineer designs the deployment strategy. Spawn both as concurrent subagents.
-
-##### Phase 5b: Test Implementation
+#### Phase 5b: Test Implementation & Quality Verification (Test Engineer)
 
 **Role:** Test Engineer (`test-engineer`)
 
@@ -284,7 +281,7 @@ This keeps the agent sharp in later phases. Without compression, Phase 7–8 qua
 
 **Prompt for subagent:**
 
-> You are the Test Engineer agent. Implement the test cases from the following test plan as executable test code. Scan the codebase for existing test conventions and follow them exactly. Write integration tests, contract tests, and backend E2E tests. Run the full suite and report results. Flag application bugs — do not fix them. [Attach Phase 5a test plan handoff, Phase 3 handoff, and list of changed files]
+> You are the Test Engineer agent. Implement the test cases from the following test plan as executable test code. Scan the codebase for existing test conventions and follow them exactly. Write integration tests, contract tests, and backend E2E tests. Run the full suite, verify coverage against the test plan, and report results with a quality verdict. Flag application bugs — do not fix them. [Attach Phase 5a test plan handoff, Phase 3 handoff, and list of changed files]
 
 **Actions:**
 
@@ -295,149 +292,44 @@ This keeps the agent sharp in later phases. Without compression, Phase 7–8 qua
   - Backend E2E tests orchestrating multi-step business workflows through API calls
   - Build reusable test factories, builders, and helpers when patterns repeat
 3. Run the full test suite. Fix test-code failures. Flag application bugs as findings.
-4. Produce a test execution report with pass/fail counts, coverage metrics, and TC-ID to test file mapping.
+4. **Verify coverage against the test plan:**
+  - Map every TC-ID to the test file that implements it
+  - Flag any TC-IDs that could not be implemented (with reason)
+  - Check for test anti-patterns: implementation testing, weak assertions, flaky patterns, mock-heavy tests
+5. Produce a test execution report with pass/fail counts, coverage metrics, TC-ID to test file mapping, and a quality verdict.
 
 **Quality gate — do not advance until:**
 
 - Every TC-ID from the test plan has a corresponding test file
 - All tests pass (test bugs fixed, app bugs flagged)
 - Test code follows project conventions (verified by scanning existing tests)
+- Quality verdict is stated: Approved, or Needs Rework (with specific findings)
 
-**Handoff artifact:** Test files created (with TC-ID mapping), execution report, application bugs found, and any deviations from the plan.
+**Automatic re-routing:**
 
----
+| Finding | Action |
+|---|---|
+| Test code quality issues or missing coverage | Re-implement the affected tests. Max 2 internal cycles before escalating to the user. |
+| Application bugs discovered | Flag in the handoff artifact. Route back to Phase 3 for fixes, then re-run Phase 5b. Max 2 cycles. |
+| Untestable code | Flag in the handoff artifact and present to the user for a decision. |
 
-##### Phase 6: DevOps Readiness
+**Handoff artifact:** Test files created (with TC-ID mapping), execution report, quality verdict, application bugs found, and any deviations from the plan.
 
-**Role:** DevOps Engineer (`devops-engineer`)
-
-**Execution:** **Subagent** — spawn concurrently with Phase 5b. Pass it the Phase 2 architecture handoff and Phase 3 implementation handoff.
-
-**Prompt for subagent:**
-
-> You are the DevOps Engineer agent. Design the deployment strategy and infrastructure plan for the following backend implementation. [Attach Phase 2 and Phase 3 handoffs]
-
-**Actions:**
-
-1. Recommend the deployment strategy (rolling, canary, blue-green, feature flag) with justification.
-2. Identify infrastructure changes required (new services, database changes, config updates).
-3. Define or update CI/CD pipeline stages for the change.
-4. Verify health checks, resource limits, and autoscaling configuration.
-5. Assess environment impact across dev, staging, and production.
-
-**Quality gate — do not advance until:**
-
-- Deployment strategy is chosen with justification
-- Rollback mechanism is defined
-- Health check endpoints are specified
-- Infrastructure changes are listed (or explicitly "none")
-
-**Handoff artifact:** Deployment plan with strategy, infrastructure changes, pipeline updates, and rollback mechanism.
+**Checkpoint:** Present the test results and quality verdict to the user. Ask: "Tests are complete. Here are the results and any issues found. Ready to proceed with creating a PR, or would you like to address the findings first?"
 
 ---
 
-#### Phase 5c: Quality Review & Go/No-Go (QA Lead)
+## Post-Merge Activities
 
-**Role:** QA Lead (`qa-lead`)
+Phases beyond code-review-and-test are **not part of this workflow**. They happen at different points in the delivery lifecycle and are available as explicit prompts:
 
-**Execution:** **Subagent** — spawn after Phase 5b and Phase 6 complete. Pass it the Phase 5a test plan, Phase 5b execution report and test files, and Phase 6 DevOps handoff.
+| Activity | Prompt | When to use |
+|---|---|---|
+| Deployment planning | `/devops-plan` | After merge, when setting up or updating CI/CD and deployment strategy |
+| Release readiness | `/release-readiness` | At release time, to run the go/no-go checklist |
+| Monitoring & observability | `/monitoring-plan` | When planning SLOs, alerts, and runbooks for a service |
 
-**Prompt for subagent:**
-
-> You are the QA Lead agent. Review the Test Engineer's test implementation against your test plan. Verify coverage, test quality, and execution results. Make the quality go/no-go decision. [Attach Phase 5a test plan, Phase 5b execution report, test files]
-
-**Actions:**
-
-1. **Coverage check:** Map every TC-ID from the plan to a test file. Flag any missing test cases.
-2. **Quality check:** Review test code for anti-patterns (implementation testing, weak assertions, flaky patterns, mock-heavy tests).
-3. **Execution validation:** Verify all tests pass. Classify any failures as test bugs or application bugs.
-4. **Gap analysis:** Identify scenarios the Test Engineer discovered during implementation that should be added to the plan.
-5. **Make the quality decision:**
-
-
-| Decision              | When                                                           | Action                                                                       |
-| --------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| **Quality Approved**  | All quality gates pass, coverage sufficient, no critical gaps  | Proceed to Phase 7                                                           |
-| **Tests Need Rework** | Test code has quality issues, missing coverage, or flaky tests | Route back to Test Engineer (Phase 5b) with specific findings. Max 2 cycles. |
-| **Code Needs Rework** | Tests reveal application bugs or untestable code               | Route back to Phase 3 with findings. Max 2 cycles.                           |
-
-
-**Quality gate — do not advance until:**
-
-- Every TC-ID has a passing test
-- Zero test quality issues rated Critical
-- Application bugs are either fixed (routed to Phase 3) or accepted by the user
-- Quality verdict is stated with rationale
-
-**Handoff artifact:** Quality verdict with evidence — coverage report (TC-ID to test file mapping), test quality findings, execution summary, and go/no-go recommendation.
-
-**Combined Checkpoint (Phase 5 + 6):** Present the quality verdict and the DevOps plan together. Ask: "Here are the quality assessment and deployment plan. Any adjustments before we assess release readiness?"
-
----
-
-### Phase 7: Release Readiness + Phase 8: Production Monitoring (Parallel)
-
-> **These two phases run in parallel.** The release checklist and the monitoring plan are independent assessments. Spawn both as concurrent subagents and present results together.
-
-#### Phase 7: Release Readiness
-
-**Role:** Release Manager (`release-manager`)
-
-**Execution:** **Subagent** — spawn using the Task tool. Pass it handoff artifacts from Phases 1, 4, 5, and 6.
-
-**Prompt for subagent:**
-
-> You are the Release Manager agent. Assess release readiness for the following backend implementation. You have the requirements, code review results, test plan, and deployment plan. Make a go/no-go recommendation. [Attach Phase 1, Phase 4, Phase 5, and Phase 6 handoffs]
-
-**Actions:**
-
-1. Run through the release readiness checklist: code complete, tests passing, security scan, performance, documentation, rollback plan, on-call coverage.
-2. Assess risk using the risk matrix (scope, blast radius, reversibility, test coverage).
-3. Document the rollback procedure with exact steps and estimated time.
-4. Define communication plan: who to notify before, during, and after.
-5. Make a go/no-go recommendation with rationale.
-
-**Quality gate — do not advance until:**
-
-- Every checklist item is assessed (pass/fail/N/A)
-- Risk rating is assigned (Low/Medium/High) with justification
-- Rollback procedure has exact steps and estimated duration
-- Go/no-go recommendation is stated with rationale
-
-**Handoff artifact:** Release assessment with readiness checklist, risk rating, rollback plan, and go/no-go recommendation.
-
----
-
-#### Phase 8: Production Monitoring
-
-**Role:** SRE (`sre`)
-
-**Execution:** **Subagent** — spawn concurrently with Phase 7. Pass it handoff artifacts from Phases 2, 3, and 5.
-
-**Prompt for subagent:**
-
-> You are the SRE agent. Design the observability and monitoring plan for the following backend implementation. Assess customer impact and incident readiness. [Attach Phase 2, Phase 3, and Phase 5 handoffs]
-
-**Actions:**
-
-1. Verify observability coverage: metrics, logs, and traces are instrumented for the new code paths.
-2. Propose or verify SLOs/SLIs for the affected service.
-3. Define alerts for the new functionality with tier, condition, and runbook outline.
-4. Assess customer impact: which user flows are affected, blast radius, degraded-mode options.
-5. Verify incident readiness: can the team detect, diagnose, and recover within the error budget?
-
-**Quality gate — do not advance until:**
-
-- At least one SLO/SLI is proposed for the affected service
-- Alerts are defined with clear conditions and severity tiers
-- Customer impact is assessed with blast radius estimate
-- Runbook outline exists for the most likely failure modes
-
-**Handoff artifact:** Observability assessment, SLO recommendations, alert plan, and customer impact analysis.
-
----
-
-**Combined Checkpoint (Phase 7 + 8):** Present both the release assessment and the monitoring plan together. Inform the user the workflow is complete and produce the final summary.
+These prompts leverage the `devops-engineer`, `release-manager`, and `sre` agents respectively.
 
 ---
 
@@ -450,13 +342,13 @@ This keeps the agent sharp in later phases. Without compression, Phase 7–8 qua
 
 - **Never skip the requirements phase silently.** If the user says "just build it," still produce a brief requirements summary and confirm before coding. Misunderstood requirements waste more time than the 2 minutes spent clarifying.
 - **Always checkpoint between phases.** Never proceed from one phase to the next without presenting the output and getting user confirmation. The user may have context that changes the approach.
-- **Use subagents for review phases.** Phases 2, 4, 5, 6, 7, and 8 should be spawned as separate subagents whenever the Task tool is available. If subagents are unavailable (e.g., in a non-Cursor environment), fall back to inline execution with explicit adversarial instructions.
+- **Use subagents for review phases.** Phases 2, 4, and 5 should be spawned as separate subagents whenever the Task tool is available. If subagents are unavailable (e.g., in a non-Cursor environment), fall back to inline execution with explicit adversarial instructions.
 - **Handoff artifacts are the contract.** Never pass raw conversation history between phases. The handoff artifact is the only input the next phase receives (plus the Phase 1 requirements).
 - **Respect re-routing caps.** Automatic re-routing loops are capped at 2 cycles. After 2 failed cycles, escalate to the user — do not loop indefinitely.
-- **Apply all phases' perspectives, not just the comfortable ones.** The value of this workflow is comprehensive coverage. Skipping security, testing, or monitoring review defeats the purpose.
-- **Keep each phase focused.** Do not let the architecture phase drift into implementation details, or the test phase into DevOps concerns. Each phase has a clear scope.
+- **Keep each phase focused.** Do not let the architecture phase drift into implementation details, or the test phase into deployment concerns. Each phase has a clear scope.
 - **Respect the user's pace.** If the user wants to stop at Phase 3 and come back later, produce a partial summary and note where to resume.
 - **Cite the agent by name when switching roles.** At the start of each phase, state which role you are adopting (e.g., "Switching to the **Product Analyst** perspective for Phase 1"). This makes role transitions visible.
 - **Stay within backend scope.** If the user's request involves frontend, mobile, or other non-backend work, note that this workflow covers the backend portion only and suggest addressing the other disciplines separately.
-- **Trace requirements end-to-end.** Every phase must reference REQ-IDs. If a requirement has no corresponding component, code, test, or monitoring, flag it as a gap.
+- **Trace requirements end-to-end.** Every phase must reference REQ-IDs. If a requirement has no corresponding component, code, or test, flag it as a gap.
+- **Do not bundle post-merge activities.** DevOps, release, and monitoring are separate concerns with their own timing. Point the user to the `/devops-plan`, `/release-readiness`, and `/monitoring-plan` prompts when appropriate.
 

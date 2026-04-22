@@ -135,6 +135,6 @@ Flag immediately:
 
 ## Handoff
 
-**Receives from QA Lead (Phase 5c) and DevOps Engineer (Phase 6):** Quality verdict with test results and coverage report, plus deployment strategy, pipeline configuration, and infrastructure changes. Both must show "approved" / "ready" status before proceeding.
+**Receives from QA Lead (Phase 5) and DevOps Engineer:** Quality verdict with test results and coverage report, plus deployment strategy, pipeline configuration, and infrastructure changes. Both must show "approved" / "ready" status before proceeding.
 
-**Produces for Combined Checkpoint (Phase 7 + 8):** Release assessment with readiness checklist, risk rating, rollback plan, and go/no-go recommendation. This is presented alongside the SRE's observability assessment at the combined checkpoint. Stakeholders receive the deployment plan and communication timeline.
+**Produces:** Release assessment with readiness checklist, risk rating, rollback plan, and go/no-go recommendation. Invoke this agent via the `/release-readiness` prompt when the team is ready to assess a release.
