@@ -26,7 +26,7 @@ Activate this skill when:
 **Example:**
 
 ```
-chore(mi-engineer-agent): PROJ-123, add setup script for gh CLI and APM
+chore(engineering-agent-platform): PROJ-123, add setup script for gh CLI and APM
 ```
 
 Every component is **required**. The server-side pre-receive hook on `git.marriott.com` rejects pushes that do not match this pattern.
@@ -54,7 +54,7 @@ The category of change. Must be one of:
 
 The project, package, or module affected. Use the repo name or a recognizable sub-component.
 
-Examples: `mi-engineer-agent`, `api-gateway`, `auth-service`, `mi-ui-library`
+Examples: `engineering-agent-platform`, `api-gateway`, `auth-service`, `mi-ui-library`
 
 ### JIRA ticket
 
@@ -104,7 +104,7 @@ Combine all components into the required format:
 For non-trivial changes, add a body separated by a blank line:
 
 ```
-feat(mi-engineer-agent): ENG-456, add commit message skill
+feat(engineering-agent-platform): ENG-456, add commit message skill
 
 Adds a skill that constructs commit messages matching the org's
 server-side commitlint hook format. Triggered automatically when

@@ -93,8 +93,8 @@ export GITHUB_TOKEN="ghp_your_token_here"
 1. Clone the repository:
 
 ```sh
-git clone https://git.marriott.com/phoenix/mi-engineer-agent.git
-cd mi-engineer-agent
+git clone https://git.marriott.com/phoenix/engineering-agent-platform.git
+cd engineering-agent-platform
 ```
 
 2. Run the setup script:
@@ -233,7 +233,7 @@ The `atlassian` MCP uses OAuth 2.1 — it opens a browser on first connection. N
 ### Global Install (recommended)
 
 ```sh
-apm install -g git.marriott.com/phoenix/mi-engineer-agent
+apm install -g git.marriott.com/phoenix/engineering-agent-platform
 ```
 
 Deploys skills, agents, instructions, prompts, and MCP servers to user-level directories (`~/.cursor/`, `~/.copilot/`). Your IDE picks them up in every project — no per-repo config required.
@@ -251,7 +251,7 @@ name: my-service
 version: "1.0.0"
 dependencies:
   apm:
-    - git: "https://git.marriott.com/phoenix/mi-engineer-agent.git"
+    - git: "https://git.marriott.com/phoenix/engineering-agent-platform.git"
       ref: trunk
 ```
 
