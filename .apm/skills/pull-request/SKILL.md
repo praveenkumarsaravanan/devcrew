@@ -1,10 +1,10 @@
 ---
-
-## name: pull-request
+name: pull-request
 description: >
   Create pull requests with structured descriptions, test summaries, and
   JIRA ticket validation. Detects discrepancies between the implementation
   and the JIRA ticket and flags them before the PR is submitted.
+---
 
 # Pull Request
 
@@ -146,6 +146,13 @@ Use the following template:
 
 - [ ] <manual test step and expected result>
 
+### Test Plan Validation
+
+<!-- Each item is validated before PR creation. ✅ = passed, ❌ = failed -->
+
+- ✅ <validated check that passed>
+- ❌ <validated check that failed — needs attention>
+
 ### Test Results
 
 <!-- Summary of test runs if available -->
@@ -161,7 +168,43 @@ Use the following template:
 - [ ] Breaking changes documented (if applicable)
 ```
 
-### 8. Create the PR
+### 8. Validate the Test Plan
+
+Before creating the PR, execute every test plan item and record whether it passes or fails. This gives reviewers immediate visibility into what works and what needs attention.
+
+**For each test plan item, attempt to verify it programmatically:**
+
+| Test plan item type | How to validate |
+|---|---|
+| Compile / build checks | Run the build command (`apm compile`, `npm build`, `mvn compile`, etc.) and check exit code |
+| Frontmatter / format checks | Run `bash .apm/skills/apm-authoring/scripts/validate.sh` or parse the file directly |
+| File existence checks | Verify the file exists and has expected content |
+| Content checks (e.g., "table includes X") | Grep or read the file and confirm the content is present |
+| Behavioral checks | Run the relevant command or script and inspect output |
+| Test suite execution | Run the test suite (`npm test`, `pytest`, `go test`, etc.) and capture results |
+| Manual-only checks | Mark as `⬜ Manual — not automatically validated` |
+
+**Process:**
+
+1. For each item in the test plan, determine how to verify it.
+2. Run the verification. If it passes, mark `✅`. If it fails, mark `❌` with a brief reason.
+3. Items that cannot be automated get `⬜ Manual`.
+4. Replace the test plan section in the PR body with the validated results.
+5. If any items are marked `❌`, **warn the user before creating the PR** and list the failures. Ask whether to proceed or fix first.
+
+**Example validated test plan:**
+
+```markdown
+### Test Plan Validation
+
+- ✅ `apm compile` completes with zero errors
+- ✅ All agent `.agent.md` files pass frontmatter validation
+- ✅ `backend-team-workflow` SKILL.md is under 500 lines (461 lines)
+- ❌ README.md table has 10 agents listed (found 9 — missing `sre`)
+- ⬜ Manual — spot-check handoff sections align with workflow phases
+```
+
+### 9. Create the PR
 
 Push the branch and create the PR using the base branch resolved in Step 1:
 
@@ -179,7 +222,7 @@ EOF
 
 The PR title must follow the same commitlint format as commit messages since squash merges use the PR title as the commit message.
 
-### 9. Post-Creation
+### 10. Post-Creation
 
 After the PR is created:
 
@@ -187,7 +230,7 @@ After the PR is created:
 - If discrepancies were found, remind the user to update the JIRA ticket
 - If no tests were included, note this as a follow-up item
 
-### 10. Update PR Description on Subsequent Pushes
+### 11. Update PR Description on Subsequent Pushes
 
 When committing to a branch that already has an open PR, the PR description must be revisited and updated to reflect the new changes. Stale descriptions mislead reviewers.
 
@@ -219,8 +262,10 @@ gh pr edit <number> --title "<updated title>"
 
 ## Guardrails
 
+- **Never create a PR without validating the test plan.** Every test plan item must be executed and marked as ✅, ❌, or ⬜ before the PR is created. If any item is ❌, warn the user and get explicit confirmation before proceeding.
 - **Never create a PR without analyzing the diff.** Read all changes, not just the latest commit.
 - **Never push to an existing PR without updating the description.** After every push to a branch with an open PR, re-read the full diff and revise the PR body. A stale description that doesn't reflect the current state of the branch is actively harmful to reviewers.
+- **Re-validate the test plan on PR updates.** When updating an existing PR, re-run the test plan validation. New commits may have fixed failures or introduced new ones. Update the ✅/❌/⬜ markers accordingly.
 - **Always validate against the JIRA ticket.** If the Atlassian MCP is unavailable, ask the user for ticket details manually.
 - **Flag missing tests explicitly.** Do not silently skip the testing section.
 - **Do not suppress discrepancies.** Always surface mismatches between the ticket and the implementation, even if minor. Let the user decide how to handle them.

@@ -19,10 +19,20 @@ MI Engineer Agent defines all engineering primitives — skills, agents, instruc
 | Skill       | `branch-creation`   | Create branches with org naming conventions                 |
 | Skill       | `pull-request`      | PR creation with JIRA validation and discrepancy detection  |
 | Skill       | `documentation`     | Write and maintain READMEs, guides, runbooks, and ADRs      |
-| Skill       | `release`           | Tag, release, and publish new versions with changelog           |
-| Skill       | `skill-authoring`   | Create and maintain skills following agentskills.io spec    |
+| Skill       | `git-release-tag`   | Tag, release, and publish new versions with changelog           |
+| Skill       | `apm-authoring`     | Create and maintain all APM artifacts (skills, agents, instructions, prompts, hooks) |
+| Skill       | `project-detection`     | Classify workspace as backend, frontend, fullstack, or infra         |
+| Skill       | `backend-team-workflow` | Orchestrated 8-phase backend development lifecycle across team roles |
 | Agent       | `backend-reviewer`  | Automated PR reviewer for backend services                  |
 | Agent       | `architect`         | Architecture decision support agent                         |
+| Agent       | `product-analyst`   | Requirements clarification and acceptance criteria          |
+| Agent       | `senior-developer`  | Scalability, performance, rollout, and test guidance        |
+| Agent       | `junior-developer`  | Clean implementation following codebase patterns            |
+| Agent       | `test-engineer`     | Test code implementation from QA Lead's test plan           |
+| Agent       | `qa-lead`           | Test strategy, quality review, and go/no-go decisions       |
+| Agent       | `devops-engineer`   | CI/CD pipeline, deployment strategy, and infrastructure     |
+| Agent       | `release-manager`   | Release readiness, go/no-go decisions, and rollback plans   |
+| Agent       | `sre`               | Observability, SLOs, alerting, and customer impact          |
 | Instruction | `coding-standards`  | Organization coding conventions and style                   |
 | Instruction | `security-baseline` | Security requirements and baseline controls                 |
 | Prompt      | `design-review`     | Prompt template for design review sessions                  |
@@ -83,8 +93,8 @@ export GITHUB_TOKEN="ghp_your_token_here"
 1. Clone the repository:
 
 ```sh
-git clone https://git.marriott.com/phoenix/mi-engineer-agent.git
-cd mi-engineer-agent
+git clone https://git.marriott.com/phoenix/engineering-agent-platform.git
+cd engineering-agent-platform
 ```
 
 2. Run the setup script:
@@ -140,7 +150,7 @@ Run the release script from `trunk`:
 
 ```sh
 git checkout trunk && git pull
-bash .apm/skills/release/scripts/release.sh --ticket DXP-XXXXX    # defaults to patch
+bash .apm/skills/git-release-tag/scripts/release.sh --ticket DXP-XXXXX    # defaults to patch
 ```
 
 The script reads the current version from `apm.yml`, computes the next version, generates a changelog from commits since the last tag, creates an annotated tag with the changelog, pushes, and creates a GitHub release. The `--ticket` flag is required — the org commitlint hook rejects commits without a JIRA ticket.
@@ -148,14 +158,14 @@ The script reads the current version from `apm.yml`, computes the next version, 
 Preview first with `--dry-run`:
 
 ```sh
-bash .apm/skills/release/scripts/release.sh --dry-run --ticket DXP-XXXXX
+bash .apm/skills/git-release-tag/scripts/release.sh --dry-run --ticket DXP-XXXXX
 ```
 
 For minor or major releases, pass the increment explicitly:
 
 ```sh
-bash .apm/skills/release/scripts/release.sh minor --ticket DXP-XXXXX
-bash .apm/skills/release/scripts/release.sh major --ticket DXP-XXXXX
+bash .apm/skills/git-release-tag/scripts/release.sh minor --ticket DXP-XXXXX
+bash .apm/skills/git-release-tag/scripts/release.sh major --ticket DXP-XXXXX
 ```
 
 **Increment guide:**
@@ -223,7 +233,7 @@ The `atlassian` MCP uses OAuth 2.1 — it opens a browser on first connection. N
 ### Global Install (recommended)
 
 ```sh
-apm install -g git.marriott.com/phoenix/mi-engineer-agent
+apm install -g git.marriott.com/phoenix/engineering-agent-platform
 ```
 
 Deploys skills, agents, instructions, prompts, and MCP servers to user-level directories (`~/.cursor/`, `~/.copilot/`). Your IDE picks them up in every project — no per-repo config required.
@@ -241,7 +251,7 @@ name: my-service
 version: "1.0.0"
 dependencies:
   apm:
-    - git: "https://git.marriott.com/phoenix/mi-engineer-agent.git"
+    - git: "https://git.marriott.com/phoenix/engineering-agent-platform.git"
       ref: trunk
 ```
 

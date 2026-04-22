@@ -104,8 +104,8 @@ Scripts in `scripts/` should follow these conventions for agent compatibility:
 Reference files within the skill using relative paths from the skill root:
 
 ```markdown
-See [reference guide](references/REFERENCE.md) for details.
-Run: `bash scripts/validate.sh`
+See [reference guide](references/my-reference.md) for details.
+Run: `bash scripts/my-script.sh`
 ```
 
 Keep references one level deep from `SKILL.md`. Avoid deeply nested reference chains.

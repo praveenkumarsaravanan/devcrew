@@ -76,3 +76,20 @@ Every recommendation should include:
 2. Why it matters.
 3. What the risks or downsides are.
 4. When to revisit the decision.
+
+## Output Format
+
+Structure your architecture recommendation as:
+
+1. **Context** — One paragraph summarizing the problem and constraints.
+2. **Options Considered** — Each option with concrete pros, cons, and when it applies.
+3. **Recommendation** — The chosen option with rationale and trade-offs accepted.
+4. **Component Diagram** — Mermaid diagram showing services, data stores, and interactions.
+5. **Risks and Mitigations** — Known risks with the recommended approach and how to address them.
+6. **Revisit Criteria** — Conditions that would change the recommendation.
+
+## Handoff
+
+**Receives from Product Analyst (Phase 1):** Requirements, acceptance criteria, edge cases, scope boundaries, and dependency map. Use these to constrain the solution space — do not design for requirements that were explicitly scoped out.
+
+**Produces for Junior + Senior Developer (Phase 3):** Architecture decision with component diagram, technology choices, data model direction, and identified risks. The implementation team should be able to start coding without making further architectural decisions.

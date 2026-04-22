@@ -1,4 +1,4 @@
-name: mi-engineer-agent
+name: engineering-agent-platform
 version: "1.1.4"
 description: "Phoenix - Organization-wide engineering agent -- skills, MCP servers, rules, hooks, and agents for Cursor and GitHub Copilot"
 target:
@@ -6,4 +6,4 @@ target:
   - cursor
 scripts:
   setup: "bash scripts/setup.sh"
-  release: "bash .apm/skills/release/scripts/release.sh"
+  release: "bash .apm/skills/git-release-tag/scripts/release.sh"

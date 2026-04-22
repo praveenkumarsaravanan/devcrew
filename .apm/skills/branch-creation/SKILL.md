@@ -36,7 +36,7 @@ refactor/PROJ-321-extract-payment-module
 
 ### type
 
-Must match the commit type conventions. Use one of:
+Must match the commit type conventions (see `commit-message` skill for the full list). Common branch types:
 
 | Type | When to Use |
 |------|-------------|
@@ -48,6 +48,8 @@ Must match the commit type conventions. Use one of:
 | `test` | Adding or updating tests |
 | `perf` | Performance improvement |
 | `ci` | CI/CD pipeline changes |
+| `style` | Formatting, whitespace, linting (no logic change) |
+| `revert` | Reverting a previous commit |
 
 ### JIRA ticket
 
