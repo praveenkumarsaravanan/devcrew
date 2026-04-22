@@ -96,6 +96,46 @@ if [[ "$CURRENT_BRANCH" != "trunk" && "$CURRENT_BRANCH" != "main" ]]; then
 fi
 
 git fetch --tags --quiet
+git fetch origin "$CURRENT_BRANCH" --quiet
+
+LOCAL_SHA=$(git rev-parse HEAD)
+REMOTE_SHA=$(git rev-parse "origin/$CURRENT_BRANCH" 2>/dev/null || echo "")
+
+if [[ -n "$REMOTE_SHA" ]]; then
+  if [[ "$LOCAL_SHA" != "$REMOTE_SHA" ]]; then
+    AHEAD=$(git rev-list "origin/$CURRENT_BRANCH..HEAD" --count 2>/dev/null || echo 0)
+    BEHIND=$(git rev-list "HEAD..origin/$CURRENT_BRANCH" --count 2>/dev/null || echo 0)
+    if [[ "$BEHIND" -gt 0 ]]; then
+      fail "$CURRENT_BRANCH is $BEHIND commit(s) behind origin/$CURRENT_BRANCH. Pull first: git pull origin $CURRENT_BRANCH" 2
+    fi
+    if [[ "$AHEAD" -gt 0 ]]; then
+      fail "$CURRENT_BRANCH is $AHEAD commit(s) ahead of origin/$CURRENT_BRANCH. Push first: git push origin $CURRENT_BRANCH" 2
+    fi
+  fi
+fi
+
+UNMERGED_BRANCHES=""
+for branch in $(git branch --no-merged HEAD --format='%(refname:short)' 2>/dev/null); do
+  UNMERGED_COUNT=$(git rev-list "HEAD..$branch" --count 2>/dev/null || echo 0)
+  if [[ "$UNMERGED_COUNT" -gt 0 ]]; then
+    UNMERGED_BRANCHES="${UNMERGED_BRANCHES}    ${branch} ($UNMERGED_COUNT unmerged commit(s))\n"
+  fi
+done
+
+if [[ -n "$UNMERGED_BRANCHES" ]]; then
+  warn "The following local branches have commits NOT merged into $CURRENT_BRANCH:"
+  printf "$UNMERGED_BRANCHES" >&2
+  if [[ "$CONFIRM" == true ]]; then
+    warn "Proceeding despite unmerged branches (--confirm). Verify this is intentional."
+  else
+    printf "\033[1;33m? Continue release despite unmerged branches? [y/N] \033[0m" >&2
+    read -r UNMERGED_RESPONSE
+    if [[ "$UNMERGED_RESPONSE" != "y" && "$UNMERGED_RESPONSE" != "Y" ]]; then
+      info "Aborted. Merge or delete unmerged branches first."
+      exit 2
+    fi
+  fi
+fi
 
 # ── Read current version ──────────────────────────────────────────────────────
 
