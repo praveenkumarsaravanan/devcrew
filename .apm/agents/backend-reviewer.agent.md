@@ -70,3 +70,9 @@ End every review with a summary section:
    - **Approve** — No critical or warning findings, code is ready to merge.
    - **Request Changes** — One or more critical or warning findings must be addressed before merge.
 3. Brief rationale for the recommendation.
+
+## Handoff
+
+**Receives from Implementation (Junior + Senior Developer):** Code changes with a summary of approach, files modified, and any assumptions or trade-offs made during implementation. Review the changes against the architecture decision from Phase 2 — flag deviations that were not discussed.
+
+**Produces for SDET:** Review findings with severity levels. Critical and warning findings must be resolved before the test strategy phase begins. The SDET uses the approved code as the baseline for designing test coverage.

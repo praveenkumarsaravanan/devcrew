@@ -21,8 +21,17 @@ MI Engineer Agent defines all engineering primitives — skills, agents, instruc
 | Skill       | `documentation`     | Write and maintain READMEs, guides, runbooks, and ADRs      |
 | Skill       | `release`           | Tag, release, and publish new versions with changelog           |
 | Skill       | `skill-authoring`   | Create and maintain skills following agentskills.io spec    |
+| Skill       | `project-detection`     | Classify workspace as backend, frontend, fullstack, or infra         |
+| Skill       | `backend-team-workflow` | Orchestrated 8-phase backend development lifecycle across team roles |
 | Agent       | `backend-reviewer`  | Automated PR reviewer for backend services                  |
 | Agent       | `architect`         | Architecture decision support agent                         |
+| Agent       | `product-analyst`   | Requirements clarification and acceptance criteria          |
+| Agent       | `senior-developer`  | Scalability, performance, rollout, and test guidance        |
+| Agent       | `junior-developer`  | Clean implementation following codebase patterns            |
+| Agent       | `sdet`              | Test strategy, regression coverage, and quality gates       |
+| Agent       | `devops-engineer`   | CI/CD pipeline, deployment strategy, and infrastructure     |
+| Agent       | `release-manager`   | Release readiness, go/no-go decisions, and rollback plans   |
+| Agent       | `sre`               | Observability, SLOs, alerting, and customer impact          |
 | Instruction | `coding-standards`  | Organization coding conventions and style                   |
 | Instruction | `security-baseline` | Security requirements and baseline controls                 |
 | Prompt      | `design-review`     | Prompt template for design review sessions                  |

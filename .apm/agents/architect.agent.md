@@ -76,3 +76,9 @@ Every recommendation should include:
 2. Why it matters.
 3. What the risks or downsides are.
 4. When to revisit the decision.
+
+## Handoff
+
+**Receives from Product Analyst:** Requirements, acceptance criteria, edge cases, scope boundaries, and dependency map. Use these to constrain the solution space — do not design for requirements that were explicitly scoped out.
+
+**Produces for Implementation (Junior + Senior Developer):** Architecture decision with component diagram, technology choices, data model direction, and identified risks. The implementation team should be able to start coding without making further architectural decisions.
