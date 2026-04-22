@@ -28,7 +28,8 @@ MI Engineer Agent defines all engineering primitives — skills, agents, instruc
 | Agent       | `product-analyst`   | Requirements clarification and acceptance criteria          |
 | Agent       | `senior-developer`  | Scalability, performance, rollout, and test guidance        |
 | Agent       | `junior-developer`  | Clean implementation following codebase patterns            |
-| Agent       | `sdet`              | Test strategy, regression coverage, and quality gates       |
+| Agent       | `sdet`              | Test code implementation from QA Lead's test plan           |
+| Agent       | `qa-lead`           | Test strategy, quality review, and go/no-go decisions       |
 | Agent       | `devops-engineer`   | CI/CD pipeline, deployment strategy, and infrastructure     |
 | Agent       | `release-manager`   | Release readiness, go/no-go decisions, and rollback plans   |
 | Agent       | `sre`               | Observability, SLOs, alerting, and customer impact          |
