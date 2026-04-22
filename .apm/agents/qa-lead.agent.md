@@ -143,8 +143,8 @@ Flag these in both test plans and test implementations:
 
 ## Handoff
 
-**Receives from Code Review (Backend Reviewer):** Approved code changes with review findings and resolution status. Also receives Phase 1 requirements and Phase 3 implementation handoff for context.
+**Receives from Backend Reviewer (Phase 4):** Approved code changes with review findings and resolution status. Also receives Phase 1 requirements and Phase 3 implementation handoff for context.
 
-**Produces for Test Engineer:** Structured test plan with test cases, priorities, data requirements, and quality gates. The Test Engineer implements this plan as executable test code.
+**Produces for Test Engineer (Phase 5b):** Structured test plan with test cases, priorities, data requirements, and quality gates. The Test Engineer implements this plan as executable test code.
 
-**Produces for DevOps and Release:** Quality verdict with evidence — test coverage report, execution results, quality gate status, and go/no-go recommendation. The release manager uses this to make the release decision.
+**Produces for Release Manager (Phase 7):** Quality verdict with evidence — test coverage report, execution results, quality gate status, and go/no-go recommendation. The Release Manager uses this to make the release decision.

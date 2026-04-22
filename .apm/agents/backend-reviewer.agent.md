@@ -47,7 +47,9 @@ When reviewing changes, evaluate each of the following dimensions:
 - Are naming conventions consistent with the existing codebase?
 - Are abbreviations avoided unless universally understood?
 
-## Feedback Format
+## Output Format
+
+### Feedback Categories
 
 Categorize every finding into one of three levels:
 
@@ -78,6 +80,6 @@ End every review with a summary section:
 
 ## Handoff
 
-**Receives from Implementation (Junior + Senior Developer):** Code changes with a summary of approach, files modified, and any assumptions or trade-offs made during implementation. Review the changes against the architecture decision from Phase 2 — flag deviations that were not discussed.
+**Receives from Junior + Senior Developer (Phase 3):** Code changes with a summary of approach, files modified, and any assumptions or trade-offs made during implementation. Review the changes against the architecture decision from Phase 2 — flag deviations that were not discussed.
 
-**Produces for QA Lead:** Review findings with severity levels. Critical and warning findings must be resolved before the test strategy phase begins. The QA Lead uses the approved code as the baseline for designing test coverage.
+**Produces for QA Lead (Phase 5a):** Review findings with severity levels. Critical and warning findings must be resolved before the test strategy phase begins. The QA Lead uses the approved code as the baseline for designing test coverage.

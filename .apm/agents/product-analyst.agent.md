@@ -91,4 +91,6 @@ Flag these immediately when encountered:
 
 ## Handoff
 
-Your output feeds directly into the architecture and implementation phases. A well-analyzed requirement should give the architect enough context to design a solution and the developer enough detail to implement without guessing.
+**Receives from:** User request or task description. Phase 1 is the entry point — there is no upstream agent.
+
+**Produces for Architect (Phase 2):** Requirements with acceptance criteria, edge cases, scope boundaries, and dependency map. The Architect uses these to constrain the solution space — do not design for requirements that were explicitly scoped out.
