@@ -24,7 +24,7 @@ Do NOT activate for:
 
 - Frontend, UI, or client-side work (a future `frontend-team-workflow` will cover those)
 - Projects classified as Infrastructure by `project-detection` (use `devops-engineer` and `sre` agents directly)
-- Isolated tasks like "review this PR" (use `code-review`), "release a new version" (use `release`), or "write tests for X" (invoke `test-engineer` directly)
+- Isolated tasks like "review this PR" (use `code-review`), "release a new version" (use `git-release-tag`), or "write tests for X" (invoke `test-engineer` directly)
 
 ## Overview
 

@@ -19,7 +19,7 @@ MI Engineer Agent defines all engineering primitives — skills, agents, instruc
 | Skill       | `branch-creation`   | Create branches with org naming conventions                 |
 | Skill       | `pull-request`      | PR creation with JIRA validation and discrepancy detection  |
 | Skill       | `documentation`     | Write and maintain READMEs, guides, runbooks, and ADRs      |
-| Skill       | `release`           | Tag, release, and publish new versions with changelog           |
+| Skill       | `git-release-tag`   | Tag, release, and publish new versions with changelog           |
 | Skill       | `apm-authoring`     | Create and maintain all APM artifacts (skills, agents, instructions, prompts, hooks) |
 | Skill       | `project-detection`     | Classify workspace as backend, frontend, fullstack, or infra         |
 | Skill       | `backend-team-workflow` | Orchestrated 8-phase backend development lifecycle across team roles |
@@ -150,7 +150,7 @@ Run the release script from `trunk`:
 
 ```sh
 git checkout trunk && git pull
-bash .apm/skills/release/scripts/release.sh --ticket DXP-XXXXX    # defaults to patch
+bash .apm/skills/git-release-tag/scripts/release.sh --ticket DXP-XXXXX    # defaults to patch
 ```
 
 The script reads the current version from `apm.yml`, computes the next version, generates a changelog from commits since the last tag, creates an annotated tag with the changelog, pushes, and creates a GitHub release. The `--ticket` flag is required — the org commitlint hook rejects commits without a JIRA ticket.
@@ -158,14 +158,14 @@ The script reads the current version from `apm.yml`, computes the next version, 
 Preview first with `--dry-run`:
 
 ```sh
-bash .apm/skills/release/scripts/release.sh --dry-run --ticket DXP-XXXXX
+bash .apm/skills/git-release-tag/scripts/release.sh --dry-run --ticket DXP-XXXXX
 ```
 
 For minor or major releases, pass the increment explicitly:
 
 ```sh
-bash .apm/skills/release/scripts/release.sh minor --ticket DXP-XXXXX
-bash .apm/skills/release/scripts/release.sh major --ticket DXP-XXXXX
+bash .apm/skills/git-release-tag/scripts/release.sh minor --ticket DXP-XXXXX
+bash .apm/skills/git-release-tag/scripts/release.sh major --ticket DXP-XXXXX
 ```
 
 **Increment guide:**

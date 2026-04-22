@@ -1,5 +1,5 @@
 ---
-name: release
+name: git-release-tag
 description: >
   Tag and publish a new version of the package. Reads the current version from
   apm.yml, auto-increments it (patch, minor, or major), blocks duplicate tags,
@@ -7,7 +7,7 @@ description: >
   confirmation.
 ---
 
-# Release
+# Git Release & Tag
 
 ## Trigger
 
