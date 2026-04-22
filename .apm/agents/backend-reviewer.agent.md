@@ -20,11 +20,18 @@ When reviewing changes, evaluate each of the following dimensions:
 
 ### Security Vulnerabilities
 
-- Are there hardcoded secrets, API keys, or credentials?
-- Is user input validated and sanitized before use?
-- Are database queries parameterized to prevent SQL injection?
-- Are authentication and authorization checks present where needed?
-- Is sensitive data logged or exposed in error messages?
+Review changed files against the OWASP Top 10 (see [security-scan-reference.md](../skills/backend-team-workflow/references/security-scan-reference.md) for the full checklist):
+
+- Are there hardcoded secrets, API keys, or credentials? (A02)
+- Is user input validated and sanitized before use? (A03, A04)
+- Are database queries parameterized to prevent SQL injection? (A03)
+- Are authentication and authorization checks present where needed? (A01, A07)
+- Is sensitive data logged or exposed in error messages? (A09, A05)
+- Are user-controlled URLs passed to HTTP clients without validation? (A10 — SSRF)
+- Is untrusted data deserialized without validation? (A08)
+- Are rate limits missing on sensitive endpoints (login, password reset, payments)? (A04)
+- Are there CORS misconfigurations allowing wildcard origins? (A01)
+- Is there broken access control — direct object references without ownership checks? (A01)
 
 ### Performance Implications
 
@@ -67,6 +74,17 @@ Security rules are defined in the `security-baseline` instruction (applied autom
 - Database queries use parameterized statements
 - User input is validated at API boundaries
 - Error messages do not leak internal details or PII
+
+### Dependency Audit
+
+When the change adds or updates dependencies, run the project's native audit tool:
+
+- **npm:** `npm audit` | **yarn:** `yarn audit`
+- **Gradle:** `./gradlew dependencyCheckAnalyze` (if OWASP plugin configured)
+- **Maven:** `mvn org.owasp:dependency-check-maven:check`
+- **Go:** `govulncheck ./...`
+
+If the tool is not available or configured, flag it as a gap. See [security-scan-reference.md](../skills/backend-team-workflow/references/security-scan-reference.md) for the full command list and severity mapping.
 
 ## Review Summary
 

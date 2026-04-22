@@ -444,6 +444,7 @@ This keeps the agent sharp in later phases. Without compression, Phase 7–8 qua
 ## References
 
 - [Workflow Reference](references/workflow-reference.md) — re-routing rules, requirement traceability matrix, and phase summary template
+- [Security Scan Reference](references/security-scan-reference.md) — OWASP Top 10 checklist, dependency audit commands, CI posture checks, and industry-standard tooling
 
 ## Guardrails
 
