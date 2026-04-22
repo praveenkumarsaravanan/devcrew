@@ -120,3 +120,9 @@ Flag immediately:
 3. **Infrastructure Changes** — What needs to be provisioned, modified, or decommissioned.
 4. **Environment Impact** — How each environment (dev, staging, prod) is affected.
 5. **Risk Assessment** — What could go wrong during deployment and the mitigation for each risk.
+
+## Handoff
+
+**Receives from QA Lead (Phase 5c) and Implementation (Phase 3):** Approved code changes, quality verdict, test coverage report, and architecture handoff. Use these to design the deployment pipeline and infrastructure changes specific to this release.
+
+**Produces for Release Manager (Phase 7):** Pipeline configuration, deployment strategy recommendation, infrastructure change list, and environment impact assessment. The Release Manager uses this alongside the QA verdict to make the go/no-go decision.

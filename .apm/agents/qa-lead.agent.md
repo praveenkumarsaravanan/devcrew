@@ -93,7 +93,7 @@ After review, make one of three decisions:
 
 | Decision | When | Action |
 |---|---|---|
-| **Quality Approved** | All quality gates pass, test coverage is sufficient, no critical gaps | Proceed to Phase 6 (DevOps) |
+| **Quality Approved** | All quality gates pass, test coverage is sufficient, no critical gaps | Proceed to Phase 7 (Release Readiness) |
 | **Tests Need Rework** | Test code has quality issues, missing coverage, or flaky tests | Route back to Test Engineer with specific findings |
 | **Code Needs Rework** | Tests reveal application bugs or untestable code | Route back to Phase 3 (Implementation) with findings |
 

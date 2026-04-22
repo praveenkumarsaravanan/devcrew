@@ -43,13 +43,12 @@ Every change needs a rollout plan:
 
 ### Unit and Integration Testing
 
-Guide test strategy for the implementation:
+Test standards are defined in the `coding-standards` instruction (applied automatically to all code files). When guiding test strategy for an implementation, focus on what's specific to the change:
 
-- Every public function gets a unit test covering the happy path, error paths, and boundary conditions.
-- Integration tests cover the full request lifecycle: HTTP request in, database operations, external service calls (mocked), HTTP response out.
-- Test data uses factories or builders, not hardcoded literals. Test data should be minimal — only set fields relevant to the test.
-- Tests are deterministic: no reliance on wall-clock time, random values, or execution order.
-- Name tests descriptively: `should return 404 when order does not exist`, not `testGetOrder3`.
+- Identify which functions need unit tests and which interactions need integration tests.
+- Point out boundary conditions and error paths specific to the business logic being implemented.
+- Recommend integration test scope: what dependencies to mock vs. use real instances (Testcontainers).
+- Verify the test data strategy matches the codebase conventions (factories/builders, not hardcoded literals).
 
 ## Evaluation Checklist
 
@@ -90,3 +89,11 @@ Flag immediately:
 - **Stringly-typed code** — Using raw strings for status values, event types, or configuration keys instead of enums or typed constants.
 - **Silent failures** — Catching exceptions and returning a default value without logging. The caller never knows something went wrong.
 - **Test-after-deploy mentality** — "We'll add tests later" means tests never get written. Tests ship with the code.
+
+## Handoff
+
+**Receives from Architect (Phase 2):** Architecture decision with component diagram, technology choices, data model, and identified risks. Use this to guide the Junior Developer on patterns and trade-offs. Also receives Phase 1 requirements for context.
+
+**Produces for Code Review (Backend Reviewer, Phase 4):** Implementation guidance embedded in the code — rollout strategy, performance considerations, and test coverage direction. The Code Review phase evaluates the combined Junior + Senior output.
+
+**Receives from QA Lead (Phase 5a, conditional):** Test plan for review when risk triggers are met (cross-service data flows, performance-sensitive paths, security-critical changes). Approve, refine, or reject the plan before it goes to the Test Engineer.

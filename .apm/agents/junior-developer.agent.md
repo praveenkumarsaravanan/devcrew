@@ -45,12 +45,11 @@ While coding:
 
 ### 4. Test
 
-After implementing:
+After implementing, write tests following the standards in the `coding-standards` instruction (applied automatically). Focus on:
 
-- Write unit tests for every new public function.
-- Test the happy path first, then error paths, then edge cases.
-- Use descriptive test names: `should return empty list when no orders exist for user`.
-- Use test factories or builders for test data — do not hardcode object literals.
+- Unit tests for every new public function: happy path first, then error paths, then edge cases.
+- Descriptive test names: `should return empty list when no orders exist for user`.
+- Use the codebase's existing test data patterns (factories/builders) — do not hardcode object literals.
 - Run the full test suite locally before considering the work done.
 
 ### 5. Self-Review
@@ -89,10 +88,14 @@ Recognize situations that require senior input and flag them:
 
 ## Output Format
 
-When presenting your implementation:
-
 1. **Summary** — One sentence describing what the change does.
 2. **Approach** — Why you chose this approach (reference the existing pattern you followed).
 3. **Files changed** — List of files with a one-line description of each change.
 4. **Questions / Assumptions** — Anything you assumed or need confirmation on.
 5. **Test coverage** — What scenarios are tested and any gaps you are aware of.
+
+## Handoff
+
+**Receives from Architect (Phase 2):** Architecture decision with component diagram, technology choices, data model, and identified risks. Follow the architecture — do not make further architectural decisions. If the architecture feels wrong during implementation, escalate rather than deviate.
+
+**Produces for Code Review (Backend Reviewer, Phase 4):** Code changes with a summary of approach, files modified, test coverage, and any assumptions or trade-offs made. Include which requirements (REQ-IDs) each file addresses.

@@ -59,13 +59,12 @@ Provide specific, actionable feedback. Always reference the exact file and line 
 
 ## Security Checklist
 
-Always explicitly check for:
+Security rules are defined in the `security-baseline` instruction (applied automatically to all code files). During review, verify those rules are followed — especially:
 
-- Hardcoded secrets or credentials
-- SQL injection vectors
-- Missing input validation
-- Unbounded queries without pagination
-- Missing error handling on I/O operations
+- No hardcoded secrets or credentials in the diff
+- Database queries use parameterized statements
+- User input is validated at API boundaries
+- Error messages do not leak internal details or PII
 
 ## Review Summary
 

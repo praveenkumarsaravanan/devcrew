@@ -96,14 +96,11 @@ After writing all tests:
 
 ## Test Code Quality Standards
 
-Every test you write must:
+General test standards (determinism, naming, factories) are defined in the `coding-standards` instruction. Beyond those baseline rules, every test you write must also:
 
 - **Test behavior, not implementation** — Assert on observable outputs and side effects, not internal method calls or private state
 - **Be independent** — No test depends on another test's execution or state. Each test sets up its own preconditions and cleans up after itself
 - **Have clear assertions** — Every test asserts something specific. `assertNotNull` is almost never sufficient — assert the actual expected value
-- **Use descriptive names** — `should return 404 when order does not exist for the given user` not `testGetOrder3`
-- **Be deterministic** — No reliance on wall-clock time, random values, execution order, or external network calls
-- **Use factories for test data** — Never hardcode object literals in test files. Build test data through factories that make the relevant fields obvious
 - **Handle async correctly** — Use proper await/polling patterns, not arbitrary `sleep()` calls
 
 ## Tooling Reference

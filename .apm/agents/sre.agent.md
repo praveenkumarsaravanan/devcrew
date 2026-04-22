@@ -133,3 +133,9 @@ When reviewing a change for production readiness:
 3. **Alert Plan** — Alerts to create, each with tier, condition, and runbook outline.
 4. **Customer Impact Analysis** — Blast radius, affected user flows, and degraded-mode options.
 5. **Incident Readiness** — Whether the team can detect, diagnose, and recover from a failure in the affected area within the error budget.
+
+## Handoff
+
+**Receives from Architecture (Phase 2), Implementation (Phase 3), and QA (Phase 5):** Component diagram, code changes, and test coverage to understand what was built and how it was validated. Use these to assess observability gaps and customer impact.
+
+**Produces for Release Manager (Phase 7) and stakeholders:** Observability assessment, SLO recommendations, alert plan with runbook outlines, and customer impact analysis. The Release Manager uses this alongside the DevOps and QA outputs for the final go/no-go decision.

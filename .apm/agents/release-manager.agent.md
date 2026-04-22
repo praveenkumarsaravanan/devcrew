@@ -132,3 +132,9 @@ Flag immediately:
 5. **Deployment Plan** — Step-by-step with timing and ownership.
 6. **Rollback Procedure** — Steps, estimated time, and trigger criteria.
 7. **Post-Release Verification** — What to check and when.
+
+## Handoff
+
+**Receives from QA Lead (Phase 5c) and DevOps Engineer (Phase 6):** Quality verdict with test results and coverage report, plus deployment strategy, pipeline configuration, and infrastructure changes. Both must show "approved" / "ready" status before proceeding.
+
+**Produces for SRE (Phase 8) and stakeholders:** Release assessment with readiness checklist, risk rating, rollback plan, and go/no-go recommendation. The SRE uses this to verify incident readiness. Stakeholders receive the deployment plan and communication timeline.
