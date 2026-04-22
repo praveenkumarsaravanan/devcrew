@@ -1,29 +1,36 @@
 ---
 name: skill-authoring
 description: >
-  Create and maintain Agent Skills following the agentskills.io specification.
-  Use when writing a new skill, modifying an existing SKILL.md, adding scripts
-  or references to a skill, or when asked about skill structure, naming, or
-  conventions.
+  Create and maintain Agent Skills and Agent definitions following APM conventions.
+  Use when writing a new skill or agent, modifying an existing SKILL.md or .agent.md,
+  adding scripts or references, or when asked about structure, naming, or conventions.
 ---
 
-# Skill Authoring
+# Skill & Agent Authoring
 
 ## Trigger
 
 Activate this skill when:
 
-- The user asks to create, write, or add a new skill
-- The user asks to modify or improve an existing SKILL.md
-- The user asks about skill structure, conventions, or the agentskills.io spec
+- The user asks to create, write, or add a new skill or agent
+- The user asks to modify or improve an existing SKILL.md or .agent.md
+- The user asks about skill or agent structure, conventions, or the agentskills.io spec
 - The user wants to add scripts, references, or assets to a skill
-- The user is overriding or extending a skill from a dependency
+- The user is overriding or extending a skill or agent from a dependency
+
+## Available Scripts
+
+- **`scripts/validate.sh`** — Validates all agents and skills for correct frontmatter format, required fields, naming conventions, and structural rules
 
 ## Specification Source
 
-All conventions in this skill are drawn from the [agentskills.io specification](https://agentskills.io/specification). When in doubt, the spec is the source of truth.
+All skill conventions are drawn from the [agentskills.io specification](https://agentskills.io/specification). Agent conventions follow the same frontmatter pattern. When in doubt, the spec is the source of truth.
 
-## Directory Structure
+---
+
+## Part 1: Skills
+
+### Directory Structure
 
 Every skill is a directory containing at minimum a `SKILL.md` file. The directory name must exactly match the `name` field in the frontmatter.
 
@@ -37,11 +44,9 @@ skill-name/
 
 In this repo, skills live under `.apm/skills/`. Consumers may also define skills in their own `.apm/skills/` directory, which take precedence over package-level skills.
 
-## Workflow
+### Skill Workflow
 
-### 1. Choose a Name
-
-The name must satisfy all of these rules:
+#### 1. Choose a Name
 
 - 1–64 characters
 - Lowercase alphanumeric (`a-z`, `0-9`) and hyphens (`-`) only
@@ -49,130 +54,199 @@ The name must satisfy all of these rules:
 - Must not contain consecutive hyphens (`--`)
 - Must match the parent directory name exactly
 
-```
-✅ code-review, api-design, skill-authoring
-❌ Code-Review (uppercase), -api (leading hyphen), my--skill (consecutive hyphens)
-```
+#### 2. Write the Frontmatter
 
-### 2. Write the Frontmatter
-
-The `SKILL.md` file starts with YAML frontmatter between `---` delimiters.
-
-**Required fields:**
-
-| Field | Constraints |
-| --- | --- |
-| `name` | Must match directory name. 1–64 chars, lowercase + hyphens. |
-| `description` | 1–1024 chars. Describe what the skill does AND when to use it. Include trigger keywords so agents can match it to user intent. |
-
-**Optional fields:**
-
-| Field | Purpose |
-| --- | --- |
-| `license` | License name or reference to a bundled file |
-| `compatibility` | Environment requirements, max 500 chars (e.g., "Requires Python 3.14+") |
-| `metadata` | Arbitrary key-value pairs (e.g., `author`, `version`) |
-| `allowed-tools` | Space-separated pre-approved tools (experimental) |
-
-**Good description — includes functionality AND trigger keywords:**
+The `SKILL.md` file starts with YAML frontmatter between `---` delimiters. **Both opening and closing `---` are required.**
 
 ```yaml
+---
+name: my-skill
 description: >
-  Extracts text and tables from PDF files, fills PDF forms, and merges
-  multiple PDFs. Use when working with PDF documents or when the user
-  mentions PDFs, forms, or document extraction.
+  What the skill does and when to use it.
+---
 ```
 
-**Bad description — too vague for agent matching:**
+| Field | Required | Constraints |
+|---|---|---|
+| `name` | Yes | Must match directory name. 1–64 chars, lowercase + hyphens. |
+| `description` | Yes | 1–1024 chars. Include functionality AND trigger keywords. |
+| `license` | No | License name or reference to a bundled file |
+| `compatibility` | No | Environment requirements, max 500 chars |
+
+#### 3. Write the Body
+
+Structure with: **Trigger**, **Workflow**, **Guardrails**, and optionally **References**. Keep `SKILL.md` under **500 lines**. Move detailed material to `references/*.md`.
+
+#### 4. Add Scripts (If Needed)
+
+Place in `scripts/` with relative paths. Follow these conventions for agent use:
+
+- **No interactive prompts.** Accept all input via flags, env vars, or stdin.
+- **Implement `--help`.** This is how agents learn the script interface.
+- **Use `--confirm` for destructive actions, `--dry-run` for stateful operations, `--json` for structured output.**
+- **Write diagnostics to stderr, data to stdout.**
+- **Use distinct exit codes.** Document them in `--help`.
+
+#### 5. Validate
+
+Run the validation script before committing:
+
+```bash
+bash .apm/skills/skill-authoring/scripts/validate.sh --skills
+```
+
+Then compile:
+
+```bash
+apm compile
+```
+
+---
+
+## Part 2: Agents
+
+### File Structure
+
+Each agent is a single `.agent.md` file. The filename (without `.agent.md`) must match the `name` field in the frontmatter.
+
+```
+.apm/agents/
+├── architect.agent.md
+├── backend-reviewer.agent.md
+├── qa-lead.agent.md
+└── test-engineer.agent.md
+```
+
+### Agent Workflow
+
+#### 1. Choose a Name
+
+Same rules as skills: lowercase, hyphens, no consecutive hyphens, 1–64 chars. The name becomes the filename: `my-agent.agent.md`.
+
+#### 2. Write the Frontmatter
+
+**Both opening and closing `---` are required.** This is the most common error — missing the closing delimiter breaks APM parsing.
 
 ```yaml
-description: Helps with PDFs.
+---
+name: my-agent
+description: One-line summary of what the agent does and when to use it
+---
 ```
 
-### 3. Write the Body
+| Field | Required | Constraints |
+|---|---|---|
+| `name` | Yes | Must match filename (without `.agent.md`). Lowercase + hyphens. |
+| `description` | Yes | One-line summary. Include the agent's role and trigger context. |
 
-The Markdown body after the frontmatter contains instructions the agent follows. Structure it with these sections:
+**Common mistake — missing closing `---`:**
+
+```yaml
+---
+name: my-agent
+description: Does something useful
+
+# My Agent        ← APM cannot parse this — frontmatter never closed
+```
+
+**Correct:**
+
+```yaml
+---
+name: my-agent
+description: Does something useful
+---
+
+# My Agent        ← Body starts after the closing ---
+```
+
+#### 3. Write the Body
+
+Structure agent definitions with these sections:
 
 | Section | Purpose |
-| --- | --- |
-| **Trigger** | When to activate — list concrete phrases and situations |
-| **Workflow** | Numbered steps the agent follows, with code blocks for commands |
-| **Guardrails** | Hard rules the agent must never break |
-| **References** (optional) | Links to files in `references/` for detailed context |
+|---|---|
+| **Role description** | Who the agent is and what perspective it brings (1-2 paragraphs) |
+| **Core Responsibilities** | What the agent evaluates, produces, or decides |
+| **Evaluation Checklist / Framework** | Concrete criteria the agent uses (tables work well) |
+| **Output Format** | How the agent structures its response |
+| **Anti-Patterns** | What the agent flags as wrong (makes the agent opinionated) |
+| **Handoff** | What the agent receives from and produces for other agents in a workflow |
 
-Keep `SKILL.md` under **500 lines**. Agents load the full body into context on activation — larger files waste tokens. Move detailed reference material to `references/*.md`.
+Keep agent files under **300 lines** for token efficiency.
 
-### 4. Add Scripts (If Needed)
+#### 4. Validate
 
-Place executable scripts in `scripts/` and reference them with relative paths from the skill root:
+Run the validation script before committing:
 
-```markdown
-## Available Scripts
-
-- **`scripts/validate.sh`** — Validates configuration files
-
-## Workflow
-
-1. Run validation:
-   ```bash
-   bash scripts/validate.sh "$INPUT_FILE"
-   ```
+```bash
+bash .apm/skills/skill-authoring/scripts/validate.sh --agents
 ```
 
-**Script conventions for agent use** (from [agentskills.io/skill-creation/using-scripts](https://agentskills.io/skill-creation/using-scripts)):
+Or validate a single file:
 
-- **No interactive prompts.** Agents cannot respond to TTY input. Accept all input via flags, env vars, or stdin.
-- **Implement `--help`.** This is how agents learn the script interface.
-- **Use `--confirm` for destructive actions.** Let agents skip prompts explicitly rather than piping `yes`.
-- **Use `--dry-run` for stateful operations.** Lets agents preview before committing.
-- **Use `--json` for structured output.** Agents parse structured data better than free-form text.
-- **Write diagnostics to stderr, data to stdout.** Keeps parseable output clean.
-- **Use distinct exit codes.** Document them in `--help` so agents can branch on failure type.
-- **Pin dependency versions.** Use inline dependency declarations where the language supports it (PEP 723 for Python, `npm:` specifiers for Deno).
-
-### 5. Add References (If Needed)
-
-Place supplemental documentation in `references/`. Keep each file focused on one topic. Reference from `SKILL.md`:
-
-```markdown
-## References
-
-- [Review Checklist](references/review-checklist.md) — detailed per-category checklist
+```bash
+bash .apm/skills/skill-authoring/scripts/validate.sh --file .apm/agents/my-agent.agent.md
 ```
 
-### 6. Validate
+Then compile:
 
-Before committing, verify:
+```bash
+apm compile
+```
 
-- [ ] `name` in frontmatter matches the directory name exactly
-- [ ] `name` passes naming rules (lowercase, no consecutive hyphens, no leading/trailing hyphen)
-- [ ] `description` includes what the skill does AND when to use it (trigger keywords)
-- [ ] `SKILL.md` is under 500 lines
-- [ ] All script paths in code blocks use relative paths from the skill root
-- [ ] Scripts include `--help`, avoid interactive prompts, and use meaningful exit codes
-- [ ] No secrets, tokens, or credentials in any skill file
+---
+
+## Validation Script
+
+The validation script checks all agents and skills automatically:
+
+```bash
+bash .apm/skills/skill-authoring/scripts/validate.sh           # All agents and skills
+bash .apm/skills/skill-authoring/scripts/validate.sh --agents   # Agents only
+bash .apm/skills/skill-authoring/scripts/validate.sh --skills   # Skills only
+bash .apm/skills/skill-authoring/scripts/validate.sh --json     # JSON output for CI
+bash .apm/skills/skill-authoring/scripts/validate.sh --help     # Usage
+```
+
+**What it checks:**
+
+| Check | Agents | Skills |
+|---|---|---|
+| Opening `---` delimiter present | ✓ | ✓ |
+| Closing `---` delimiter present | ✓ | ✓ |
+| `name` field exists and is valid | ✓ | ✓ |
+| `name` matches filename/directory | ✓ | ✓ |
+| `description` field exists | ✓ | ✓ |
+| No uppercase in name | ✓ | ✓ |
+| No consecutive hyphens in name | ✓ | ✓ |
+| Line count under limit (300 agents, 500 skills) | ✓ | ✓ |
+| Scripts implement `--help` | — | ✓ |
+
+**Always run validation after creating or modifying any agent or skill.** Then run `apm compile` to regenerate output files.
 
 ## Progressive Disclosure
 
-Agents load skills in tiers to optimize token usage. Design with this in mind:
+Agents load skills in tiers to optimize token usage:
 
 | Tier | What loads | Budget |
-| --- | --- | --- |
-| **1. Catalog** | `name` + `description` from frontmatter | ~100 tokens, loaded at session start for all skills |
-| **2. Activation** | Full `SKILL.md` body | <5000 tokens recommended, loaded when skill is selected |
-| **3. On-demand** | Files in `scripts/`, `references/`, `assets/` | Loaded only when explicitly referenced in the body |
+|---|---|---|
+| **1. Catalog** | `name` + `description` from frontmatter | ~100 tokens per skill |
+| **2. Activation** | Full `SKILL.md` body | <5000 tokens recommended |
+| **3. On-demand** | Files in `scripts/`, `references/`, `assets/` | Loaded only when referenced |
 
-Front-load the most important instructions in the body. Put detailed reference material in separate files so it only consumes tokens when needed.
+Front-load the most important instructions in the body. Put detailed reference material in separate files.
 
 ## Guardrails
 
-- **Always check the spec.** The [agentskills.io specification](https://agentskills.io/specification) is the source of truth. If this skill and the spec disagree, follow the spec.
-- **Never use uppercase in skill names.** The spec strictly requires lowercase alphanumeric + hyphens.
-- **Never exceed 500 lines in SKILL.md.** Split into `references/` files instead.
-- **Never hardcode absolute paths in scripts.** Use relative paths from the skill root.
-- **Never write interactive scripts for agent use.** All input must come from flags or env vars. Interactive prompts hang the agent session.
-- **Always include a description with trigger keywords.** A skill without trigger context will never be activated by an agent.
-- **Always list scripts in the body.** Agents discover scripts through the `SKILL.md` body, not by scanning the filesystem.
+- **Always run `bash .apm/skills/skill-authoring/scripts/validate.sh` before committing.** This catches frontmatter errors, naming violations, and line count issues automatically.
+- **Always run `apm compile` after validation passes.** Validation checks format; compilation checks APM integration.
+- **Always check the spec.** The [agentskills.io specification](https://agentskills.io/specification) is the source of truth.
+- **Never use uppercase in names.** Lowercase alphanumeric + hyphens only.
+- **Never exceed line limits.** 500 lines for SKILL.md, 300 lines for .agent.md. Split into `references/` files.
+- **Never omit the closing `---` in frontmatter.** This is the #1 parsing error.
+- **Never write interactive scripts for agent use.** All input must come from flags or env vars.
+- **Always include a description with trigger keywords.** Without trigger context, agents cannot match the skill or agent to user intent.
 
 ## References
 

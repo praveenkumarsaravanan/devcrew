@@ -1,11 +1,11 @@
 ---
-
-## name: release
+name: release
 description: >
   Tag and publish a new version of the package. Reads the current version from
   apm.yml, auto-increments it (patch, minor, or major), blocks duplicate tags,
   creates a GitHub release with changelog, and pushes — all with explicit user
   confirmation.
+---
 
 # Release
 

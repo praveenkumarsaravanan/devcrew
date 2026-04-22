@@ -1,10 +1,10 @@
 ---
-
-## name: pull-request
+name: pull-request
 description: >
   Create pull requests with structured descriptions, test summaries, and
   JIRA ticket validation. Detects discrepancies between the implementation
   and the JIRA ticket and flags them before the PR is submitted.
+---
 
 # Pull Request
 
