@@ -20,7 +20,7 @@ MI Engineer Agent defines all engineering primitives — skills, agents, instruc
 | Skill       | `pull-request`      | PR creation with JIRA validation and discrepancy detection  |
 | Skill       | `documentation`     | Write and maintain READMEs, guides, runbooks, and ADRs      |
 | Skill       | `release`           | Tag, release, and publish new versions with changelog           |
-| Skill       | `skill-authoring`   | Create and maintain skills following agentskills.io spec    |
+| Skill       | `apm-authoring`     | Create and maintain all APM artifacts (skills, agents, instructions, prompts, hooks) |
 | Skill       | `project-detection`     | Classify workspace as backend, frontend, fullstack, or infra         |
 | Skill       | `backend-team-workflow` | Orchestrated 8-phase backend development lifecycle across team roles |
 | Agent       | `backend-reviewer`  | Automated PR reviewer for backend services                  |
