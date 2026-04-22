@@ -24,14 +24,23 @@ Activate this skill when:
 The base branch is `**trunk**` unless:
 
 1. **The user explicitly specifies a different base** (e.g., "create a PR against `release/2.0`").
-2. **A PR already exists for the current branch** — check with `gh pr view --json baseRefName` first. If a PR is open, use its existing base branch.
+2. **An *open* PR already exists for the current branch** — check with `gh pr view --json baseRefName,state,url` first. Only reuse an existing PR if `state` is `OPEN`.
 
 ```bash
-# Check if a PR already exists for this branch
-gh pr view --json baseRefName,url 2>/dev/null
+# Check if an OPEN PR already exists for this branch
+gh pr view --json baseRefName,state,url 2>/dev/null
 ```
 
-If the command returns a result, use that PR's base branch and URL. Otherwise default to `trunk`.
+Evaluate the result:
+
+| `state`   | Action                                                                                           |
+| --------- | ------------------------------------------------------------------------------------------------ |
+| `OPEN`    | Reuse the existing PR — use its base branch and URL. Update the description after pushing.       |
+| `MERGED`  | The previous PR is done. Create a **new branch** from `trunk`, commit there, and open a new PR.  |
+| `CLOSED`  | Same as `MERGED` — do not reopen. Create a new branch and a new PR.                              |
+| (no result) | No PR exists. Default base branch is `trunk`.                                                  |
+
+If the state is `MERGED` or `CLOSED`, **do not push additional commits to the old branch and do not attempt to update the closed PR.** Instead, switch to `trunk`, pull latest, create a fresh feature branch, cherry-pick or re-apply the changes, and open a new PR.
 
 ### 2. Gather Context
 
@@ -265,6 +274,7 @@ gh pr edit <number> --title "<updated title>"
 - **Never create a PR without validating the test plan.** Every test plan item must be executed and marked as ✅, ❌, or ⬜ before the PR is created. If any item is ❌, warn the user and get explicit confirmation before proceeding.
 - **Never create a PR without analyzing the diff.** Read all changes, not just the latest commit.
 - **Never push to an existing PR without updating the description.** After every push to a branch with an open PR, re-read the full diff and revise the PR body. A stale description that doesn't reflect the current state of the branch is actively harmful to reviewers.
+- **Never update a merged or closed PR.** Always check `state` from `gh pr view`. If the PR is `MERGED` or `CLOSED`, create a new branch from `trunk` and open a fresh PR. Do not push to the old branch or edit the old PR.
 - **Re-validate the test plan on PR updates.** When updating an existing PR, re-run the test plan validation. New commits may have fixed failures or introduced new ones. Update the ✅/❌/⬜ markers accordingly.
 - **Always validate against the JIRA ticket.** If the Atlassian MCP is unavailable, ask the user for ticket details manually.
 - **Flag missing tests explicitly.** Do not silently skip the testing section.
