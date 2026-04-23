@@ -54,7 +54,7 @@ The category of change. Must be one of:
 
 The project, package, or module affected. Use the repo name or a recognizable sub-component.
 
-Examples: `engineering-agent-platform`, `api-gateway`, `auth-service`, `mi-ui-library`
+Examples: `engineering-agent-platform`, `api-gateway`, `auth-service`, `shared-ui-library`
 
 ### JIRA ticket
 
