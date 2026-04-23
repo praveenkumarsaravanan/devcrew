@@ -57,13 +57,13 @@ git fetch --tags
 Always run a dry run first so the user can see the plan and confirm:
 
 ```bash
-bash scripts/release.sh --dry-run --json --ticket DXP-XXXXX
+bash scripts/release.sh --dry-run --json --ticket JIR-XXXXX
 ```
 
 When the user specifies `minor` or `major`:
 
 ```bash
-bash scripts/release.sh minor --dry-run --json --ticket DXP-XXXXX
+bash scripts/release.sh minor --dry-run --json --ticket JIR-XXXXX
 ```
 
 The `--ticket` flag embeds the JIRA ticket ID in the version bump commit message to satisfy the org commitlint hook. Always include it.
@@ -81,19 +81,19 @@ Present the plan to the user and ask for explicit confirmation before proceeding
 After the user confirms the dry-run plan, run the script with `--confirm` to skip interactive prompts (agents cannot respond to TTY input):
 
 ```bash
-bash scripts/release.sh --confirm --ticket DXP-XXXXX
+bash scripts/release.sh --confirm --ticket JIR-XXXXX
 ```
 
 When the user specifies `minor` or `major`:
 
 ```bash
-bash scripts/release.sh minor --confirm --ticket DXP-XXXXX
+bash scripts/release.sh minor --confirm --ticket JIR-XXXXX
 ```
 
 The script will:
 
 1. Update `apm.yml` with the new version
-2. Commit: `chore(release): DXP-XXXXX, bump version to X.Y.Z`
+2. Commit: `chore(release): JIR-XXXXX, bump version to X.Y.Z`
 3. Generate a changelog from commits since the previous tag
 4. Create an annotated tag `vX.Y.Z` with the changelog in the tag message
 5. Push the commit and tag to origin
@@ -102,13 +102,13 @@ The script will:
 If the user wants to tag without pushing (e.g., to review first), add `--no-push`:
 
 ```bash
-bash scripts/release.sh --confirm --no-push --ticket DXP-XXXXX
+bash scripts/release.sh --confirm --no-push --ticket JIR-XXXXX
 ```
 
 If the user wants to skip the GitHub release (tag only), add `--no-release`:
 
 ```bash
-bash scripts/release.sh --confirm --no-release --ticket DXP-XXXXX
+bash scripts/release.sh --confirm --no-release --ticket JIR-XXXXX
 ```
 
 ### 5. Post-Release Verification

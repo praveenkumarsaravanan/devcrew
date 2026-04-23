@@ -29,7 +29,7 @@ Activate this skill when:
 chore(engineering-agent-platform): PROJ-123, add setup script for gh CLI and APM
 ```
 
-Every component is **required**. The server-side pre-receive hook on `git.marriott.com` rejects pushes that do not match this pattern.
+Every component is **required**. The server-side pre-receive hook rejects pushes that do not match this pattern.
 
 ## Components
 

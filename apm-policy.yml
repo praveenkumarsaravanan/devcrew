@@ -1,4 +1,4 @@
-extends: phoenix
+extends: default
 require_resolution: project-wins
 
 # dependencies:
