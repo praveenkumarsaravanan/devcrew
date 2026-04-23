@@ -81,19 +81,22 @@ For anyone adding or modifying skills, agents, prompts, hooks, or other primitiv
 
 - **APM CLI** — `brew tap microsoft/apm && brew install apm`
 - **gh CLI** — version 2.40.0+ (the setup script installs it if missing)
-- **`GITHUB_TOKEN`** — a PAT from `git.marriott.com` with `repo` and `read:org` scopes. Generate one at [git.marriott.com/settings/tokens](https://git.marriott.com/settings/tokens) and export it:
+- **Environment variables** — if you haven't already, complete the [one-time shell profile setup](#prerequisites-1) in the Consumer Guide. This ensures `GIT_HOST`, `GIT_API_URL`, and `GITHUB_TOKEN` are available in every terminal.
+
+  Alternatively, contributors can use a **project-local `.env` file** (the setup script sources it automatically):
 
 ```sh
-# ~/.zshrc or ~/.bashrc
-export GITHUB_TOKEN="ghp_your_token_here"
+cp .env.example .env    # then edit .env with your values
 ```
+
+  The `.env` file is gitignored. Shell profile exports take precedence if both are set.
 
 ### Local Setup
 
 1. Clone the repository:
 
 ```sh
-git clone https://git.marriott.com/phoenix/engineering-agent-platform.git
+git clone https://$GIT_HOST/<org>/engineering-agent-platform.git
 cd engineering-agent-platform
 ```
 
@@ -103,7 +106,7 @@ cd engineering-agent-platform
 apm run setup
 ```
 
-This checks `gh` CLI version, GitHub Enterprise auth, `GITHUB_TOKEN`, and APM availability.
+This validates required environment variables (`GIT_HOST`, `GITHUB_TOKEN`), checks `gh` CLI version, GitHub auth, and APM availability.
 
 3. Compile the package so your IDE can use the skills and instructions:
 
@@ -118,7 +121,7 @@ The `.apm/` directory holds **source primitives**. Your IDE reads from compiled 
 1. Create a feature branch:
 
 ```sh
-git checkout -b feat/DXP-12345-add-new-skill
+git checkout -b feat/JIR-12345-add-new-skill
 ```
 
 2. Edit files under `.apm/` — skills, agents, instructions, prompts, hooks, or MCP configs in `.mcp.json`.
@@ -133,13 +136,13 @@ apm pack --target copilot      # Pack for Copilot
 4. Commit using conventional commits:
 
 ```sh
-git commit -m "feat(skills): DXP-12345, add terraform-plan skill"
+git commit -m "feat(skills): JIR-12345, add terraform-plan skill"
 ```
 
 ### Submitting a Pull Request
 
 1. Push your branch and open a PR against `trunk`.
-2. All files are owned by `@phoenix/mi-platform-dev-squad` (see `.github/CODEOWNERS`), so a review from that team is required.
+2. All files are owned by the team defined in `.github/CODEOWNERS`, so a review from that team is required.
 3. PRs are squash-merged. The PR title becomes the merge commit message and must follow conventional commit format.
 
 ### Releasing New Versions
@@ -150,7 +153,7 @@ Run the release script from `trunk`:
 
 ```sh
 git checkout trunk && git pull
-bash .apm/skills/git-release-tag/scripts/release.sh --ticket DXP-XXXXX    # defaults to patch
+bash .apm/skills/git-release-tag/scripts/release.sh --ticket JIR-XXXXX    # defaults to patch
 ```
 
 The script reads the current version from `apm.yml`, computes the next version, generates a changelog from commits since the last tag, creates an annotated tag with the changelog, pushes, and creates a GitHub release. The `--ticket` flag is required — the org commitlint hook rejects commits without a JIRA ticket.
@@ -158,14 +161,14 @@ The script reads the current version from `apm.yml`, computes the next version, 
 Preview first with `--dry-run`:
 
 ```sh
-bash .apm/skills/git-release-tag/scripts/release.sh --dry-run --ticket DXP-XXXXX
+bash .apm/skills/git-release-tag/scripts/release.sh --dry-run --ticket JIR-XXXXX
 ```
 
 For minor or major releases, pass the increment explicitly:
 
 ```sh
-bash .apm/skills/git-release-tag/scripts/release.sh minor --ticket DXP-XXXXX
-bash .apm/skills/git-release-tag/scripts/release.sh major --ticket DXP-XXXXX
+bash .apm/skills/git-release-tag/scripts/release.sh minor --ticket JIR-XXXXX
+bash .apm/skills/git-release-tag/scripts/release.sh major --ticket JIR-XXXXX
 ```
 
 **Increment guide:**
@@ -215,17 +218,25 @@ For teams adopting MI Engineer Agent in their own repositories. Two installation
 
 1. **APM CLI** — `brew tap microsoft/apm && brew install apm`
 2. **gh CLI** (v2.40.0+) — `brew install gh`
-3. **GitHub Enterprise auth:**
+3. **One-time shell profile setup** — add the following to `~/.zshrc` or `~/.bashrc` so the variables are available in every terminal session and every project:
 
 ```sh
-gh auth login --hostname git.marriott.com --web --git-protocol https
+export GIT_HOST="github.example.com"
+export GIT_API_URL="https://$GIT_HOST/api/v3"
 ```
 
-4. **`GITHUB_TOKEN`** — needed by the GitHub MCP server at runtime. Generate a PAT at [git.marriott.com/settings/tokens](https://git.marriott.com/settings/tokens) with `repo` and `read:org` scopes:
+Generate a PAT at `https://<your-git-host>/settings/tokens` with `repo` and `read:org` scopes, then add it to the same file:
 
 ```sh
-# ~/.zshrc or ~/.bashrc
-export GITHUB_TOKEN="ghp_your_token_here"
+export GITHUB_TOKEN="<paste-token-here>"
+```
+
+Reload your shell (`source ~/.zshrc`) or open a new terminal for the values to take effect. This is the **only setup that works across all projects** — global installs, per-project installs, and MCP servers all read from these environment variables.
+
+4. **GitHub auth:**
+
+```sh
+gh auth login --hostname "$GIT_HOST" --web --git-protocol https
 ```
 
 The `atlassian` MCP uses OAuth 2.1 — it opens a browser on first connection. No token needed.
@@ -233,7 +244,7 @@ The `atlassian` MCP uses OAuth 2.1 — it opens a browser on first connection. N
 ### Global Install (recommended)
 
 ```sh
-apm install -g git.marriott.com/phoenix/engineering-agent-platform
+apm install -g $GIT_HOST/<org>/engineering-agent-platform
 ```
 
 Deploys skills, agents, instructions, prompts, and MCP servers to user-level directories (`~/.cursor/`, `~/.copilot/`). Your IDE picks them up in every project — no per-repo config required.
@@ -251,7 +262,7 @@ name: my-service
 version: "1.0.0"
 dependencies:
   apm:
-    - git: "https://git.marriott.com/phoenix/engineering-agent-platform.git"
+    - git: "https://<your-git-host>/<org>/engineering-agent-platform.git"
       ref: trunk
 ```
 

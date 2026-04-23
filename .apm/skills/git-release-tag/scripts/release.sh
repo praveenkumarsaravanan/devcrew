@@ -33,7 +33,7 @@ Options:
   --no-push         Create the tag locally but do not push to origin
   --no-release      Push the tag but skip GitHub release creation
   --json            Output the release summary as JSON to stdout
-  --ticket TICKET   JIRA ticket ID to include in commit message (e.g., DXP-39314)
+  --ticket TICKET   JIRA ticket ID to include in commit message (e.g., JIR-39314)
 
 Exit codes:
   0  Success
@@ -46,7 +46,7 @@ Examples:
   bash scripts/release.sh minor --dry-run          # Preview a minor bump
   bash scripts/release.sh major --confirm          # Non-interactive major release
   bash scripts/release.sh patch --confirm --json   # Agent-friendly: no prompts, JSON output
-  bash scripts/release.sh minor --ticket DXP-123   # Include JIRA ticket in commit
+  bash scripts/release.sh minor --ticket JIR-123   # Include JIRA ticket in commit
 USAGE
   exit 0
 }
@@ -71,7 +71,7 @@ while [[ $# -gt 0 ]]; do
     --json)       JSON_OUTPUT=true ;;
     --ticket)
       shift
-      [[ -z "${1:-}" ]] && fail "--ticket requires a JIRA ticket ID (e.g., DXP-39314)" 1
+      [[ -z "${1:-}" ]] && fail "--ticket requires a JIRA ticket ID (e.g., JIR-39314)" 1
       TICKET="$1"
       ;;
     patch|minor|major) INCREMENT="$1" ;;

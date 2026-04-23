@@ -9,7 +9,7 @@
       "args": ["-y", "@modelcontextprotocol/server-github"],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}",
-        "GITHUB_API_URL": "https://git.marriott.com/api/v3"
+        "GITHUB_API_URL": "${GIT_API_URL}"
       }
     },
     "atlassian": {

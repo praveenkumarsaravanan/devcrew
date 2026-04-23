@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-GHE_HOST="git.marriott.com"
 REQUIRED_GH_VERSION="2.40.0"
 
 info()  { printf "\033[1;34m▸ %s\033[0m\n" "$1"; }
@@ -13,7 +12,37 @@ version_gte() {
   printf '%s\n%s' "$1" "$2" | sort -V | head -n1 | grep -qx "$2"
 }
 
-# ── 1. gh CLI ────────────────────────────────────────────────────────────────
+# ── 0. Load .env (if present) ────────────────────────────────────────────────
+
+if [[ -f ".env" ]]; then
+  info "Loading .env file..."
+  set -a
+  # shellcheck disable=SC1091
+  source .env
+  set +a
+  ok "Loaded .env"
+elif [[ -f ".env.example" && ! -f ".env" ]]; then
+  info "No .env file found. Copy .env.example to .env and fill in your values:"
+  echo "    cp .env.example .env"
+  echo ""
+fi
+
+# ── 1. Required environment variables ────────────────────────────────────────
+
+info "Checking required environment variables..."
+
+if [[ -z "${GIT_HOST:-}" ]]; then
+  fail "GIT_HOST is not set. Export it in your shell profile (e.g., export GIT_HOST=\"github.example.com\")"
+fi
+ok "GIT_HOST is set ($GIT_HOST)"
+
+if [[ -z "${GIT_API_URL:-}" ]]; then
+  warn "GIT_API_URL is not set — defaulting to https://$GIT_HOST/api/v3"
+  echo "  To override, export GIT_API_URL in your shell profile."
+  echo ""
+fi
+
+# ── 2. gh CLI ────────────────────────────────────────────────────────────────
 
 info "Checking gh CLI..."
 
@@ -32,23 +61,23 @@ else
   warn "gh $GH_VERSION found — $REQUIRED_GH_VERSION+ recommended. Run: brew upgrade gh"
 fi
 
-# ── 2. GitHub Enterprise authentication ──────────────────────────────────────
+# ── 3. GitHub authentication ─────────────────────────────────────────────────
 
-info "Checking authentication for $GHE_HOST..."
+info "Checking authentication for $GIT_HOST..."
 
-if gh auth status --hostname "$GHE_HOST" &>/dev/null; then
-  ok "Already authenticated to $GHE_HOST"
+if gh auth status --hostname "$GIT_HOST" &>/dev/null; then
+  ok "Already authenticated to $GIT_HOST"
 else
-  info "Not authenticated — starting login for $GHE_HOST..."
-  gh auth login --hostname "$GHE_HOST" --web --git-protocol https
-  if gh auth status --hostname "$GHE_HOST" &>/dev/null; then
-    ok "Authenticated to $GHE_HOST"
+  info "Not authenticated — starting login for $GIT_HOST..."
+  gh auth login --hostname "$GIT_HOST" --web --git-protocol https
+  if gh auth status --hostname "$GIT_HOST" &>/dev/null; then
+    ok "Authenticated to $GIT_HOST"
   else
-    fail "Authentication to $GHE_HOST failed"
+    fail "Authentication to $GIT_HOST failed"
   fi
 fi
 
-# ── 3. GITHUB_TOKEN environment variable ─────────────────────────────────────
+# ── 4. GITHUB_TOKEN environment variable ─────────────────────────────────────
 
 info "Checking GITHUB_TOKEN..."
 
@@ -58,14 +87,14 @@ else
   warn "GITHUB_TOKEN is not set in your environment"
   echo ""
   echo "  The GitHub MCP server requires GITHUB_TOKEN to be exported."
-  echo "  Generate a Personal Access Token on https://$GHE_HOST/settings/tokens"
+  echo "  Generate a Personal Access Token on https://$GIT_HOST/settings/tokens"
   echo "  with 'repo' and 'read:org' scopes, then add to your shell profile:"
   echo ""
-  echo "    export GITHUB_TOKEN=\"ghp_...\""
+  echo "    export GITHUB_TOKEN=\"<your-token>\""
   echo ""
 fi
 
-# ── 4. APM ───────────────────────────────────────────────────────────────────
+# ── 5. APM ───────────────────────────────────────────────────────────────────
 
 info "Checking APM..."
 
