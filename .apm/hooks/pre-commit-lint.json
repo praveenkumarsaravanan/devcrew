@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "name": "lint-check",
+        "type": "prompt",
+        "prompt": "Check if the edited file follows the project's coding standards defined in .apm/instructions/coding-standards.instructions.md. If there are violations, list them with specific line numbers and suggest fixes.",
+        "matchers": {
+          "filePattern": "\\.(ts|js|py|go|java)$"
+        }
+      }
+    ],
+    "preToolUse": [
+      {
+        "name": "security-guard",
+        "type": "prompt",
+        "prompt": "Before executing this tool, verify that no secrets, API keys, tokens, or credentials are being written to any file. If detected, block the action and warn the user.",
+        "matchers": {
+          "toolName": "^(write|str_replace|edit)$"
+        }
+      }
+    ]
+  }
+}

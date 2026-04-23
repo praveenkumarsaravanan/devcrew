@@ -1,0 +1,12 @@
+name: devcrew
+version: "1.0.0"
+description: "DevCrew - AI engineering team simulation with specialized agents, skills, and workflows for Cursor, GitHub Copilot, and Claude Code"
+target:
+  copilot: {}
+  claude: {}
+  cursor:
+    instructions: .cursor/rules/
+    prompts: .cursor/commands/
+scripts:
+  setup: "bash scripts/setup.sh"
+  release: "bash .apm/skills/git-release-tag/scripts/release.sh"
