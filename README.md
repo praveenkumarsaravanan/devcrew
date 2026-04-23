@@ -6,7 +6,7 @@ Organization-wide agent package distributing engineering skills, agents, rules, 
 
 ## About the Project
 
-MI Engineer Agent defines all engineering primitives — skills, agents, instructions, prompts, hooks, and MCP servers — in a single `.apm/` directory. APM compiles and deploys the correct format for each target IDE so teams get consistent tooling regardless of their editor.
+Engineering Agent Platform defines all engineering primitives — skills, agents, instructions, prompts, hooks, and MCP servers — in a single `.apm/` directory. APM compiles and deploys the correct format for each target IDE so teams get consistent tooling regardless of their editor.
 
 ### What's Included
 
@@ -212,7 +212,7 @@ Two connection types: **`http`** for remote servers, **`command`** for local ser
 
 ## Consumer Guide
 
-For teams adopting MI Engineer Agent in their own repositories. Two installation methods: **global** (all projects on your machine) and **per-project** (version-pinned, committed to the repo). Both can coexist — project-level always takes precedence.
+For teams adopting Engineering Agent Platform in their own repositories. Two installation methods: **global** (all projects on your machine) and **per-project** (version-pinned, committed to the repo). Both can coexist — project-level always takes precedence.
 
 ### Prerequisites
 
