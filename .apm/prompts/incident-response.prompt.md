@@ -1,3 +1,8 @@
+---
+name: incident-response
+description: Triage and resolve production incidents with structured severity assessment
+---
+
 # Incident Response
 
 Help triage and resolve a production incident:

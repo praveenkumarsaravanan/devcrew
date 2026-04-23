@@ -123,6 +123,8 @@ Flag immediately:
 
 ## Handoff
 
-**Receives from QA Lead (Phase 5) and Implementation (Phase 3):** Approved code changes, quality verdict, test coverage report, and architecture handoff. Use these to design the deployment pipeline and infrastructure changes specific to this release.
+**Invoked via the `/devops-plan` prompt** — not as a phase in the team-workflow. The developer chooses when to invoke this agent (typically after code is merged and deployment planning begins).
 
-**Produces:** Pipeline configuration, deployment strategy recommendation, infrastructure change list, and environment impact assessment. Invoke this agent via the `/devops-plan` prompt when ready to plan deployment after code is merged.
+**Receives:** Approved code changes, quality verdict, test coverage report, and architecture handoff (when available). Use these to design the deployment pipeline and infrastructure changes.
+
+**Produces:** Pipeline configuration, deployment strategy recommendation, infrastructure change list, and environment impact assessment.

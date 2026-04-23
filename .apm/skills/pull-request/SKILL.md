@@ -2,8 +2,8 @@
 name: pull-request
 description: >
   Create pull requests with structured descriptions, test summaries, and
-  JIRA ticket validation. Detects discrepancies between the implementation
-  and the JIRA ticket and flags them before the PR is submitted.
+  ticket validation. Detects discrepancies between the implementation
+  and the ticket and flags them before the PR is submitted.
 ---
 
 # Pull Request
@@ -58,19 +58,19 @@ Identify:
 - All commits included in the PR (not just the latest)
 - All files changed, added, or deleted
 
-### 3. Extract the JIRA Ticket
+### 3. Extract the Ticket
 
-Find the JIRA ticket from:
+Find the ticket from:
 
-1. The branch name (e.g., `feat/ENG-456-add-auth` → `ENG-456`)
+1. The branch name (e.g., `feat/ISSUE-456-add-auth` → `ISSUE-456`)
 2. Commit messages
 3. The user's instructions
 
 If no ticket is found, ask the user before proceeding.
 
-### 4. Fetch JIRA Ticket Details
+### 4. Fetch Ticket Details
 
-If the Atlassian MCP or Jira API is available, fetch the ticket:
+If an issue tracker integration is available, fetch the ticket:
 
 - Summary / title
 - Description and acceptance criteria
@@ -78,9 +78,9 @@ If the Atlassian MCP or Jira API is available, fetch the ticket:
 - Status (To Do, In Progress, Done)
 - Subtasks if any
 
-If the MCP is not available, ask the user to provide the ticket summary and acceptance criteria.
+If the issue tracker is not available, ask the user to provide the ticket summary and acceptance criteria.
 
-### 5. Analyze Implementation vs. JIRA Ticket
+### 5. Analyze Implementation vs. Ticket
 
 Compare what was implemented (from the diff) against what the ticket describes:
 
@@ -99,9 +99,9 @@ Compare what was implemented (from the diff) against what the ticket describes:
 **If discrepancies are found:**
 
 1. List each discrepancy clearly with what the ticket says vs. what was implemented
-2. Recommend whether the JIRA ticket or the code should be updated
+2. Recommend whether the ticket or the code should be updated
 3. Ask the user how they want to proceed:
-  - Update the JIRA ticket to match the implementation
+  - Update the ticket to match the implementation
   - Note the discrepancies in the PR description
   - Hold the PR until the gaps are addressed
 4. Only proceed with PR creation after the user acknowledges the discrepancies
@@ -128,9 +128,9 @@ Use the following template:
 
 <!-- 2-3 sentences describing what this PR does and why -->
 
-## JIRA Ticket
+## Ticket
 
-[<TICKET-KEY>](https://<ghe-host>/path/to/ticket) — <ticket summary>
+[<TICKET-KEY>](https://<host>/path/to/ticket) — <ticket summary>
 
 ## Changes
 
@@ -171,7 +171,7 @@ Use the following template:
 - [ ] Code follows org coding standards
 - [ ] Commit messages match commitlint format
 - [ ] No secrets or credentials in the diff
-- [ ] JIRA ticket status updated
+- [ ] ticket status updated
 - [ ] Tests cover new/changed logic
 - [ ] Documentation updated (if applicable)
 - [ ] Breaking changes documented (if applicable)
@@ -208,7 +208,7 @@ Before creating the PR, execute every test plan item and record whether it passe
 
 - ✅ `apm compile` completes with zero errors
 - ✅ All agent `.agent.md` files pass frontmatter validation
-- ✅ `backend-team-workflow` SKILL.md is under 500 lines (461 lines)
+- ✅ `team-workflow` SKILL.md is under 500 lines (461 lines)
 - ❌ README.md table has 10 agents listed (found 9 — missing `sre`)
 - ⬜ Manual — spot-check handoff sections align with workflow phases
 ```
@@ -222,7 +222,7 @@ git push -u origin HEAD
 
 gh pr create \
   --base <base> \
-  --title "<type>(<scope>): <JIRA-ticket>, <short description>" \
+  --title "<type>(<scope>): <ticket>, <short description>" \
   --body "$(cat <<'EOF'
 <constructed PR description from Step 7>
 EOF
@@ -236,7 +236,7 @@ The PR title must follow the same commitlint format as commit messages since squ
 After the PR is created:
 
 - Return the PR URL to the user
-- If discrepancies were found, remind the user to update the JIRA ticket
+- If discrepancies were found, remind the user to update the ticket
 - If no tests were included, note this as a follow-up item
 
 ### 11. Update PR Description on Subsequent Pushes
@@ -252,7 +252,7 @@ gh pr view --json number,title,body,url 2>/dev/null
 If a PR exists, after pushing the new commits:
 
 1. **Re-gather context** — run the same diff and log commands from Step 2 against the full PR range (all commits from base to HEAD, not just the new ones).
-2. **Re-run JIRA validation** — repeat Step 5 to check for new discrepancies introduced by the latest changes.
+2. **Re-run ticket validation** — repeat Step 5 to check for new discrepancies introduced by the latest changes.
 3. **Update the description** — revise the Summary, Changes, Testing, and Discrepancies sections to cover the entire PR scope. Do not just append — rewrite sections so the description reads as a coherent whole.
 4. **Update the PR:**
 
@@ -276,10 +276,17 @@ gh pr edit <number> --title "<updated title>"
 - **Never push to an existing PR without updating the description.** After every push to a branch with an open PR, re-read the full diff and revise the PR body. A stale description that doesn't reflect the current state of the branch is actively harmful to reviewers.
 - **Never update a merged or closed PR.** Always check `state` from `gh pr view`. If the PR is `MERGED` or `CLOSED`, create a new branch from `trunk` and open a fresh PR. Do not push to the old branch or edit the old PR.
 - **Re-validate the test plan on PR updates.** When updating an existing PR, re-run the test plan validation. New commits may have fixed failures or introduced new ones. Update the ✅/❌/⬜ markers accordingly.
-- **Always validate against the JIRA ticket.** If the Atlassian MCP is unavailable, ask the user for ticket details manually.
+- **Always validate against the ticket.** If the issue tracker is unavailable, ask the user for ticket details manually.
 - **Flag missing tests explicitly.** Do not silently skip the testing section.
 - **Do not suppress discrepancies.** Always surface mismatches between the ticket and the implementation, even if minor. Let the user decide how to handle them.
-- **PR title must match commitlint format.** The server-side hook applies to squash merge commits which use the PR title.
+- **PR title must match commitlint format.** The commitlint convention applies to squash merge commits which use the PR title.
 - **Never push to trunk directly.** Always create the PR from a feature branch. Default base branch is `trunk` unless the user specifies otherwise or a PR already exists for the branch with a different base.
 - **Include the full checklist.** Do not remove checklist items — leave them unchecked if not applicable so reviewers can see what was considered.
+
+## See Also
+
+- **`git-release-tag`** — After the PR is merged, use this skill to tag and publish a new version.
+- **`/release-readiness`** — Before releasing, run this prompt to assess whether the release candidate is production-ready.
+- **`/devops-plan`** — If the change needs deployment strategy updates, run this prompt after merge.
+- **`/monitoring-plan`** — If the change affects SLOs or needs new alerting, run this prompt to design the observability strategy.
 

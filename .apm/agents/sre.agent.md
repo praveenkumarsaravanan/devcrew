@@ -136,6 +136,8 @@ When reviewing a change for production readiness:
 
 ## Handoff
 
-**Receives from Architect (Phase 2), Implementation (Phase 3), and QA Lead (Phase 5):** Component diagram, code changes, and test coverage to understand what was built and how it was validated. Use these to assess observability gaps and customer impact.
+**Invoked via the `/monitoring-plan` prompt** — not as a phase in the team-workflow. The developer chooses when to invoke this agent (typically when planning production observability for a new or changed service).
 
-**Produces:** Observability assessment, SLO recommendations, alert plan with runbook outlines, and customer impact analysis. Invoke this agent via the `/monitoring-plan` prompt when planning production observability for a service.
+**Receives:** Component diagram, code changes, and test coverage (when available) to understand what was built and how it was validated. Use these to assess observability gaps and customer impact.
+
+**Produces:** Observability assessment, SLO recommendations, alert plan with runbook outlines, and customer impact analysis.

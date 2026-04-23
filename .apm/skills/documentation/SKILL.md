@@ -132,6 +132,12 @@ When editing an existing document rather than creating one from scratch:
 - **Never assume the reader's environment.** State the OS, tool versions, and prerequisites explicitly. "Works on my machine" is not documentation.
 - **Always include a way to verify.** After any install or config step, show how the reader can confirm it worked.
 
+## See Also
+
+- **`/adr`** — Use this prompt to create architecture decision records in Nygard format.
+- **`apm-authoring`** — When writing or modifying APM artifacts (skills, agents, prompts), this skill covers the spec constraints and validation.
+- **`pull-request`** — After documentation changes are ready, use this skill to create the PR.
+
 ## References
 
 Sources grounding the principles and patterns in this skill:

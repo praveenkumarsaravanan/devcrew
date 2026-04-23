@@ -1,4 +1,4 @@
-# Backend Team Workflow Reference
+# Team Workflow Reference
 
 ## Re-Routing Rules
 
@@ -43,10 +43,11 @@ At the final summary, produce a traceability matrix:
 At the end of the full workflow (or when the user stops early), produce a summary:
 
 ```
-## Backend Team Workflow Summary
+## Team Workflow Summary
 
 | Phase | Status | Execution | Key Decision / Output |
 |---|---|---|---|
+| 0. Discipline Detection | Completed | Inline | Discipline: [backend/frontend/fullstack] |
 | 1. Requirements | Completed | Inline | X requirements defined, Y edge cases identified |
 | 2. Architecture | Completed | Subagent | [Approach chosen] with [key trade-off] |
 | 3. Implementation | Completed | Subagent | X files changed, Y new files created |

@@ -4,9 +4,12 @@ require_resolution: project-wins
 # dependencies:
 #   allow:
 #     - "org/*"
+#     - "microsoft/*"
 #   deny:
 #     - "*/malicious-*"
 #     - "*/deprecated-*"
+#   require:
+#     - org/security-baseline@v1
 
 enforcement:
   level: warn

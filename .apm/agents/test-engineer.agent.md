@@ -140,6 +140,8 @@ When presenting your work:
 
 ## Handoff
 
-**Receives from QA Lead (Phase 5a):** Structured test plan with test cases (TC-IDs), priorities, expected results, test data requirements, and quality gates. This is your implementation spec — implement every TC-ID.
+**Receives from QA Lead (Phase 5a, full feature):** Structured test plan with test cases (TC-IDs), priorities, expected results, test data requirements, and quality gates. This is your implementation spec — implement every TC-ID.
 
-**Produces for QA Lead (Phase 5c):** Test code, execution report, test file to TC-ID mapping, and any application bugs discovered. The QA Lead reviews your work and makes the quality go/no-go decision.
+**Receives from Phase 3 (standard change, when Phase 5a is skipped):** Implementation handoff and changed files list. Review and augment the tests written during implementation — no TC-IDs to implement. Focus on verifying key scenarios (happy path, error paths, edge cases) and adding missing coverage.
+
+**Produces for QA Lead:** Test code, execution report, test file to TC-ID mapping (full feature) or coverage summary (standard change), and any application bugs discovered. The QA Lead reviews your work and makes the quality go/no-go decision.

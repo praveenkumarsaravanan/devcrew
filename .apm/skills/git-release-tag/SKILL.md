@@ -22,6 +22,8 @@ Activate this skill when:
 
 - `**scripts/release.sh**` — Reads the current version from `apm.yml`, computes the next version, generates a changelog from commits since the last tag, blocks duplicate tags, updates the file, commits, tags, pushes, and creates a GitHub release.
 
+> **Note:** All script paths below are relative to the repository root. The full path is `.apm/skills/git-release-tag/scripts/release.sh`, but `apm.yml` registers the script as `release`, so you can also invoke it via `apm run release`.
+
 ## Workflow
 
 ### 1. Determine the Increment Type
@@ -57,16 +59,16 @@ git fetch --tags
 Always run a dry run first so the user can see the plan and confirm:
 
 ```bash
-bash scripts/release.sh --dry-run --json --ticket PROJ-XXXXX
+bash .apm/skills/git-release-tag/scripts/release.sh --dry-run --json --ticket ISSUE-XXX
 ```
 
 When the user specifies `minor` or `major`:
 
 ```bash
-bash scripts/release.sh minor --dry-run --json --ticket PROJ-XXXXX
+bash .apm/skills/git-release-tag/scripts/release.sh minor --dry-run --json --ticket ISSUE-XXX
 ```
 
-The `--ticket` flag embeds the JIRA ticket ID in the version bump commit message to satisfy the commitlint hook. Include it if your project requires ticket IDs in commit messages.
+The `--ticket` flag embeds the ticket ID in the version bump commit message to satisfy the recommended commit convention. Always include it.
 
 The `--json` flag outputs a structured summary to stdout:
 
@@ -81,19 +83,19 @@ Present the plan to the user and ask for explicit confirmation before proceeding
 After the user confirms the dry-run plan, run the script with `--confirm` to skip interactive prompts (agents cannot respond to TTY input):
 
 ```bash
-bash scripts/release.sh --confirm --ticket PROJ-XXXXX
+bash .apm/skills/git-release-tag/scripts/release.sh --confirm --ticket ISSUE-XXX
 ```
 
 When the user specifies `minor` or `major`:
 
 ```bash
-bash scripts/release.sh minor --confirm --ticket PROJ-XXXXX
+bash .apm/skills/git-release-tag/scripts/release.sh minor --confirm --ticket ISSUE-XXX
 ```
 
 The script will:
 
 1. Update `apm.yml` with the new version
-2. Commit: `chore(release): PROJ-XXXXX, bump version to X.Y.Z`
+2. Commit: `chore(release): ISSUE-XXX, bump version to X.Y.Z`
 3. Generate a changelog from commits since the previous tag
 4. Create an annotated tag `vX.Y.Z` with the changelog in the tag message
 5. Push the commit and tag to origin
@@ -102,13 +104,13 @@ The script will:
 If the user wants to tag without pushing (e.g., to review first), add `--no-push`:
 
 ```bash
-bash scripts/release.sh --confirm --no-push --ticket PROJ-XXXXX
+bash .apm/skills/git-release-tag/scripts/release.sh --confirm --no-push --ticket ISSUE-XXX
 ```
 
 If the user wants to skip the GitHub release (tag only), add `--no-release`:
 
 ```bash
-bash scripts/release.sh --confirm --no-release --ticket PROJ-XXXXX
+bash .apm/skills/git-release-tag/scripts/release.sh --confirm --no-release --ticket ISSUE-XXX
 ```
 
 ### 5. Post-Release Verification
@@ -141,11 +143,17 @@ The script uses distinct exit codes — use these to decide the next action:
 
 If exit code is `3`, inform the user that this version is already tagged and suggest incrementing to the next version instead.
 
+## See Also
+
+- **`/release-readiness`** — Before tagging, run this prompt to assess whether the release candidate passes the go/no-go checklist.
+- **`/monitoring-plan`** — After release, use this prompt to verify SLOs, alerts, and runbooks are in place for the new version.
+- **`/devops-plan`** — If the release changes deployment strategy or infrastructure, run this prompt to plan the rollout.
+
 ## Guardrails
 
 - **Never run without a dry run first.** Always preview the release plan and get user confirmation before executing.
 - **Always pass `--confirm` when executing.** The agent cannot respond to interactive prompts. Omitting `--confirm` will hang the session.
-- **Pass `--ticket` if your project requires ticket IDs in commits.** The commitlint hook may reject commits without a ticket. Omitting `--ticket` will cause the push to fail if your hook enforces this.
+- **Always pass `--ticket` with the ticket ID.** The recommended commit convention rejects commits without a ticket. Omitting `--ticket` will cause the push to fail.
 - **Never tag from a feature branch.** Releases come from `trunk` or `main` only. If the user insists on tagging from another branch, warn them explicitly and require double confirmation.
 - **Never re-tag an existing version.** If the tag already exists (exit code `3`), do not bypass it. Increment to a new version instead.
 - **Never force-push tags.** If a tag needs correction, create a new version. Deleting and re-creating tags breaks consumers who already resolved the old tag.

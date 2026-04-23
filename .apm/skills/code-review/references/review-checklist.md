@@ -1,6 +1,6 @@
 # Code Review Checklist
 
-Use this checklist to ensure thorough coverage during backend code reviews. Each section lists specific items to verify.
+Use this checklist to ensure thorough coverage during backend code reviews. For frontend-specific checks, see the [Frontend Review Checklist](frontend-review-checklist.md).
 
 ---
 

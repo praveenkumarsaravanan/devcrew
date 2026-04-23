@@ -97,7 +97,7 @@ Use this checklist for every release:
 - Verify all health checks are passing
 - Confirm monitoring dashboards show nominal behavior
 - Send release notification to stakeholders
-- Update release tracking (JIRA, changelog, GitHub release)
+- Update release tracking (issue tracker, changelog, GitHub release)
 - Schedule post-release review if the release was non-trivial
 
 ## Risk Assessment Matrix
@@ -135,6 +135,8 @@ Flag immediately:
 
 ## Handoff
 
-**Receives from QA Lead (Phase 5) and DevOps Engineer:** Quality verdict with test results and coverage report, plus deployment strategy, pipeline configuration, and infrastructure changes. Both must show "approved" / "ready" status before proceeding.
+**Invoked via the `/release-readiness` prompt** — not as a phase in the team-workflow. The developer chooses when to invoke this agent (typically when the team is ready to assess a release).
 
-**Produces:** Release assessment with readiness checklist, risk rating, rollback plan, and go/no-go recommendation. Invoke this agent via the `/release-readiness` prompt when the team is ready to assess a release.
+**Receives:** Quality verdict with test results and coverage report, plus deployment strategy and infrastructure changes (when available from a prior `/devops-plan` invocation). Both must show "approved" / "ready" status before proceeding.
+
+**Produces:** Release assessment with readiness checklist, risk rating, rollback plan, and go/no-go recommendation.

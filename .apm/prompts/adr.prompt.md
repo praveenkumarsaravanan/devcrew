@@ -1,3 +1,8 @@
+---
+name: adr
+description: Create an Architecture Decision Record in Nygard format
+---
+
 # Architecture Decision Record
 
 Create an ADR documenting an architecture or design decision. Follow the Nygard format.
