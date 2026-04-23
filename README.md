@@ -1,4 +1,4 @@
-# MI Engineer Agent
+# Engineering Agent Platform
 
 Organization-wide agent package distributing engineering skills, agents, rules, and MCP server configs across Cursor and GitHub Copilot via [Microsoft APM](https://microsoft.github.io/apm/).
 
