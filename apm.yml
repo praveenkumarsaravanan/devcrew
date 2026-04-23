@@ -1,11 +1,15 @@
 name: engineering-agent-platform
 version: "1.1.5"
-description: "Organization-wide engineering agent -- skills, MCP servers, rules, hooks, and agents for Cursor and GitHub Copilot"
+description: "Organization-wide engineering agent -- skills, MCP servers, rules, hooks, and agents for Cursor, GitHub Copilot, and Claude Code"
 target:
   copilot: {}
   cursor:
     instructions: .cursor/rules/
     prompts: .cursor/commands/
+  claude:
+    instructions: .claude/rules/
+    prompts: .claude/commands/
 scripts:
   setup: "bash scripts/setup.sh"
   release: "bash .apm/skills/git-release-tag/scripts/release.sh"
+  deploy-claude: "bash scripts/deploy-claude.sh"
