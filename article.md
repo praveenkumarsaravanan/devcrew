@@ -1,32 +1,36 @@
-# The Self-Agreement Problem: Why AI Needs a Team, Not a Solo Agent
+# DevCrew: Turning Your AI-Powered IDE Into a Complete Engineering Team
 
-AI coding assistants are remarkably capable. Given a prompt, they can generate database schemas, REST endpoints, authentication middleware, and unit tests in seconds. But capability without discipline is a liability. A single agent that writes code, reviews its own output, and declares it production-ready is not engineering -- it is autocomplete with a confidence problem.
+Your AI coding assistant can generate an entire backend service in minutes. It writes the database schema, builds the REST endpoints, adds authentication middleware, and even generates the unit tests. Then it reviews its own work and tells you everything looks great.
 
-We built the [DevCrew](https://github.com/praveenkumarsaravanan/devcrew) to answer a question: *what happens if you stop treating AI as a lone developer and start treating it as a team?* Not a team that agrees with itself, but one with distinct roles, independent perspectives, adversarial review, and structured handoffs -- the same dynamics that make real engineering teams produce reliable software.
+That is the problem.
 
-The result is a system that simulates a cross-functional backend engineering team across 10 specialized agents, orchestrated through a 5-phase development lifecycle with built-in quality gates, automatic rework loops, and end-to-end requirement traceability. It ships as a distributable package via [Microsoft APM (Agent Package Manager)](https://microsoft.github.io/apm/) for Cursor, GitHub Copilot, and Claude Code -- but the architectural patterns described here apply to any multi-agent system.
+No real engineering team ships code this way. A developer does not write, review, test, and approve their own work in isolation. There is a product analyst who clarifies requirements before anyone writes a line of code. An architect who evaluates trade-offs. A code reviewer who approaches the diff cold -- skeptical, looking for what the author missed. A QA lead who designs tests meant to *break* the system, not confirm it works. These roles exist because people -- and now AI -- produce better software when someone else checks their work.
+
+Today's AI-powered IDEs are genuinely intelligent. Cursor, GitHub Copilot, and Claude Code can plan multi-step tasks, spawn subagents, and execute autonomously. But intelligence alone does not produce the properties that engineering teams need: **consistency** (the same review rigor every time), **adversarial scrutiny** (challenging assumptions rather than confirming them), and **process discipline** (requirements before code, architecture before implementation, tests that trace back to requirements).
+
+We built [DevCrew](https://github.com/praveenkumarsaravanan/devcrew) to bridge this gap. It turns your AI-powered IDE into a complete engineering team -- 11 specialized agents orchestrated through a scope-adaptive development lifecycle with built-in quality gates, automatic rework loops, and end-to-end requirement traceability. The workflow right-sizes itself: quick fixes skip straight to implementation, while full features run a complete 5-phase lifecycle across backend, frontend, or fullstack disciplines. It ships as a distributable package via [Microsoft APM (Agent Package Manager)](https://microsoft.github.io/apm/) for Cursor, GitHub Copilot, and Claude Code -- but the architectural patterns described here apply to any multi-agent system.
 
 This is the first article in a two-part series. This piece covers the *why* and the *how* of the multi-agent workflow. The companion article, [Write Once, Agent Everywhere](article-distribution.md), covers how we packaged and distributed the platform across IDEs and teams.
 
 ---
 
-## The Problem: Three Failure Modes of Monolithic AI Assistance
+## The Problem: Three Ways a Solo AI Agent Fails You
 
-Most AI-assisted development today follows a single-agent pattern: one long conversation where the same LLM understands the requirements, designs the architecture, writes the code, and validates the result. This works well for small tasks. For anything substantial, it fails in predictable ways.
+Most AI-assisted development today follows a single-agent pattern: one long conversation where the same LLM understands the requirements, designs the architecture, writes the code, and validates the result. This works well for small tasks. For anything substantial, it fails in three predictable ways.
 
-### Self-Agreement Bias
+### It Reviews Its Own Work and Always Agrees
 
 When an LLM writes code and then reviews it in the same conversation, it is reviewing its own reasoning. It remembers why it chose that approach, what trade-offs it considered, and what alternatives it rejected. The review becomes a formality -- the agent confirms its own decisions rather than challenging them.
 
 The real-world consequence: the agent generates an API endpoint using string-concatenated SQL, reviews it, deems it acceptable because "the input is validated upstream," and ships a SQL injection vulnerability. A fresh reviewer would catch this immediately.
 
-### Context Window Pollution
+### It Forgets What You Asked For
 
 Long conversations accumulate stale reasoning. By the time a single-agent conversation reaches the testing phase, the context window is saturated with discarded design alternatives and implementation details that are no longer relevant. The agent's attention is diluted across thousands of tokens of noise.
 
 We observed this repeatedly: the implementation phase produces clean code, but by the test strategy phase the agent writes tests that validate implementation details rather than requirements, because the requirements have been buried under layers of conversation.
 
-### Missing Process Discipline
+### It Skips the Steps That Real Teams Never Skip
 
 Without explicit structure, AI assistants skip the steps that real teams enforce through process. No requirements clarification -- the agent starts coding immediately. No architecture review -- the first approach gets implemented. No adversarial code review -- the agent approves its own work. No test strategy -- tests are an afterthought.
 
@@ -34,18 +38,20 @@ The cumulative effect is code that works for the happy path but fails under real
 
 ---
 
-## The Solution: A Team, Not a Solo Agent
+## The Solution: Give Your IDE an Engineering Team
 
-The [DevCrew](https://github.com/praveenkumarsaravanan/devcrew) addresses these failure modes by decomposing the software development lifecycle into isolated phases, each executed by a specialized agent with its own context window and handoff contract. The full implementation is open source -- every agent definition, skill, handoff template, and workflow described below can be found in the repository.
+[DevCrew](https://github.com/praveenkumarsaravanan/devcrew) addresses these failure modes by decomposing the software development lifecycle into isolated phases, each executed by a specialized agent with its own context window and handoff contract. Instead of one agent doing everything, different agents handle requirements, architecture, implementation, review, and testing -- just like a real team. The full implementation is open source -- every agent definition, skill, handoff template, and workflow described below can be found in the repository.
 
-The centerpiece is the **backend-team-workflow**, which orchestrates 5 pre-merge phases across distinct agent personas plus 3 post-merge prompts for deployment, release, and monitoring.
+The centerpiece is the **team-workflow**, a unified entry point that right-sizes itself to the task at hand. Phase 0 classifies each request as a quick fix, standard change, or full feature, and detects whether the work is backend, frontend, or fullstack. Quick fixes skip straight to implementation; full features run the complete lifecycle across 5 phases, dispatching the correct agents and checklists for the detected discipline. Post-merge activities (deployment, release, monitoring) are available as separate on-demand prompts.
 
 ```mermaid
 flowchart TD
-    Start([User Request]) --> P1[Phase 1: Requirements\nProduct Analyst]
+    Start([User Request]) --> P0[Phase 0: Scope Sizing\nDiscipline Detection]
+    P0 -->|"Quick fix"| P3
+    P0 -->|"Standard / Full"| P1[Phase 1: Requirements\nProduct Analyst]
     P1 -->|"User checkpoint"| P2[Phase 2: Architecture\nArchitect]
     P2 -->|"User checkpoint"| P3[Phase 3: Implementation\nJunior + Senior Developer]
-    P3 -->|"User checkpoint"| P4[Phase 4: Code Review\nBackend Reviewer]
+    P3 -->|"User checkpoint"| P4[Phase 4: Code Review\nBackend / Frontend Reviewer]
     P4 -->|"Critical findings"| P3
     P4 -->|"Approved"| P5a[Phase 5a: Test Strategy\nQA Lead]
     P5a -->|"User checkpoint"| P5b[Phase 5b: Test Implementation\nTest Engineer]
@@ -56,7 +62,7 @@ flowchart TD
 
 
 
-Each "User checkpoint" is a pause where the workflow presents its output and waits for human confirmation. The loops from Phase 4 and Phase 5b back to Phase 3 are automatic rework cycles, capped at 2 iterations to prevent infinite loops.
+Each "User checkpoint" is a pause where the workflow presents its output and waits for human confirmation. The user can skip phases, repeat them, override the scope sizing, or stop at any point. The loops from Phase 4 and Phase 5b back to Phase 3 are automatic rework cycles, capped at 2 iterations to prevent infinite loops.
 
 ---
 
@@ -106,6 +112,16 @@ IDEs provide the engine -- subagent spawning, context isolation, tool access. De
 
 ## The Workflow: Phase by Phase
 
+### Phase 0 -- Scope Sizing and Discipline Detection
+
+**Role:** Workflow Orchestrator | **Execution:** Inline
+
+Before any development begins, the workflow classifies the task along two dimensions: **size** (quick fix, standard change, or full feature) and **discipline** (backend, frontend, or fullstack). This determines which phases run and which agents are dispatched.
+
+Quick fixes (typos, one-line changes, config tweaks) skip directly to Phase 3 -- adding requirements analysis and architecture review would waste time. Standard changes run Phases 1, 3, 4, and 5. Full features run the complete lifecycle. The user can always override: "run the full workflow" forces all phases regardless of the classification.
+
+Discipline detection examines the codebase and the user's request to determine whether the work is backend (Java, Go, Python services), frontend (React, Vue, Angular), or fullstack. This routes subsequent phases to the appropriate reviewer (Backend Reviewer or Frontend Reviewer), the correct coding standards (Java Standards or React Standards), and the matching review checklists.
+
 ### Phase 1 -- Requirements Clarification
 
 **Role:** Product Analyst | **Execution:** Inline (no subagent)
@@ -145,9 +161,11 @@ Every file changed maps back to a REQ-ID. Unit tests are written alongside the i
 
 ### Phase 4 -- Code Review
 
-**Role:** Backend Reviewer | **Execution:** Subagent (isolated, adversarial)
+**Role:** Backend Reviewer or Frontend Reviewer | **Execution:** Subagent (isolated, adversarial)
 
 This is the most critical isolation point. A fresh subagent spawns with no memory of writing the code. It receives the Phase 3 handoff (summary of changes, file list) and the Phase 2 architecture decision. It does *not* receive the Phase 3 reasoning or conversation.
+
+The discipline detected in Phase 0 determines which reviewer is dispatched. Backend work gets the Backend Reviewer with its security-focused checklist (SQL injection, authentication, rate limiting). Frontend work gets the Frontend Reviewer with its accessibility, performance, and design system checklist. Fullstack work dispatches both reviewers sequentially.
 
 The reviewer's instructions are explicitly adversarial:
 
@@ -173,7 +191,7 @@ A separate subagent implements every TC-ID as executable test code. This subagen
 
 The Test Engineer scans the codebase for existing test conventions and follows them exactly. After running the full suite, it produces a test execution report with a quality verdict. Application bugs are flagged and routed back to Phase 3 (capped at 2 iterations).
 
-> **Explore the implementation:** The complete workflow orchestration is defined in [`.apm/skills/backend-team-workflow/SKILL.md`](https://github.com/praveenkumarsaravanan/devcrew/blob/trunk/.apm/skills/backend-team-workflow/SKILL.md). Each agent persona lives in [`.apm/agents/`](https://github.com/praveenkumarsaravanan/devcrew/tree/trunk/.apm/agents). The re-routing rules and traceability matrix template are in the [workflow reference](https://github.com/praveenkumarsaravanan/devcrew/blob/trunk/.apm/skills/backend-team-workflow/references/workflow-reference.md).
+> **Explore the implementation:** The complete workflow orchestration is defined in [`.apm/skills/team-workflow/SKILL.md`](https://github.com/praveenkumarsaravanan/devcrew/blob/trunk/.apm/skills/team-workflow/SKILL.md). Each agent persona lives in [`.apm/agents/`](https://github.com/praveenkumarsaravanan/devcrew/tree/trunk/.apm/agents). The re-routing rules and traceability matrix template are in the [workflow reference](https://github.com/praveenkumarsaravanan/devcrew/blob/trunk/.apm/skills/team-workflow/references/workflow-reference.md).
 
 ---
 
@@ -305,10 +323,10 @@ Two mechanisms run continuously, outside the workflow:
 
 **Instructions** are rules injected automatically whenever matching files are open:
 
-- **Coding Standards** (code files) -- naming conventions, error handling, structured logging, 80% test coverage, git workflow.
-- **Security Baseline** (code and config files) -- secrets management, input validation, JWT expiry under 1 hour, default-deny authorization, AES-256 at rest, TLS 1.2+ in transit, rate limiting, CORS.
+- **Coding Standards** (code files) -- universal naming conventions, error handling, structured logging, 80% test coverage, git workflow. When language-specific files are detected, the instructions route to dedicated standards: **Java Standards** for Spring Boot services and **React Standards** for TypeScript/React frontends.
+- **Security Baseline** (code and config files) -- secrets management, input validation, JWT expiry under 1 hour, default-deny authorization, AES-256 at rest, TLS 1.2+ in transit, rate limiting, CORS. Like coding standards, the baseline routes to language-specific rules when applicable.
 
-**Hooks** fire on specific events:
+**Hooks** fire on specific events via the `edit-guards` configuration:
 
 - **lint-check** -- after every file edit, checks against coding standards.
 - **security-guard** -- before any write operation, blocks secrets from being committed.
@@ -339,6 +357,10 @@ Without a re-routing cap, certain edge cases trigger infinite loops: the reviewe
 
 An early version included deployment and monitoring as sequential phases 6, 7, and 8. Developers do not plan deployment immediately after writing tests. Separating post-merge activities into on-demand prompts matches how teams actually work.
 
+### Scope sizing prevents process overkill
+
+An early version ran all 5 phases for every task, including one-line typo fixes. Developers bypassed the workflow entirely for small changes, losing the guardrails. Adding Phase 0 -- automatic scope sizing with user override -- solved both problems: quick fixes get fast-tracked through implementation and review without ceremony, while full features get the complete lifecycle. The right amount of process depends on the task.
+
 ---
 
 ## Conclusion
@@ -347,6 +369,6 @@ The self-agreement problem is fundamental: an AI agent that writes and reviews i
 
 The system is not about replacing human engineers. It is about giving each developer an AI team that follows the same process discipline that real engineering teams enforce through culture, code review, and quality gates. When the reviewer cannot remember writing the code, when the test author has never seen the implementation reasoning, when every requirement is traceable from inception to verification -- the result is software that is not just generated, but engineered.
 
-The [DevCrew](https://github.com/praveenkumarsaravanan/devcrew) is open source. The patterns described here -- subagent isolation, handoff contracts, adversarial prompting, re-routing with safety caps -- are portable to any multi-agent system.
+[DevCrew](https://github.com/praveenkumarsaravanan/devcrew) is open source. The patterns described here -- scope-adaptive workflows, subagent isolation, handoff contracts, adversarial prompting, re-routing with safety caps -- are portable to any multi-agent system.
 
 **Next in this series:** [Write Once, Agent Everywhere](article-distribution.md) -- how we packaged the platform for distribution across IDEs (Cursor, GitHub Copilot, and Claude Code) and teams using [Microsoft APM](https://microsoft.github.io/apm/).

@@ -1,12 +1,12 @@
-# Write Once, Agent Everywhere: Distributing AI Engineering Tooling Across IDEs and Teams
+# DevCrew: Write Once, Agent Everywhere -- Distributing AI Engineering Tooling Across IDEs and Teams
 
 Your team's best developer practices are locked inside individual conversations. One engineer has a Cursor rule for code reviews. Another has a GitHub Copilot instruction for commit messages. A third has a custom prompt for architecture decisions. None of them share the same standards, and every new team member starts from scratch.
 
 This is the distribution problem: how do you package engineering knowledge -- agent behaviors, coding standards, security rules, review checklists, and workflow automation -- into something that every developer on your team gets automatically, regardless of which IDE they use?
 
-We solved this with the [DevCrew](https://github.com/praveenkumarsaravanan/devcrew), a single repository that defines all engineering primitives in one place and compiles them for multiple IDEs using [Microsoft APM (Agent Package Manager)](https://microsoft.github.io/apm/). One source of truth, three targets: Cursor, GitHub Copilot, and Claude Code.
+We solved this with [DevCrew](https://github.com/praveenkumarsaravanan/devcrew), a single repository that defines all engineering primitives in one place and compiles them for multiple IDEs using [Microsoft APM (Agent Package Manager)](https://microsoft.github.io/apm/). One source of truth, three targets: Cursor, GitHub Copilot, and Claude Code.
 
-This is the second article in a two-part series. The companion article, [The Self-Agreement Problem](article.md), covers the multi-agent workflow architecture. This piece covers how we packaged and distributed it.
+This is the second article in a two-part series. The companion article, [Turning Your AI-Powered IDE Into a Complete Engineering Team](article.md), covers the multi-agent workflow architecture. This piece covers how we packaged and distributed it.
 
 ---
 
@@ -46,14 +46,16 @@ Explicit definitions solve this: every developer gets the same review checklist,
 
 [Microsoft APM](https://microsoft.github.io/apm/) solves this the same way npm solved JavaScript dependency management: define your package in a manifest, publish it, and let consumers install it with a single command.
 
-The DevCrew is an APM package. Everything lives in a single `.apm/` directory -- the source of truth for all engineering primitives. The full implementation is [on GitHub](https://github.com/praveenkumarsaravanan/devcrew):
+DevCrew is an APM package. Everything lives in a single `.apm/` directory -- the source of truth for all engineering primitives. The full implementation is [on GitHub](https://github.com/praveenkumarsaravanan/devcrew):
 
 ```
 .apm/
   skills/           # SKILL.md files with scripts and references
+    team-workflow/
     code-review/
     api-design/
-    backend-team-workflow/
+    testing/
+    debugging/
     pull-request/
     commit-message/
     branch-creation/
@@ -61,9 +63,12 @@ The DevCrew is an APM package. Everything lives in a single `.apm/` directory --
     git-release-tag/
     apm-authoring/
     project-detection/
+    java-standards/
+    react-standards/
   agents/           # .agent.md persona definitions
     architect.agent.md
     backend-reviewer.agent.md
+    frontend-reviewer.agent.md
     product-analyst.agent.md
     junior-developer.agent.md
     senior-developer.agent.md
@@ -76,6 +81,7 @@ The DevCrew is an APM package. Everything lives in a single `.apm/` directory --
     coding-standards.instructions.md
     security-baseline.instructions.md
   prompts/          # On-demand workflow templates
+    quickstart.prompt.md
     design-review.prompt.md
     incident-response.prompt.md
     devops-plan.prompt.md
@@ -84,7 +90,7 @@ The DevCrew is an APM package. Everything lives in a single `.apm/` directory --
     adr.prompt.md
     dependency-audit.prompt.md
   hooks/            # Event-driven automation
-    pre-commit-lint.json
+    edit-guards.json
 apm.yml             # Package manifest
 apm-policy.yml      # Governance policy
 .mcp.json           # MCP server definitions
@@ -100,7 +106,7 @@ The platform distributes six types of engineering primitives:
 
 ### Agents -- The Team
 
-Ten specialized agent personas, each with a distinct role, evaluation criteria, and handoff contract:
+Eleven specialized agent personas, each with a distinct role, evaluation criteria, and handoff contract:
 
 | Agent | Role |
 |---|---|
@@ -108,35 +114,36 @@ Ten specialized agent personas, each with a distinct role, evaluation criteria, 
 | Architect | Trade-off analysis, component design, anti-pattern detection |
 | Junior Developer | Clean implementation following codebase patterns |
 | Senior Developer | Scalability, performance, rollout, and backward compatibility |
-| Backend Reviewer | Adversarial code review with severity categorization |
+| Backend Reviewer | Adversarial code review for backend services (security, performance, quality) |
+| Frontend Reviewer | Adversarial code review for frontend (accessibility, performance, design system) |
 | QA Lead | Test strategy, quality gates, and go/no-go decisions |
 | Test Engineer | Test implementation from the QA Lead's plan |
 | DevOps Engineer | CI/CD pipeline and deployment strategy |
 | Release Manager | Release readiness and rollback planning |
 | SRE | SLOs, alerting, runbooks, and customer impact |
 
-These agents can be invoked individually or orchestrated through the backend-team-workflow (covered in [The Self-Agreement Problem](article.md)).
+These agents can be invoked individually or orchestrated through the team-workflow (covered in [Turning Your AI-Powered IDE Into a Complete Engineering Team](article.md)). The workflow's discipline detection automatically dispatches the Backend Reviewer or Frontend Reviewer based on the type of code being changed.
 
 ### Skills -- The Capabilities
 
-Ten reusable skills that agents and developers invoke on demand: code review, API design, branch creation, PR creation with JIRA validation, commit message formatting, documentation authoring, release tagging, APM artifact authoring, and project type detection.
+Fourteen reusable skills that agents and developers invoke on demand: the unified team-workflow (which right-sizes itself from quick fixes to full features across backend, frontend, and fullstack disciplines), code review, API design, standalone testing, systematic debugging, branch creation, PR creation with JIRA validation, commit message formatting, documentation authoring, release tagging, APM artifact authoring, project type detection, and language-specific standards for Java and React.
 
 ### Instructions -- The Standards
 
 Two always-on instruction sets injected automatically by file pattern:
 
-- **Coding Standards** (applied to `*.ts, *.js, *.py, *.go, *.java, *.rs`) -- naming conventions, error handling, structured logging, 80% test coverage, conventional commits.
-- **Security Baseline** (applied to code and config files) -- secrets management, input validation, JWT standards, default-deny authorization, encryption at rest and in transit, rate limiting, CORS.
+- **Coding Standards** (applied to `*.ts, *.js, *.py, *.go, *.java, *.rs`) -- universal naming conventions, error handling, structured logging, 80% test coverage, conventional commits. When language-specific files are detected, the instructions automatically route to dedicated standards: **Java Standards** for Spring Boot services and **React Standards** for TypeScript/React frontends.
+- **Security Baseline** (applied to code and config files) -- secrets management, input validation, JWT standards, default-deny authorization, encryption at rest and in transit, rate limiting, CORS. Like coding standards, the baseline routes to language-specific rules when applicable.
 
 These are not optional guidelines. When a developer opens a matching file, the instructions are active in the AI assistant's context. Every code suggestion, review, and generation respects these standards.
 
 ### Prompts -- The Workflows
 
-Seven on-demand prompt templates for recurring engineering tasks: architecture decision records, dependency audits, design reviews, deployment planning, incident response, release readiness, and monitoring plans.
+Eight on-demand prompt templates for recurring engineering tasks: a quickstart guide that maps common tasks to the right skill or prompt, architecture decision records, dependency audits, design reviews, deployment planning, incident response, release readiness, and monitoring plans.
 
 ### Hooks -- The Automation
 
-Event-driven automation that fires without developer action:
+Event-driven automation that fires without developer action, defined in `edit-guards.json`:
 
 - **lint-check** (after every file edit) -- checks the edited file against coding standards and lists violations.
 - **security-guard** (before any write operation) -- blocks secrets, API keys, and credentials from being written to files.
@@ -359,8 +366,8 @@ Starting with `warn` mode lets teams adopt the package without friction. Once th
 
 ## Conclusion
 
-The distribution problem is distinct from the workflow problem. Building a sophisticated multi-agent workflow (covered in [The Self-Agreement Problem](article.md)) is valuable, but it only matters if every developer on your team actually has access to it.
+The distribution problem is distinct from the workflow problem. Building a sophisticated multi-agent workflow (covered in [Turning Your AI-Powered IDE Into a Complete Engineering Team](article.md)) is valuable, but it only matters if every developer on your team actually has access to it.
 
 [Microsoft APM](https://microsoft.github.io/apm/) bridges this gap: define your engineering primitives once in `.apm/`, compile to any IDE -- Cursor, GitHub Copilot, or Claude Code -- distribute with a single command, and let teams override what does not fit. The result is consistent AI-assisted development across every developer, every IDE, and every project -- without manual configuration.
 
-The [DevCrew](https://github.com/praveenkumarsaravanan/devcrew) is open source. Install it, adapt it to your team, and stop letting your best practices live in one developer's head.
+[DevCrew](https://github.com/praveenkumarsaravanan/devcrew) is open source. Install it, adapt it to your team, and stop letting your best practices live in one developer's head.
