@@ -185,6 +185,12 @@ When designing gRPC APIs:
 - **Validate at the boundary.** Never trust input from clients — validate in the handler before business logic.
 - **Be consistent.** Field naming, error format, pagination style, and envelope structure must be uniform across all endpoints.
 
+## See Also
+
+- **`team-workflow`** — When ready to implement the API, the team workflow handles the full build lifecycle (requirements through testing). The architect phase (Phase 2) consumes the API design produced here.
+- **`code-review`** — After implementation, this skill reviews the code against quality, security, and API design standards.
+- **`documentation`** — Use this skill to write user-facing API documentation or an OpenAPI reference guide.
+
 ## References
 
 - [REST Conventions](references/rest-conventions.md) — detailed URL patterns, status codes, error formats, pagination, and versioning reference

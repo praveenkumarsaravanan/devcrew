@@ -252,7 +252,7 @@ Hooks are JSON configuration files that trigger agent actions on specific events
 
 ```
 .apm/hooks/
-└── pre-commit-lint.json
+└── edit-guards.json
 ```
 
 ### Format
@@ -323,6 +323,12 @@ bash .apm/skills/apm-authoring/scripts/validate.sh --json        # JSON output f
 - **Never exceed line limits.** 500 lines for skills, 300 for agents, 100 for prompts.
 - **Never omit the closing `---` in frontmatter.** This is the #1 parsing error for skills and agents.
 - **Never write interactive scripts for agent use.** All input must come from flags or env vars.
+
+## See Also
+
+- **`commit-message`** — After authoring APM artifacts, use this skill to construct commit messages that pass the recommended commit convention.
+- **`pull-request`** — When artifacts are ready for review, this skill creates the PR with validation checks.
+- **`documentation`** — Use this skill for general documentation (READMEs, guides, runbooks) that lives outside the `.apm/` directory.
 
 ## References
 

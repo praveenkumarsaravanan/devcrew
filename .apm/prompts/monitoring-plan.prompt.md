@@ -1,3 +1,8 @@
+---
+name: monitoring-plan
+description: SLOs, alerting, and runbook design from an SRE perspective
+---
+
 # Monitoring Plan
 
 Design the observability and monitoring strategy for a service or a recent change. Adopt the **SRE** perspective.

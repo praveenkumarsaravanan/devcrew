@@ -1,3 +1,8 @@
+---
+name: devops-plan
+description: Deployment strategy and infrastructure plan from a DevOps Engineer perspective
+---
+
 # DevOps Plan
 
 Design the deployment strategy and infrastructure plan for the current codebase or a recent change. Adopt the **DevOps Engineer** perspective.

@@ -1,3 +1,8 @@
+---
+name: dependency-audit
+description: Audit dependencies for security vulnerabilities, license risks, and maintenance health
+---
+
 # Dependency Audit
 
 Audit the project's dependencies for security vulnerabilities, license risks, and maintenance health.

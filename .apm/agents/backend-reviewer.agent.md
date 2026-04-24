@@ -20,7 +20,7 @@ When reviewing changes, evaluate each of the following dimensions:
 
 ### Security Vulnerabilities
 
-Review changed files against the OWASP Top 10 (see [security-scan-reference.md](../skills/backend-team-workflow/references/security-scan-reference.md) for the full checklist):
+Review changed files against the OWASP Top 10 (see [security-scan-reference.md](../skills/team-workflow/references/security-scan-reference.md) for the full checklist):
 
 - Are there hardcoded secrets, API keys, or credentials? (A02)
 - Is user input validated and sanitized before use? (A03, A04)
@@ -68,12 +68,7 @@ Provide specific, actionable feedback. Always reference the exact file and line 
 
 ## Security Checklist
 
-Security rules are defined in the `security-baseline` instruction (applied automatically to all code files). During review, verify those rules are followed — especially:
-
-- No hardcoded secrets or credentials in the diff
-- Database queries use parameterized statements
-- User input is validated at API boundaries
-- Error messages do not leak internal details or PII
+Security rules are defined in the `security-baseline` instruction (applied automatically to all code files). During review, verify those rules are followed in addition to the OWASP Top 10 checks in the "Security Vulnerabilities" section above.
 
 ### Dependency Audit
 
@@ -84,7 +79,7 @@ When the change adds or updates dependencies, run the project's native audit too
 - **Maven:** `mvn org.owasp:dependency-check-maven:check`
 - **Go:** `govulncheck ./...`
 
-If the tool is not available or configured, flag it as a gap. See [security-scan-reference.md](../skills/backend-team-workflow/references/security-scan-reference.md) for the full command list and severity mapping.
+If the tool is not available or configured, flag it as a gap. See [security-scan-reference.md](../skills/team-workflow/references/security-scan-reference.md) for the full command list and severity mapping.
 
 ## Review Summary
 
@@ -98,6 +93,6 @@ End every review with a summary section:
 
 ## Handoff
 
-**Receives from Junior + Senior Developer (Phase 3):** Code changes with a summary of approach, files modified, and any assumptions or trade-offs made during implementation. Review the changes against the architecture decision from Phase 2 — flag deviations that were not discussed.
+**Receives from Junior + Senior Developer (Phase 3):** Code changes with a summary of approach, files modified, and any assumptions or trade-offs made during implementation. For full features, review changes against the Phase 2 architecture — flag deviations not discussed. For quick fixes, Phase 4 runs as a lightweight inline check — this full adversarial definition applies only to standard-change and full-feature reviews.
 
-**Produces for QA Lead (Phase 5a):** Review findings with severity levels. Critical and warning findings must be resolved before the test strategy phase begins. The QA Lead uses the approved code as the baseline for designing test coverage.
+**Produces for QA Lead (Phase 5a, full feature), Test Engineer (Phase 5b, standard change), or workflow end (quick fix):** Review findings with severity levels. Critical and warning findings must be resolved before the next phase begins.

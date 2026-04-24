@@ -1,3 +1,8 @@
+---
+name: design-review
+description: Design review for scalability, reliability, and cost
+---
+
 # Design Review
 
 Review the proposed design for:

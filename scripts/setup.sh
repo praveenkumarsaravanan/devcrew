@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-GH_HOST="github.com"
+GHE_HOST="${GHE_HOST:-github.com}"
 REQUIRED_GH_VERSION="2.40.0"
 
 info()  { printf "\033[1;34m▸ %s\033[0m\n" "$1"; }
@@ -34,17 +34,17 @@ fi
 
 # ── 2. GitHub authentication ─────────────────────────────────────────────────
 
-info "Checking authentication for $GH_HOST..."
+info "Checking authentication for $GHE_HOST..."
 
-if gh auth status --hostname "$GH_HOST" &>/dev/null; then
-  ok "Already authenticated to $GH_HOST"
+if gh auth status --hostname "$GHE_HOST" &>/dev/null; then
+  ok "Already authenticated to $GHE_HOST"
 else
-  info "Not authenticated — starting login for $GH_HOST..."
-  gh auth login --hostname "$GH_HOST" --web --git-protocol https
-  if gh auth status --hostname "$GH_HOST" &>/dev/null; then
-    ok "Authenticated to $GH_HOST"
+  info "Not authenticated — starting login for $GHE_HOST..."
+  gh auth login --hostname "$GHE_HOST" --web --git-protocol https
+  if gh auth status --hostname "$GHE_HOST" &>/dev/null; then
+    ok "Authenticated to $GHE_HOST"
   else
-    fail "Authentication to $GH_HOST failed"
+    fail "Authentication to $GHE_HOST failed"
   fi
 fi
 
@@ -58,7 +58,7 @@ else
   warn "GITHUB_TOKEN is not set in your environment"
   echo ""
   echo "  The GitHub MCP server requires GITHUB_TOKEN to be exported."
-  echo "  Generate a Personal Access Token at https://$GH_HOST/settings/tokens"
+  echo "  Generate a Personal Access Token on https://$GHE_HOST/settings/tokens"
   echo "  with 'repo' and 'read:org' scopes, then add to your shell profile:"
   echo ""
   echo "    export GITHUB_TOKEN=\"ghp_...\""

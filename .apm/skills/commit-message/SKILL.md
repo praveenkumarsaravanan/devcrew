@@ -1,8 +1,8 @@
 ---
 name: commit-message
 description: >
-  Construct git commit messages that pass the project's server-side
-  commitlint hook. Use when committing code, creating PRs, amending commits,
+  Construct git commit messages that pass the recommended commit convention.
+  Use when committing code, creating PRs, amending commits,
   or when a push is rejected for invalid commit message format.
 ---
 
@@ -13,23 +13,23 @@ description: >
 Activate this skill when:
 
 - Creating a git commit
-- A `git push` is rejected by the server-side `commitlint.sh` pre-receive hook
+- A `git push` is rejected by the commitlint (if configured)
 - The user asks how to format a commit message
 - Amending or rewording a commit message
 
 ## Required Format
 
 ```
-<type>(<scope>): <JIRA-ticket>, <description>
+<type>(<scope>): <ticket>, <description>
 ```
 
 **Example:**
 
 ```
-chore(devcrew): PROJ-123, add setup script for gh CLI and APM
+chore(devcrew): ISSUE-123, add setup script for gh CLI and APM
 ```
 
-Every component is **required**. The server-side pre-receive hook rejects pushes that do not match this pattern.
+Every component is **required**. The commitlint rejects pushes that do not match this pattern.
 
 ## Components
 
@@ -56,9 +56,9 @@ The project, package, or module affected. Use the repo name or a recognizable su
 
 Examples: `devcrew`, `api-gateway`, `auth-service`, `ui-library`
 
-### JIRA ticket
+### ticket
 
-The Jira issue key linked to this change (e.g., `PROJ-123`, `ENG-456`).
+The issue key linked to this change (e.g., `ISSUE-123`, `ISSUE-456`).
 
 If no ticket exists, check with the team whether `NOTICKET` is accepted. Some projects require a ticket for every commit.
 
@@ -83,9 +83,9 @@ Choose the `type` based on the nature of the change, not the files touched. A ne
 
 Use the repo name for cross-cutting changes. Use a sub-component name if the change is isolated to a specific module.
 
-### 4. Find the JIRA Ticket
+### 4. Find the Ticket
 
-- Check the branch name — it often contains the ticket (e.g., `feat/PROJ-123-add-auth`).
+- Check the branch name — it often contains the ticket (e.g., `feat/ISSUE-123-add-auth`).
 - Check recent conversation or task context for a ticket reference.
 - Ask the user if no ticket is apparent.
 
@@ -98,16 +98,15 @@ Summarize the **what**, not the **how**. Keep it under 72 characters. Use impera
 Combine all components into the required format:
 
 ```
-<type>(<scope>): <JIRA-ticket>, <description>
+<type>(<scope>): <ticket>, <description>
 ```
 
 For non-trivial changes, add a body separated by a blank line:
 
 ```
-feat(devcrew): ENG-456, add commit message skill
+feat(devcrew): ISSUE-456, add commit message skill
 
-Adds a skill that constructs commit messages matching the org's
-server-side commitlint hook format. Triggered automatically when
+Adds a skill that constructs commit messages matching the recommended commit convention format. Triggered automatically when
 committing or when a push is rejected.
 ```
 
@@ -115,7 +114,7 @@ committing or when a push is rejected.
 
 ```bash
 git commit -m "$(cat <<'EOF'
-<type>(<scope>): <JIRA-ticket>, <description>
+<type>(<scope>): <ticket>, <description>
 
 Optional body explaining why the change was made.
 EOF
@@ -124,9 +123,15 @@ EOF
 
 ## Guardrails
 
-- **Never skip the JIRA ticket.** The hook will reject the push. If unsure, ask the user.
+- **Never skip the ticket.** The hook will reject the push. If unsure, ask the user.
 - **Never capitalize the description.** The first word after the ticket must be lowercase.
 - **Never end the description with a period.**
 - **Always use the exact format.** Deviations like missing parentheses, missing colon, or swapped order will fail the hook.
 - **Keep the subject line under 100 characters total.** Long lines may be truncated or rejected by some tools.
 - **If a push is rejected**, read the error message, identify which rule failed, fix the commit message with `git commit --amend`, and retry the push.
+
+## See Also
+
+- **`pull-request`** — After committing, this skill creates the PR with ticket validation, discrepancy detection, and test plan checks.
+- **`branch-creation`** — If you haven't created a branch yet, this skill ensures the correct naming convention.
+- **`team-workflow`** — For structured feature development that includes implementation, review, and testing phases before the commit stage.

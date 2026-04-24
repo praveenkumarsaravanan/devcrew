@@ -1,3 +1,8 @@
+---
+name: release-readiness
+description: Go/no-go checklist for production release from a Release Manager perspective
+---
+
 # Release Readiness
 
 Assess whether the current branch or release candidate is ready for production. Adopt the **Release Manager** perspective.

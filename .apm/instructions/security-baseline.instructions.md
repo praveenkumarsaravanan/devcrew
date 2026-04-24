@@ -1,66 +1,61 @@
 ---
-description: Security baseline requirements for all backend services
-applyTo: "**/*.{ts,js,py,go,java,rs,sql,yml,yaml,json}"
+name: security-baseline
+description: Universal security rules and discipline routing to java-standards or react-standards
+applyTo: "**/*.{ts,tsx,js,jsx,java,sql,yml,yaml,json,html}"
 ---
 
 # Security Baseline
 
+These universal security rules apply to all code. For discipline-specific
+security standards, activate the appropriate skill below.
+
+## Discipline Routing
+
+| Project type   | Activate skill     |
+|----------------|--------------------|
+| Java backend   | `java-standards`   |
+| React frontend | `react-standards`  |
+| Fullstack      | Both skills        |
+| Other (Go, Python, Node.js, Angular, Vue, etc.) | No discipline-specific skill yet — apply the universal rules below |
+
+Use `project-detection` when the discipline is unclear.
+
 ## Secrets Management
 
-- Never commit secrets, API keys, tokens, or credentials to source control. Use pre-commit hooks (e.g., `detect-secrets`, `gitleaks`) to prevent accidental commits.
+- Never commit secrets, API keys, tokens, or credentials to source control. Use pre-commit hooks (`detect-secrets`, `gitleaks`) to prevent accidental commits.
 - Store secrets in environment variables or a dedicated secret manager (AWS Secrets Manager, HashiCorp Vault, GCP Secret Manager).
 - Rotate credentials on a quarterly cadence at minimum. Automate rotation where possible.
 - Use distinct credentials per environment (dev, staging, production). Never share secrets across environments.
 - Revoke credentials immediately when team members leave or roles change.
-
-## Input Validation
-
-- Validate all user input at API boundaries before any processing occurs.
-- Use allowlists over denylists. Define what is permitted rather than trying to enumerate what is forbidden.
-- Sanitize input before database queries, template rendering, and shell execution.
-- Enforce type, length, format, and range constraints on all inputs. Reject early with clear error messages.
-- Never trust client-side validation alone. Always re-validate on the server.
 
 ## Authentication
 
 - Use short-lived access tokens. JWT expiry should be under 1 hour.
 - Implement refresh token rotation — each refresh token is single-use and issues a new refresh token alongside the access token.
 - Enforce multi-factor authentication (MFA) for all admin and privileged operations.
-- Hash passwords with a modern algorithm (bcrypt, scrypt, or Argon2) with appropriate work factors.
+- Hash passwords with bcrypt, scrypt, or Argon2. Never use MD5 or SHA-256 alone for password hashing.
 - Implement account lockout or exponential backoff after repeated failed login attempts.
 - Invalidate all sessions on password change.
 
 ## Authorization
 
-- Check permissions at every endpoint. Never rely on client-side route guards alone.
-- Use Role-Based Access Control (RBAC) or Attribute-Based Access Control (ABAC) depending on complexity requirements.
+- Check permissions at every endpoint (backend). Never rely on client-side route guards as the sole authorization mechanism.
+- Use RBAC or ABAC depending on complexity requirements.
 - Default to deny. Explicitly grant access rather than explicitly restricting it.
-- Validate resource ownership — ensure users can only access their own resources unless explicitly authorized otherwise.
+- Validate resource ownership — users can only access their own resources unless explicitly authorized.
 - Log all authorization failures for security monitoring.
-
-## Data Protection
-
-- Encrypt data at rest using AES-256 or equivalent.
-- Encrypt data in transit using TLS 1.2+ for all connections, including internal service-to-service communication.
-- Use parameterized queries for all database operations. Never construct queries via string concatenation.
-- Mask PII (personally identifiable information) in logs, error messages, and monitoring dashboards.
-- Implement data retention policies. Do not store data longer than necessary.
-- Classify data by sensitivity level and apply controls proportional to the classification.
-
-## Dependency Security
-
-- Pin dependency versions in lock files. Use exact versions, not ranges.
-- Run vulnerability scans (e.g., `npm audit`, `safety`, `govulncheck`, Snyk, Dependabot) in CI on every build.
-- Do not merge code that introduces dependencies with known critical CVEs.
-- Review new dependencies before adoption: check maintenance status, known vulnerabilities, license, and transitive dependencies.
-- Subscribe to security advisories for critical dependencies.
 
 ## API Security
 
-- Rate limit all endpoints. Use tiered limits: stricter for authentication endpoints, more generous for read-only endpoints.
-- Validate `Content-Type` headers on all requests that accept a body. Reject unexpected content types.
-- Implement CORS properly: restrict allowed origins to known domains, do not use wildcard (`*`) in production.
-- Return minimal error information to clients. Internal details (stack traces, SQL errors, internal IPs) must never leak in API responses.
-- Use security headers: `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options`, `Content-Security-Policy`.
-- Implement request size limits to prevent denial-of-service via oversized payloads.
-- Log all API requests with enough detail for audit trails (who, what, when, from where) without logging sensitive request/response bodies.
+- Rate limit all endpoints. Stricter limits for authentication endpoints.
+- Implement CORS properly: restrict allowed origins to known domains, no wildcard (`*`) in production.
+- Return minimal error information to clients. No stack traces, SQL errors, or internal IPs in responses.
+- Use security headers on all responses:
+  - `Strict-Transport-Security: max-age=31536000; includeSubDomains`
+  - `X-Content-Type-Options: nosniff`
+  - `X-Frame-Options: DENY`
+  - `Content-Security-Policy: default-src 'self'`
+  - `Referrer-Policy: strict-origin-when-cross-origin`
+  - `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+- Implement request size limits to prevent DoS via oversized payloads.
+- Log API requests with enough detail for audit trails without logging sensitive bodies.

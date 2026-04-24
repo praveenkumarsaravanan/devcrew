@@ -17,7 +17,7 @@
         "type": "prompt",
         "prompt": "Before executing this tool, verify that no secrets, API keys, tokens, or credentials are being written to any file. If detected, block the action and warn the user.",
         "matchers": {
-          "toolName": "^(write|str_replace|edit)$"
+          "toolName": "^(write|str_replace|edit|Write|StrReplace|EditNotebook)$"
         }
       }
     ]

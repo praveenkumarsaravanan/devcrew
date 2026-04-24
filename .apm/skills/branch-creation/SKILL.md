@@ -1,7 +1,7 @@
 ---
 name: branch-creation
 description: >
-  Create git branches following the project's naming conventions.
+  Create git branches following the organization's naming conventions.
   Use when starting work on a new feature, fix, or chore, or when the
   user asks to create a branch.
 ---
@@ -14,22 +14,22 @@ Activate this skill when:
 
 - The user asks to create a new branch
 - Starting work on a new feature, bug fix, or task
-- The user provides a JIRA ticket and wants to begin implementation
+- The user provides a ticket and wants to begin implementation
 
 ## Required Format
 
 ```
-<type>/<JIRA-ticket>-<short-description>
+<type>/<ticket>-<short-description>
 ```
 
 **Examples:**
 
 ```
-feat/ENG-456-add-user-auth
-fix/PROJ-789-null-pointer-on-checkout
-chore/INFRA-101-upgrade-node-20
-docs/ENG-500-api-migration-guide
-refactor/PROJ-321-extract-payment-module
+feat/ISSUE-456-add-user-auth
+fix/ISSUE-789-null-pointer-on-checkout
+chore/ISSUE-101-upgrade-node-20
+docs/ISSUE-500-api-migration-guide
+refactor/ISSUE-321-extract-payment-module
 ```
 
 ## Components
@@ -51,9 +51,9 @@ Must match the commit type conventions (see `commit-message` skill for the full 
 | `style` | Formatting, whitespace, linting (no logic change) |
 | `revert` | Reverting a previous commit |
 
-### JIRA ticket
+### ticket
 
-The Jira issue key (e.g., `ENG-456`, `PROJ-789`). This links the branch to the ticket for traceability.
+The issue key (e.g., `ISSUE-456`, `ISSUE-789`). This links the branch to the ticket for traceability.
 
 ### short-description
 
@@ -64,10 +64,10 @@ A brief, kebab-case summary of the work. Keep it under 5 words.
 
 ## Workflow
 
-### 1. Identify the JIRA Ticket
+### 1. Identify the Ticket
 
 - Ask the user for the ticket if not provided.
-- If the Atlassian MCP is available, fetch the ticket details to confirm the summary matches the planned work.
+- If an issue tracker integration is available, fetch the ticket details to confirm the summary matches the planned work.
 
 ### 2. Determine the Type
 
@@ -84,13 +84,13 @@ Combine components in the required format. Keep the description concise and lowe
 ### 4. Create the Branch
 
 ```bash
-git checkout -b <type>/<JIRA-ticket>-<short-description>
+git checkout -b <type>/<ticket>-<short-description>
 ```
 
 If the branch should track a remote base branch:
 
 ```bash
-git checkout -b <type>/<JIRA-ticket>-<short-description> origin/trunk
+git checkout -b <type>/<ticket>-<short-description> origin/trunk
 ```
 
 ### 5. Confirm
@@ -99,8 +99,14 @@ Print the created branch name and confirm the user is on the correct base branch
 
 ## Guardrails
 
-- **Always include the JIRA ticket.** Branches without tickets break traceability and may be rejected by CI.
+- **Always include the ticket.** Branches without tickets break traceability and may be rejected by CI.
 - **Use kebab-case for the description.** No underscores, camelCase, or spaces.
 - **Keep it short.** Branch names over 60 characters cause issues with some tools.
 - **Branch from the correct base.** Default to `trunk` unless the user specifies otherwise.
 - **Check for existing branches.** Before creating, run `git branch -a | grep <ticket>` to avoid duplicates.
+
+## See Also
+
+- **`team-workflow`** — If starting a structured feature build, the team workflow handles requirements, architecture, implementation, review, and testing end-to-end.
+- **`commit-message`** — When your implementation is ready to commit, this skill constructs messages that pass the recommended commit convention.
+- **`pull-request`** — When all commits are ready, this skill creates the PR with ticket validation and test plan checks.

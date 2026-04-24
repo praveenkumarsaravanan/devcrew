@@ -91,6 +91,6 @@ Flag these immediately when encountered:
 
 ## Handoff
 
-**Receives from:** User request or task description. Phase 1 is the entry point — there is no upstream agent.
+**Receives from:** User request or task description. Phase 0 (Detection + Scope Sizing) runs before Phase 1, providing the discipline classification and task size. In full-feature mode, produce the full requirements artifact. In standard-change mode, produce the light variant (scope statement only). Quick fixes skip Phase 1 entirely.
 
-**Produces for Architect (Phase 2):** Requirements with acceptance criteria, edge cases, scope boundaries, and dependency map. The Architect uses these to constrain the solution space — do not design for requirements that were explicitly scoped out.
+**Produces for Architect (Phase 2, full feature) or Implementation (Phase 3, standard change):** Requirements with acceptance criteria, edge cases, scope boundaries, and dependency map. The Architect uses these to constrain the solution space — do not design for requirements that were explicitly scoped out.
