@@ -1,6 +1,6 @@
 # DevCrew: Turning Your AI-Powered IDE Into a Complete Engineering Team
 
-Your AI coding assistant can generate an entire backend service in minutes. It writes the database schema, builds the REST endpoints, adds authentication middleware, and even generates the unit tests. Then it reviews its own work and tells you everything looks great.
+Your AI coding assistant can build an entire feature in minutes. Need a backend service? It writes the database schema, builds the REST endpoints, and adds authentication middleware. Need a frontend? It scaffolds components, wires up state management, and handles form validation. It even generates the unit tests. Then it reviews its own work and tells you everything looks great.
 
 That is the problem.
 
@@ -8,9 +8,9 @@ No real engineering team ships code this way. A developer does not write, review
 
 Today's AI-powered IDEs are genuinely intelligent. Cursor, GitHub Copilot, and Claude Code can plan multi-step tasks, spawn subagents, and execute autonomously. But intelligence alone does not produce the properties that engineering teams need: **consistency** (the same review rigor every time), **adversarial scrutiny** (challenging assumptions rather than confirming them), and **process discipline** (requirements before code, architecture before implementation, tests that trace back to requirements).
 
-We built [DevCrew](https://github.com/praveenkumarsaravanan/devcrew) to bridge this gap. It turns your AI-powered IDE into a complete engineering team -- 11 specialized agents orchestrated through a scope-adaptive development lifecycle with built-in quality gates, automatic rework loops, and end-to-end requirement traceability. The workflow right-sizes itself: quick fixes skip straight to implementation, while full features run a complete 5-phase lifecycle across backend, frontend, or fullstack disciplines. It ships as a distributable package via [Microsoft APM (Agent Package Manager)](https://microsoft.github.io/apm/) for Cursor, GitHub Copilot, and Claude Code -- but the architectural patterns described here apply to any multi-agent system.
+I built [DevCrew](https://github.com/praveenkumarsaravanan/devcrew) to bridge this gap. It turns your AI-powered IDE into a complete engineering team -- 11 specialized agents orchestrated through a scope-adaptive development lifecycle with built-in quality gates, automatic rework loops, and end-to-end requirement traceability. The workflow right-sizes itself: quick fixes skip straight to implementation, while full features run a complete 5-phase lifecycle across backend, frontend, or fullstack disciplines. It ships as a distributable package via [Microsoft APM (Agent Package Manager)](https://microsoft.github.io/apm/) for Cursor, GitHub Copilot, and Claude Code -- but the architectural patterns described here apply to any multi-agent system.
 
-This is the first article in a two-part series. This piece covers the *why* and the *how* of the multi-agent workflow. The companion article, [Write Once, Agent Everywhere](article-distribution.md), covers how we packaged and distributed the platform across IDEs and teams.
+This is the first article in a two-part series. This piece covers the *why* and the *how* of the multi-agent workflow. The companion article, [Write Once, Agent Everywhere](distributing-ai-tooling.md), covers how I packaged and distributed the platform across IDEs and teams.
 
 ---
 
@@ -22,13 +22,13 @@ Most AI-assisted development today follows a single-agent pattern: one long conv
 
 When an LLM writes code and then reviews it in the same conversation, it is reviewing its own reasoning. It remembers why it chose that approach, what trade-offs it considered, and what alternatives it rejected. The review becomes a formality -- the agent confirms its own decisions rather than challenging them.
 
-The real-world consequence: the agent generates an API endpoint using string-concatenated SQL, reviews it, deems it acceptable because "the input is validated upstream," and ships a SQL injection vulnerability. A fresh reviewer would catch this immediately.
+The real-world consequence: the agent generates an API endpoint using string-concatenated SQL, reviews it, deems it acceptable because "the input is validated upstream," and ships a SQL injection vulnerability. Or it builds a React form that stores an auth token in localStorage, reviews it, and calls it secure. A fresh reviewer -- one who did not write the code -- would catch either issue immediately.
 
 ### It Forgets What You Asked For
 
 Long conversations accumulate stale reasoning. By the time a single-agent conversation reaches the testing phase, the context window is saturated with discarded design alternatives and implementation details that are no longer relevant. The agent's attention is diluted across thousands of tokens of noise.
 
-We observed this repeatedly: the implementation phase produces clean code, but by the test strategy phase the agent writes tests that validate implementation details rather than requirements, because the requirements have been buried under layers of conversation.
+I observed this repeatedly: the implementation phase produces clean code, but by the test strategy phase the agent writes tests that validate implementation details rather than requirements, because the requirements have been buried under layers of conversation.
 
 ### It Skips the Steps That Real Teams Never Skip
 
@@ -135,7 +135,15 @@ REQ-001: Create user registration endpoint
               password below minimum length (400)
   Priority: Must-have
 
-REQ-002: Hash passwords before storage
+REQ-002: Build registration form UI
+  Acceptance criteria: Form validates inputs client-side, displays
+              inline errors, submits to POST /api/users, redirects
+              on success
+  Edge cases: network failure during submit, concurrent duplicate
+              submission, screen reader accessibility
+  Priority: Must-have
+
+REQ-003: Hash passwords before storage
   Acceptance criteria: Passwords stored using bcrypt with cost factor 12
   Edge cases: empty password rejected at validation layer
   Priority: Must-have
@@ -191,7 +199,7 @@ A separate subagent implements every TC-ID as executable test code. This subagen
 
 The Test Engineer scans the codebase for existing test conventions and follows them exactly. After running the full suite, it produces a test execution report with a quality verdict. Application bugs are flagged and routed back to Phase 3 (capped at 2 iterations).
 
-> **Explore the implementation:** The complete workflow orchestration is defined in [`.apm/skills/team-workflow/SKILL.md`](https://github.com/praveenkumarsaravanan/devcrew/blob/trunk/.apm/skills/team-workflow/SKILL.md). Each agent persona lives in [`.apm/agents/`](https://github.com/praveenkumarsaravanan/devcrew/tree/trunk/.apm/agents). The re-routing rules and traceability matrix template are in the [workflow reference](https://github.com/praveenkumarsaravanan/devcrew/blob/trunk/.apm/skills/team-workflow/references/workflow-reference.md).
+> **Explore the implementation:** The complete workflow orchestration is defined in `[.apm/skills/team-workflow/SKILL.md](https://github.com/praveenkumarsaravanan/devcrew/blob/trunk/.apm/skills/team-workflow/SKILL.md)`. Each agent persona lives in `[.apm/agents/](https://github.com/praveenkumarsaravanan/devcrew/tree/trunk/.apm/agents)`. The re-routing rules and traceability matrix template are in the [workflow reference](https://github.com/praveenkumarsaravanan/devcrew/blob/trunk/.apm/skills/team-workflow/references/workflow-reference.md).
 
 ---
 
@@ -249,7 +257,7 @@ This solves context window pollution: later phases operate on clean, compressed 
 
 Phases 4 and 5a are explicitly adversarial. The agents are instructed to assume defects exist and actively search for them, rather than confirming the code works.
 
-This counteracts a well-documented tendency of LLMs toward agreeableness -- the inclination to validate work rather than challenge it. By framing the review as adversarial ("assume at least 3 defects exist," "do not approve on first pass unless genuinely flawless"), we shift the agent's default from confirmation to scrutiny.
+This counteracts a well-documented tendency of LLMs toward agreeableness -- the inclination to validate work rather than challenge it. By framing the review as adversarial ("assume at least 3 defects exist," "do not approve on first pass unless genuinely flawless"), the agent's default shifts from confirmation to scrutiny.
 
 The phrasing matters enormously. Early versions with softer language ("review the code for potential issues") produced noticeably less thorough reviews. The adversarial frame also needs calibration -- too aggressive and the reviewer flags false positives; too lenient and it reverts to agreeableness.
 
@@ -290,11 +298,11 @@ flowchart LR
 At the end of the workflow, a traceability matrix maps every requirement from inception to verification:
 
 
-| REQ-ID  | Component      | Files                | Test Cases             |
-| ------- | -------------- | -------------------- | ---------------------- |
-| REQ-001 | UserService    | `UserService.java`   | TC-001, TC-003         |
-| REQ-002 | AuthMiddleware | `auth.middleware.ts` | TC-002, TC-004         |
-| REQ-003 | RateLimiter    | `rate-limiter.ts`    | TC-005, TC-006, TC-007 |
+| REQ-ID  | Component        | Files                  | Test Cases             |
+| ------- | ---------------- | ---------------------- | ---------------------- |
+| REQ-001 | UserService      | `UserService.java`     | TC-001, TC-003         |
+| REQ-002 | RegistrationForm | `RegistrationForm.tsx` | TC-002, TC-004         |
+| REQ-003 | AuthMiddleware   | `auth.middleware.ts`   | TC-005, TC-006, TC-007 |
 
 
 If any REQ-ID lacks a corresponding component, code file, or test case, it is flagged as a gap. This maps directly to enterprise audit requirements and demonstrates that the system produces verifiable, traceable output.
@@ -313,7 +321,7 @@ The 5-phase workflow covers everything up to merge. Post-merge activities are de
 | `/monitoring-plan`   | SRE             | SLOs/SLIs, 4-tier alerting, runbooks, customer impact |
 
 
-Deployment, release, and monitoring happen at different cadences. Bundling them into the pre-merge workflow was an early mistake we corrected (see Lessons Learned).
+Deployment, release, and monitoring happen at different cadences. Bundling them into the pre-merge workflow was an early mistake I corrected (see Lessons Learned).
 
 ---
 
@@ -371,4 +379,4 @@ The system is not about replacing human engineers. It is about giving each devel
 
 [DevCrew](https://github.com/praveenkumarsaravanan/devcrew) is open source. The patterns described here -- scope-adaptive workflows, subagent isolation, handoff contracts, adversarial prompting, re-routing with safety caps -- are portable to any multi-agent system.
 
-**Next in this series:** [Write Once, Agent Everywhere](article-distribution.md) -- how we packaged the platform for distribution across IDEs (Cursor, GitHub Copilot, and Claude Code) and teams using [Microsoft APM](https://microsoft.github.io/apm/).
+**Next in this series:** [Write Once, Agent Everywhere](distributing-ai-tooling.md) -- how I packaged the platform for distribution across IDEs (Cursor, GitHub Copilot, and Claude Code) and teams using [Microsoft APM](https://microsoft.github.io/apm/).

@@ -4,9 +4,9 @@ Your team's best developer practices are locked inside individual conversations.
 
 This is the distribution problem: how do you package engineering knowledge -- agent behaviors, coding standards, security rules, review checklists, and workflow automation -- into something that every developer on your team gets automatically, regardless of which IDE they use?
 
-We solved this with [DevCrew](https://github.com/praveenkumarsaravanan/devcrew), a single repository that defines all engineering primitives in one place and compiles them for multiple IDEs using [Microsoft APM (Agent Package Manager)](https://microsoft.github.io/apm/). One source of truth, three targets: Cursor, GitHub Copilot, and Claude Code.
+I solved this with [DevCrew](https://github.com/praveenkumarsaravanan/devcrew), a single repository that defines all engineering primitives in one place and compiles them for multiple IDEs using [Microsoft APM (Agent Package Manager)](https://microsoft.github.io/apm/). One source of truth, three targets: Cursor, GitHub Copilot, and Claude Code.
 
-This is the second article in a two-part series. The companion article, [Turning Your AI-Powered IDE Into a Complete Engineering Team](article.md), covers the multi-agent workflow architecture. This piece covers how we packaged and distributed it.
+This is the second article in a two-part series. The companion article, [Turning Your AI-Powered IDE Into a Complete Engineering Team](turning-ide-into-engineering-team.md), covers the multi-agent workflow architecture. This piece covers how I packaged and distributed it.
 
 ---
 
@@ -16,7 +16,7 @@ When AI coding assistants first appeared, adoption was organic. Individual devel
 
 ### Inconsistency Across Engineers
 
-Developer A's AI assistant enforces parameterized SQL queries. Developer B's does not. Both ship code to the same production database. The security posture of the codebase depends on which developer happened to touch the file.
+Developer A's AI assistant enforces parameterized SQL queries and accessible form markup. Developer B's does not. Both ship code to the same production application. The security posture and user experience of the product depend on which developer happened to touch the file.
 
 This inconsistency extends to every dimension of software quality: error handling patterns, logging standards, test coverage expectations, commit message formats, and code review thoroughness. Without shared configuration, the AI assistant amplifies each developer's individual habits -- good or bad.
 
@@ -108,21 +108,23 @@ The platform distributes six types of engineering primitives:
 
 Eleven specialized agent personas, each with a distinct role, evaluation criteria, and handoff contract:
 
-| Agent | Role |
-|---|---|
-| Product Analyst | Decomposes requests into testable requirements |
-| Architect | Trade-off analysis, component design, anti-pattern detection |
-| Junior Developer | Clean implementation following codebase patterns |
-| Senior Developer | Scalability, performance, rollout, and backward compatibility |
-| Backend Reviewer | Adversarial code review for backend services (security, performance, quality) |
-| Frontend Reviewer | Adversarial code review for frontend (accessibility, performance, design system) |
-| QA Lead | Test strategy, quality gates, and go/no-go decisions |
-| Test Engineer | Test implementation from the QA Lead's plan |
-| DevOps Engineer | CI/CD pipeline and deployment strategy |
-| Release Manager | Release readiness and rollback planning |
-| SRE | SLOs, alerting, runbooks, and customer impact |
 
-These agents can be invoked individually or orchestrated through the team-workflow (covered in [Turning Your AI-Powered IDE Into a Complete Engineering Team](article.md)). The workflow's discipline detection automatically dispatches the Backend Reviewer or Frontend Reviewer based on the type of code being changed.
+| Agent             | Role                                                                             |
+| ----------------- | -------------------------------------------------------------------------------- |
+| Product Analyst   | Decomposes requests into testable requirements                                   |
+| Architect         | Trade-off analysis, component design, anti-pattern detection                     |
+| Junior Developer  | Clean implementation following codebase patterns                                 |
+| Senior Developer  | Scalability, performance, rollout, and backward compatibility                    |
+| Backend Reviewer  | Adversarial code review for backend services (security, performance, quality)    |
+| Frontend Reviewer | Adversarial code review for frontend (accessibility, performance, design system) |
+| QA Lead           | Test strategy, quality gates, and go/no-go decisions                             |
+| Test Engineer     | Test implementation from the QA Lead's plan                                      |
+| DevOps Engineer   | CI/CD pipeline and deployment strategy                                           |
+| Release Manager   | Release readiness and rollback planning                                          |
+| SRE               | SLOs, alerting, runbooks, and customer impact                                    |
+
+
+These agents can be invoked individually or orchestrated through the team-workflow (covered in [Turning Your AI-Powered IDE Into a Complete Engineering Team](turning-ide-into-engineering-team.md)). The workflow's discipline detection automatically dispatches the Backend Reviewer or Frontend Reviewer based on the type of code being changed.
 
 ### Skills -- The Capabilities
 
@@ -156,7 +158,7 @@ Three [Model Context Protocol](https://modelcontextprotocol.io/) servers that gi
 - **GitHub** -- repository, PR, and issue management
 - **Atlassian** -- Jira and Confluence for ticket validation and documentation
 
-> **Browse the source:** All primitives are in the [`.apm/` directory](https://github.com/praveenkumarsaravanan/devcrew/tree/trunk/.apm). Agent definitions live in [`agents/`](https://github.com/praveenkumarsaravanan/devcrew/tree/trunk/.apm/agents), skills in [`skills/`](https://github.com/praveenkumarsaravanan/devcrew/tree/trunk/.apm/skills), and the MCP server configuration in [`.mcp.json`](https://github.com/praveenkumarsaravanan/devcrew/blob/trunk/.mcp.json).
+> **Browse the source:** All primitives are in the `[.apm/` directory]([https://github.com/praveenkumarsaravanan/devcrew/tree/trunk/.apm](https://github.com/praveenkumarsaravanan/devcrew/tree/trunk/.apm)). Agent definitions live in `[agents/](https://github.com/praveenkumarsaravanan/devcrew/tree/trunk/.apm/agents)`, skills in `[skills/](https://github.com/praveenkumarsaravanan/devcrew/tree/trunk/.apm/skills)`, and the MCP server configuration in `[.mcp.json](https://github.com/praveenkumarsaravanan/devcrew/blob/trunk/.mcp.json)`.
 
 ---
 
@@ -205,16 +207,20 @@ flowchart TD
     Claude --> ClaudeHooks
 ```
 
+
+
 The compilation step translates between formats. For example, an instruction defined in `.apm/instructions/coding-standards.instructions.md` becomes a `.mdc` rule file for Cursor, an `.instructions.md` file under `.github/` for Copilot, and part of the compiled `CLAUDE.md` for Claude Code. The content is identical -- only the location and file format change.
 
-| Primitive | Cursor Location | Copilot Location | Claude Code Location |
-|---|---|---|---|
-| Instructions | `.cursor/rules/*.mdc` | `.github/instructions/*.instructions.md` | `CLAUDE.md` (compiled) |
-| Agents | `.cursor/agents/*.md` | `.github/agents/*.agent.md` | `.claude/agents/*.md` |
-| Skills | `.cursor/skills/{name}/` | `.github/skills/{name}/` | `.claude/skills/{name}/` |
-| Prompts | `.cursor/commands/` | `.github/prompts/*.prompt.md` | `.claude/commands/*.md` |
-| Hooks | `.cursor/hooks.json` | N/A (Copilot) | `.claude/settings.json` |
-| MCP | `.mcp.json` | `.mcp.json` | `.mcp.json` |
+
+| Primitive    | Cursor Location          | Copilot Location                         | Claude Code Location     |
+| ------------ | ------------------------ | ---------------------------------------- | ------------------------ |
+| Instructions | `.cursor/rules/*.mdc`    | `.github/instructions/*.instructions.md` | `CLAUDE.md` (compiled)   |
+| Agents       | `.cursor/agents/*.md`    | `.github/agents/*.agent.md`              | `.claude/agents/*.md`    |
+| Skills       | `.cursor/skills/{name}/` | `.github/skills/{name}/`                 | `.claude/skills/{name}/` |
+| Prompts      | `.cursor/commands/`      | `.github/prompts/*.prompt.md`            | `.claude/commands/*.md`  |
+| Hooks        | `.cursor/hooks.json`     | N/A (Copilot)                            | `.claude/settings.json`  |
+| MCP          | `.mcp.json`              | `.mcp.json`                              | `.mcp.json`              |
+
 
 This means the team maintains one set of files. When a coding standard is updated, it is updated once and compiled to all three targets.
 
@@ -270,7 +276,7 @@ To override any primitive, mirror the file path locally:
 .apm/instructions/coding-standards.md   # Your standards win
 ```
 
-The governance policy (`apm-policy.yml`) controls enforcement. Our package uses `warn` mode -- policy violations produce warnings but do not block installs. Organizations that need stricter control can switch to `enforce` mode, which blocks installation of non-compliant packages.
+The governance policy (`apm-policy.yml`) controls enforcement. The DevCrew package uses `warn` mode -- policy violations produce warnings but do not block installs. Organizations that need stricter control can switch to `enforce` mode, which blocks installation of non-compliant packages.
 
 ```yaml
 extends: default
@@ -312,11 +318,13 @@ The platform uses semantic versioning with git tags. The release process is auto
 bash .apm/skills/git-release-tag/scripts/release.sh
 ```
 
-| Increment | When to use |
-|---|---|
-| `patch` (default) | Fixes to existing skills, instructions, or prompts |
-| `minor` | New skills, agents, prompts, or non-breaking additions |
-| `major` | Breaking changes to primitives that consumers may have overridden |
+
+| Increment         | When to use                                                       |
+| ----------------- | ----------------------------------------------------------------- |
+| `patch` (default) | Fixes to existing skills, instructions, or prompts                |
+| `minor`           | New skills, agents, prompts, or non-breaking additions            |
+| `major`           | Breaking changes to primitives that consumers may have overridden |
+
 
 Consumers pin to a specific version via `ref:` in their `apm.yml`. When the platform publishes a new version, consumers update at their own pace -- there is no forced upgrade.
 
@@ -366,7 +374,7 @@ Starting with `warn` mode lets teams adopt the package without friction. Once th
 
 ## Conclusion
 
-The distribution problem is distinct from the workflow problem. Building a sophisticated multi-agent workflow (covered in [Turning Your AI-Powered IDE Into a Complete Engineering Team](article.md)) is valuable, but it only matters if every developer on your team actually has access to it.
+The distribution problem is distinct from the workflow problem. Building a sophisticated multi-agent workflow (covered in [Turning Your AI-Powered IDE Into a Complete Engineering Team](turning-ide-into-engineering-team.md)) is valuable, but it only matters if every developer on your team actually has access to it.
 
 [Microsoft APM](https://microsoft.github.io/apm/) bridges this gap: define your engineering primitives once in `.apm/`, compile to any IDE -- Cursor, GitHub Copilot, or Claude Code -- distribute with a single command, and let teams override what does not fit. The result is consistent AI-assisted development across every developer, every IDE, and every project -- without manual configuration.
 
