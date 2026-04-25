@@ -80,3 +80,20 @@ fi
 
 echo ""
 info "Setup complete. Run 'apm install' to install package dependencies."
+
+# ── 5. Bootstrap project-level files ─────────────────────────────────────────
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+info "Bootstrapping project context and memory files..."
+
+if [[ -t 0 ]]; then
+  bash "$SCRIPT_DIR/init-context.sh"
+else
+  info "Non-interactive mode — skipping .project-context.md setup (run 'bash scripts/init-context.sh' manually or let the AI agent create it)"
+fi
+
+bash "$SCRIPT_DIR/init-memory.sh"
+
+echo ""
+ok "All done. Your project is ready for AI-native development with DevCrew."

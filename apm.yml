@@ -1,11 +1,10 @@
 name: devcrew
-version: "1.0.1"
-description: "AI engineering team simulation -- skills, MCP servers, rules, hooks, and agents for Cursor and GitHub Copilot"
-target:
-  copilot: {}
-  cursor:
-    instructions: .cursor/rules/
-    prompts: .cursor/commands/
+version: "1.5.0"
+description: "PROSE-aligned AI engineering team — skills, agents, instructions, prompts, hooks, and project lifecycle for Cursor and GitHub Copilot"
+target: [copilot, cursor, claude]
 scripts:
   setup: "bash scripts/setup.sh"
+  postinstall: "bash scripts/post-install.sh"
   release: "bash .apm/skills/git-release-tag/scripts/release.sh"
+  init-context: "bash scripts/init-context.sh"
+  init-memory: "bash scripts/init-memory.sh"
