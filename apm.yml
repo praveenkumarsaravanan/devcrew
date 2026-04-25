@@ -1,5 +1,5 @@
 name: devcrew
-version: "1.5.0"
+version: "1.5.1"
 description: "PROSE-aligned AI engineering team — skills, agents, instructions, prompts, hooks, and project lifecycle for Cursor and GitHub Copilot"
 target: [copilot, cursor, claude]
 scripts:
