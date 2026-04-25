@@ -1,19 +1,11 @@
 # APM output (apm compile / apm pack / apm install)
 build/
 AGENTS.md
-.cursor/rules/
-.cursor/agents/
-.cursor/skills/
-.cursor/hooks.json
-.github/instructions/*-apm.instructions.md
-.github/prompts/
-.github/agents/
-.github/skills/
-.github/hooks/
+CLAUDE.md
+.cursor/*
+.github/*
+.claude/*
 apm_modules/
-
-# Dependencies
-node_modules/
 
 # Environment / secrets
 .env
@@ -21,4 +13,4 @@ node_modules/
 
 # Logs
 *.log
-CLAUDE.md
+apm.lock.yaml

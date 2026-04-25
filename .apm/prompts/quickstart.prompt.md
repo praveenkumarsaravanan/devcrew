@@ -19,6 +19,18 @@ You don't need to pick a workflow. `team-workflow` accepts any task and right-si
 
 You confirm the classification at the start and can override it at any time ("run the full workflow" or "skip to implementation").
 
+## Project Lifecycle
+
+Start here when setting up or onboarding a project:
+
+| I want to... | Use this | Type |
+|---|---|---|
+| Scaffold a new project from scratch | `/new-project` | Prompt |
+| Set up project standards and governance | `/constitution` | Prompt |
+| Migrate a legacy codebase to AI-native dev | `/legacy-migrate` | Prompt |
+| Decompose a spec into tracker tasks | `/spec-to-issues` | Prompt |
+| Create a team standards package | `/new-team-package` | Prompt |
+
 ## Specialized Skills
 
 For tasks that have a dedicated skill, use it directly instead of `team-workflow`:
@@ -37,6 +49,11 @@ For tasks that have a dedicated skill, use it directly instead of `team-workflow
 | Create or edit APM artifacts | `apm-authoring` | Skill |
 | Check Java/Spring Boot standards | `java-standards` | Skill |
 | Check React/TypeScript standards | `react-standards` | Skill |
+| Write a structured specification | `spec-templates` | Skill |
+| Manage project context and memory | `memory-management` | Skill |
+| Assess a legacy codebase for migration | `legacy-assessment` | Skill |
+| Bootstrap a new project | `project-bootstrap` | Skill |
+| Manage team packages | `team-package-management` | Skill |
 
 ## Post-Merge (Optional, Human-Initiated)
 
@@ -63,6 +80,11 @@ These are never automatic. Invoke them when you're ready:
 
 **Prompts** are invoked via slash commands (Cmd+/ in Cursor):
 
+- `/new-project` — scaffold a new project with DevCrew wired in
+- `/constitution` — set up project standards and persistent context
+- `/legacy-migrate` — onboard a legacy codebase
+- `/spec-to-issues` — decompose a spec into tracker tasks
+- `/new-team-package` — scaffold a team standards package
 - `/devops-plan` — deployment planning
 - `/release-readiness` — go/no-go checklist
 - `/monitoring-plan` — SLOs, alerts, and runbooks
@@ -70,6 +92,12 @@ These are never automatic. Invoke them when you're ready:
 **Agents** are role-based personas dispatched automatically by skills. You rarely invoke them directly.
 
 ## Workflow Quick Reference
+
+### New project (full lifecycle)
+
+```
+/new-project → /constitution → team-workflow → commit-message → pull-request
+```
 
 ### Any task (system right-sizes automatically)
 

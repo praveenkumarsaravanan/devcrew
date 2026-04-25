@@ -156,12 +156,18 @@ At phase transitions, compress context by:
 
 **Actions:**
 
-1. **Discipline detection:**
+1. **Load project context:**
+   - Run the `memory-management` skill (Operation 1: Read Context) to check for `.project-context.md`.
+   - If found, load stored platform configuration (tracker, execution mode, git platform) alongside discipline.
+   - Run the `memory-management` skill (Operation 3: Read Memory) to load relevant `.memory.md` sections as context for the current task.
+
+2. **Discipline detection:**
    - If the user stated the discipline explicitly, trust them.
+   - If `.project-context.md` provided the discipline, confirm with a one-line summary.
    - Otherwise, run `project-detection` to classify by scanning root files, dependencies, and directory structure.
    - For fullstack projects, ask which layer the current task targets. If it spans both, set discipline to **fullstack**.
 
-2. **Scope sizing — assess these signals:**
+3. **Scope sizing — assess these signals:**
    - How many files will likely change? (1–2 = small; 3–5 = medium; 6+ = large)
    - Does the task introduce a new API surface, service, or component? (yes = larger)
    - Is there an architecture decision to make (new technology, new pattern, data model change)? (yes = full feature)
@@ -169,6 +175,7 @@ At phase transitions, compress context by:
    - Is there a ticket? If so, is it a bug, story, or epic? (bug = quick fix; story = standard; epic = full feature)
 
 3. **Present the assessment and get confirmation.**
+4. **Persist context (first run only):** If `.project-context.md` did not exist, call `memory-management` (Operation 2: Write Context) to persist all detected values.
 
 **Output:**
 
@@ -180,6 +187,10 @@ At phase transitions, compress context by:
 **Task size:** quick-fix | standard-change | full-feature
 **Sizing rationale:** [1-2 sentences explaining why]
 **Active phases:** [list of phases that will run]
+
+**Platform:** tracker=[tracker] | execution=[mode] | git=[platform]
+**Context source:** .project-context.md (persisted) | fresh detection
+**Memory loaded:** [relevant domain sections, or "none"]
 ```
 
 **Quality gate — do not advance until:**
@@ -236,7 +247,7 @@ After completing Phase 1, re-evaluate scope sizing. If the requirements reveal t
 
 ---
 
-**Handoff artifact:** Requirements document with numbered requirements, acceptance criteria, edge case table, scope boundaries, and dependency list (full feature) — or a brief scope statement (standard change). This artifact is referenced by every subsequent phase.
+**Handoff artifact:** Requirements document with numbered requirements, acceptance criteria, edge case table, scope boundaries, and dependency list (full feature) — or a brief scope statement (standard change). **For full features:** activate the `spec-templates` skill to produce a `.spec.md` file as the formal handoff artifact. This file becomes the contract between Phase 1 and all subsequent phases.
 
 **Checkpoint:** Present the requirements to the user. Ask: "Do these requirements capture what you want to build? Any missing scenarios or scope changes?" Proceed only after confirmation.
 
@@ -278,7 +289,18 @@ After completing Phase 1, re-evaluate scope sizing. If the requirements reveal t
 
 **Role:** Junior Developer (`junior-developer`) guided by Senior Developer (`senior-developer`)
 
-**Execution:** **Subagent** — spawn with `subagent_type="generalPurpose"`. Pass Phase 0 discipline, plus Phase 1 requirements and Phase 2 architecture handoffs (if those phases ran). Needs full tool access.
+**Execution strategy:** Determined by the `execution` value from Phase 0 (stored in `.project-context.md`):
+
+| Mode | Behavior |
+|------|----------|
+| **`local`** (default) | Spawn a `generalPurpose` subagent in the current IDE session. This is the existing behavior. |
+| **`background`** | Describe the implementation plan, then instruct the user to delegate to a Cursor Background Agent or Claude Code `--background` mode. Provide the full Phase 1 requirements and Phase 2 architecture as the background agent's prompt. |
+| **`async`** | Run `/spec-to-issues` to decompose the spec into parallelizable tracker tasks. Each task can be assigned to an async agent (GitHub Coding Agent, Devin, etc.) or a team member. The workflow pauses here until tasks are completed. |
+| **`manual`** | Produce a detailed implementation plan (files to create/modify, code patterns to follow, test expectations) and let the developer code it themselves. Skip to Phase 4 when the developer signals completion. |
+
+For `local` mode (the default), proceed with the subagent-based implementation below. For other modes, produce the appropriate output and pause for user action.
+
+**Subagent execution (local mode):** Spawn with `subagent_type="generalPurpose"`. Pass Phase 0 discipline, plus Phase 1 requirements and Phase 2 architecture handoffs (if those phases ran). Needs full tool access.
 
 **Prompt for subagent:** "You are the Junior Developer guided by the Senior Developer. Discipline: **[discipline]**. Task size: **[size]**. Implement the changes following codebase patterns. Apply discipline-specific practices from both agent definitions. Handle error paths, validation, and cleanup. [Attach available handoffs from prior phases]"
 
@@ -447,6 +469,22 @@ The following does NOT apply to quick-fix lightweight reviews. For standard and 
 **Handoff artifact:** Test files created (with TC-ID mapping), execution report, quality verdict, application bugs found, and any deviations from the plan.
 
 **Checkpoint:** Present the test results and quality verdict to the user. Ask: "Tests are complete. Here are the results and any issues found. Ready to proceed with creating a PR, or would you like to address the findings first?"
+
+---
+
+### Post-Workflow: Capture Learnings
+
+**After the workflow completes** (all phases done, or the user stops early), run the `memory-management` skill (Operation 4: Write Memory) to capture learnings:
+
+1. Extract from the final handoff artifacts:
+   - Architecture decisions made and their rationale
+   - Patterns that worked well during implementation
+   - Anti-patterns discovered during review
+   - Test strategies that provided good coverage
+2. Append entries to `.memory.md` under the appropriate domain sections.
+3. Inform the user: "Learnings captured in `.memory.md`."
+
+This step is automatic and lightweight — it should not require user interaction unless the learnings are ambiguous.
 
 ---
 
