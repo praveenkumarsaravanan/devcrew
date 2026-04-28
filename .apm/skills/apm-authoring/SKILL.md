@@ -324,6 +324,36 @@ bash .apm/skills/apm-authoring/scripts/validate.sh --json        # JSON output f
 - **Never omit the closing `---` in frontmatter.** This is the #1 parsing error for skills and agents.
 - **Never write interactive scripts for agent use.** All input must come from flags or env vars.
 
+## Post-Change Evaluation
+
+After creating or modifying any APM artifact, run the relevant eval scenarios to verify nothing has regressed.
+
+### When to run evals
+
+| Change type | Eval action |
+|-------------|-------------|
+| New skill created | Run the matching SO-* scenario if one exists, or flag that no scenario covers this skill yet |
+| Existing skill modified | Run `eval` skill Mode 5 (regression check) against the last baseline |
+| Agent modified | Run right-sizing (RS-*) and consistency (CON-*) scenarios — agents affect Phase 0 and workflow behavior |
+| Instruction modified | Run quality-gates (QG-*) and governance (GOV-*) — instructions affect review and risk rules |
+| Prompt modified | Run the SO-* scenario matching the prompt's purpose, if available |
+| Hook modified | Run a quick smoke test — edit a matching file and verify the hook fires correctly |
+
+### How to run
+
+1. After validation and `apm compile` succeed, invoke the `eval` skill:
+   - **Single scenario:** "Run eval SO-007" (for a java-standards change)
+   - **Dimension sweep:** "Eval skill-output" (for broad skill changes)
+   - **Regression check:** "Check for regressions" (compares against the last baseline)
+2. If the eval reveals a regression (RL-2 or higher), fix the issue before committing.
+3. If no eval scenario covers the modified skill, note it as a gap and consider adding one.
+
+### Minimum eval requirement
+
+- **Any change to `.apm/skills/`**: Run at least the matching SO-* scenario.
+- **Any change to `.apm/agents/` or `.apm/instructions/`**: Run at least one scenario from the affected behavioral dimension (right-sizing, quality-gates, governance).
+- **Before a release**: Run the full suite (Mode 3).
+
 ## See Also
 
 - **`commit-message`** — After authoring APM artifacts, use this skill to construct commit messages that pass the recommended commit convention.

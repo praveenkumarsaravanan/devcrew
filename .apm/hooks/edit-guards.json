@@ -9,6 +9,14 @@
         "matchers": {
           "filePattern": "\\.(ts|js|py|go|java)$"
         }
+      },
+      {
+        "name": "apm-eval-reminder",
+        "type": "prompt",
+        "prompt": "An APM artifact was modified. After completing all edits, remind the user to run the relevant eval scenario to check for regressions. Suggest: 1) Run validation: bash .apm/skills/apm-authoring/scripts/validate.sh, 2) Recompile: apm compile, 3) Run the matching eval scenario (e.g., 'Run eval SO-007' for a java-standards change, or 'Check for regressions' for a full regression check). Do NOT block the edit — this is an advisory reminder only.",
+        "matchers": {
+          "filePattern": "\\.apm/(skills|agents|instructions|prompts|hooks)/"
+        }
       }
     ],
     "preToolUse": [
