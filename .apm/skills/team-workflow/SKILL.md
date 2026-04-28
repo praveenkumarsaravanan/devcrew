@@ -535,4 +535,5 @@ These prompts leverage the `devops-engineer`, `release-manager`, and `sre` agent
 - **`branch-creation`** — Create a branch with org naming conventions before starting.
 - **`code-review`** — Standalone reviews outside the workflow (e.g., reviewing someone else's PR).
 - **`testing`** — Standalone test writing outside the workflow (e.g., backfilling tests).
+- **`eval`** — If the workflow modified `.apm/` primitives (skills, agents, instructions, prompts, hooks), suggest running the relevant eval scenarios to verify no regressions. See `apm-authoring` skill for the eval-after-change protocol.
 
