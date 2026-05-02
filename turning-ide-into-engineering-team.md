@@ -10,7 +10,7 @@ Today's AI-powered IDEs are genuinely intelligent. Cursor, GitHub Copilot, and C
 
 I built [DevCrew](https://github.com/praveenkumarsaravanan/devcrew) to bridge this gap. It turns your AI-powered IDE into a complete engineering team -- 11 specialized agents orchestrated through a scope-adaptive development lifecycle with built-in quality gates, automatic rework loops, and end-to-end requirement traceability. The workflow right-sizes itself: quick fixes skip straight to implementation, while full features run a complete 5-phase lifecycle across backend, frontend, or fullstack disciplines. It ships as a distributable package via [Microsoft APM (Agent Package Manager)](https://microsoft.github.io/apm/) for Cursor, GitHub Copilot, and Claude Code -- but the architectural patterns described here apply to any multi-agent system.
 
-This is the first article in a two-part series. This piece covers the *why* and the *how* of the multi-agent workflow. The companion article, [Write Once, Agent Everywhere](distributing-ai-tooling.md), covers how I packaged and distributed the platform across IDEs and teams.
+This is the first article in a three-part series. This piece covers the *why* and the *how* of the multi-agent workflow. The second article, [Write Once, Agent Everywhere](distributing-ai-tooling.md), covers how I packaged and distributed the platform across IDEs and teams. The third, [How Do You Know Your AI Tools Actually Help Your Team?](measuring-ai-tooling.md), covers how I measure whether any of it works.
 
 ---
 
@@ -379,4 +379,4 @@ The system is not about replacing human engineers. It is about giving each devel
 
 [DevCrew](https://github.com/praveenkumarsaravanan/devcrew) is open source. The patterns described here -- scope-adaptive workflows, subagent isolation, handoff contracts, adversarial prompting, re-routing with safety caps -- are portable to any multi-agent system.
 
-**Next in this series:** [Write Once, Agent Everywhere](distributing-ai-tooling.md) -- how I packaged the platform for distribution across IDEs (Cursor, GitHub Copilot, and Claude Code) and teams using [Microsoft APM](https://microsoft.github.io/apm/).
+**Next in this series:** [Write Once, Agent Everywhere](distributing-ai-tooling.md) -- how I packaged the platform for distribution across IDEs (Cursor, GitHub Copilot, and Claude Code) and teams using [Microsoft APM](https://microsoft.github.io/apm/). Then: [How Do You Know Your AI Tools Actually Help Your Team?](measuring-ai-tooling.md) -- how I built an evaluation framework with standard ML metrics to prove it works.
