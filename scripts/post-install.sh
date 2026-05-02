@@ -24,11 +24,8 @@ if [[ "${APM_GLOBAL:-}" == "1" ]] || [[ "${1:-}" == "--global" ]]; then
 elif [[ -d "$PROJECT_CURSOR_DIR" ]]; then
   CURSOR_BASE="$PROJECT_CURSOR_DIR"
   SCOPE="project"
-elif [[ -d "$USER_CURSOR_DIR" ]]; then
-  CURSOR_BASE="$USER_CURSOR_DIR"
-  SCOPE="user"
 else
-  echo "[i] No .cursor/ directory found at project or user level — skipping."
+  echo "[i] No .cursor/ directory found in project — skipping. Use --global to deploy to ~/.cursor."
   exit 0
 fi
 
