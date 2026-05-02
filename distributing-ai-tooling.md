@@ -6,7 +6,7 @@ This is the distribution problem: how do you package engineering knowledge -- ag
 
 I solved this with [DevCrew](https://github.com/praveenkumarsaravanan/devcrew), a single repository that defines all engineering primitives in one place and compiles them for multiple IDEs using [Microsoft APM (Agent Package Manager)](https://microsoft.github.io/apm/). One source of truth, three targets: Cursor, GitHub Copilot, and Claude Code.
 
-This is the second article in a two-part series. The companion article, [Turning Your AI-Powered IDE Into a Complete Engineering Team](turning-ide-into-engineering-team.md), covers the multi-agent workflow architecture. This piece covers how I packaged and distributed it.
+This is the second article in a three-part series. The first article, [Turning Your AI-Powered IDE Into a Complete Engineering Team](turning-ide-into-engineering-team.md), covers the multi-agent workflow architecture. This piece covers how I packaged and distributed it. The third, [How Do You Know Your AI Tools Actually Help Your Team?](measuring-ai-tooling.md), covers how I measure whether any of it works.
 
 ---
 
@@ -379,3 +379,5 @@ The distribution problem is distinct from the workflow problem. Building a sophi
 [Microsoft APM](https://microsoft.github.io/apm/) bridges this gap: define your engineering primitives once in `.apm/`, compile to any IDE -- Cursor, GitHub Copilot, or Claude Code -- distribute with a single command, and let teams override what does not fit. The result is consistent AI-assisted development across every developer, every IDE, and every project -- without manual configuration.
 
 [DevCrew](https://github.com/praveenkumarsaravanan/devcrew) is open source. Install it, adapt it to your team, and stop letting your best practices live in one developer's head.
+
+**Next in this series:** [How Do You Know Your AI Tools Actually Help Your Team?](measuring-ai-tooling.md) -- how I built an evaluation framework with planted-bug fixtures, standard ML metrics, and Capability Levels to prove the tooling actually works.
