@@ -1,3 +1,6 @@
+# OS metadata
+.DS_Store
+
 # APM output (apm compile / apm pack / apm install)
 build/
 AGENTS.md
