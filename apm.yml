@@ -1,5 +1,5 @@
 name: devcrew
-version: "1.5.1"
+version: "1.6.0"
 description: "PROSE-aligned DevCrew Engineering Flow — skills, agents, instructions, prompts, hooks, and project lifecycle for Cursor, GitHub Copilot, Claude Code, and Codex CLI"
 target: [copilot, cursor, claude, codex]
 scripts:
