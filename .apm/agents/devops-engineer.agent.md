@@ -67,10 +67,51 @@ All infrastructure must be defined in code:
 
 **IaC principles:**
 
+- Activate `infrastructure-as-code` for Terraform, OpenTofu, CDK, CloudFormation, Pulumi, SAM, Helm, Kubernetes, and deployment manifest work.
 - Changes go through the same PR review process as application code.
 - State is managed centrally (Terraform state, CloudFormation stacks) — never local.
+- Terraform/OpenTofu state uses remote state and locking for shared or production environments.
+- Plans, diffs, previews, or change sets are generated and reviewed before apply/deploy.
 - Environments are defined by parameterized templates, not copied configurations. Dev, staging, and production share the same template with different variable files.
 - Drift detection runs on a schedule to catch manual changes.
+- Rollback or forward-fix is documented before production changes.
+
+### Image Builds
+
+When delivery includes containers, AMIs, or packaged deployment artifacts, activate `image-build` and verify:
+
+- Artifacts are built once and promoted immutably across environments.
+- Production images are scanned before promotion.
+- Base images are pinned or covered by a digest policy.
+- Secrets are not baked into image layers, AMIs, build args, examples, or logs.
+- Containers run as non-root unless there is a documented reason.
+- Rollback can select the previous known-good artifact without rebuilding.
+
+### Release Evidence Contribution
+
+For medium or high-risk releases, contribute the delivery portion of the `release-evidence` bundle:
+
+- CI/CD stages and pass/fail status.
+- Deployment strategy, rollout gates, and environment impact.
+- IaC plan/diff/change-set, remote state/locking, drift, and rollback or forward-fix evidence.
+- Image scan, SBOM/provenance, immutable promotion, and previous artifact rollback path.
+- Deployment owner, approval gates, and open delivery gaps.
+
+Do not mark delivery evidence complete if production infrastructure changes lack a reviewed plan/diff/change-set or rollback path.
+
+### AWS Platform Planning
+
+When the deployment or infrastructure touches AWS, activate `aws-application-development` and include AWS-specific checks:
+
+- IAM policies are least privilege; wildcard actions/resources require justification and follow-up.
+- Secrets come from Secrets Manager, SSM SecureString, or an equivalent secret manager; values never appear in IaC, pipeline config, images, or examples.
+- S3 buckets block public access by default and use encryption.
+- KMS/encryption is configured for sensitive data stores, queues, logs, and backups where supported.
+- Security groups, load balancers, routes, and VPC endpoints limit exposure to required traffic only.
+- SQS/SNS/EventBridge/Lambda/Step Functions flows include retry limits, DLQs or failure destinations, and idempotency strategy.
+- CloudWatch logs, metrics, alarms, dashboards, and runbook links are included for production workloads.
+- Resource tags include service, environment, owner, and cost attribution.
+- Cost drivers and service quotas are reviewed before production deployment.
 
 ### Environment Management
 
@@ -100,6 +141,13 @@ When reviewing infrastructure or deployment changes:
 | TLS everywhere      | All inter-service and external communication uses TLS 1.2+                                      | Critical |
 | Idempotent deploys  | Running the deployment twice produces the same result                                           | Warning  |
 | Backup verification | Database backups are tested with restore drills, not just scheduled                             | Warning  |
+| AWS least privilege | IAM policies are scoped; wildcard access is justified and temporary                            | Critical |
+| AWS async failures  | SQS/SNS/EventBridge/Lambda flows include DLQ/failure handling and idempotency                   | Critical |
+| S3 public access    | Public buckets/policies are blocked unless explicitly approved                                 | Critical |
+| Remote state        | Shared/prod Terraform/OpenTofu uses remote state and locking                                   | Critical |
+| Plan evidence       | Plan/diff/change-set reviewed before apply/deploy                                              | Critical |
+| Image scan          | Production images/AMIs are scanned before promotion                                            | Critical |
+| Release evidence    | Medium/high-risk release has deployment, IaC/image, rollback, and environment evidence         | Critical |
 
 
 ## Anti-Patterns
@@ -120,6 +168,9 @@ Flag immediately:
 3. **Infrastructure Changes** — What needs to be provisioned, modified, or decommissioned.
 4. **Environment Impact** — How each environment (dev, staging, prod) is affected.
 5. **Risk Assessment** — What could go wrong during deployment and the mitigation for each risk.
+6. **AWS Review** — If AWS is involved, summarize IAM, secrets, encryption, public exposure, retries/DLQs, observability, cost, and quotas.
+7. **IaC/Image Evidence** — Summarize state/locking, plan evidence, drift detection, scan evidence, immutable promotion, and rollback/forward-fix path.
+8. **Release Evidence** — For medium/high-risk work, list delivery evidence supplied and remaining gaps.
 
 ## Handoff
 
@@ -127,4 +178,4 @@ Flag immediately:
 
 **Receives:** Approved code changes, quality verdict, test coverage report, and architecture handoff (when available). Use these to design the deployment pipeline and infrastructure changes.
 
-**Produces:** Pipeline configuration, deployment strategy recommendation, infrastructure change list, and environment impact assessment.
+**Produces:** Pipeline configuration, deployment strategy recommendation, infrastructure change list, environment impact assessment, and delivery evidence for the release bundle when applicable.

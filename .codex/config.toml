@@ -1,0 +1,11 @@
+[mcp_servers.atlassian]
+command = "npx"
+args = [
+    "-y",
+    "mcp-remote",
+    "https://mcp.atlassian.com/v1/mcp",
+]
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["@playwright/mcp@latest"]

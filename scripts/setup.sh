@@ -2,7 +2,9 @@
 set -euo pipefail
 
 GHE_HOST="${GHE_HOST:-github.com}"
+GIT_PROTOCOL="${GIT_PROTOCOL:-ssh}"
 REQUIRED_GH_VERSION="2.40.0"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 info()  { printf "\033[1;34m▸ %s\033[0m\n" "$1"; }
 ok()    { printf "\033[1;32m✓ %s\033[0m\n" "$1"; }
@@ -32,15 +34,20 @@ else
   warn "gh $GH_VERSION found — $REQUIRED_GH_VERSION+ recommended. Run: brew upgrade gh"
 fi
 
-# ── 2. GitHub authentication ─────────────────────────────────────────────────
+# ── 2. SSH for GitHub ────────────────────────────────────────────────────────
+
+info "Configuring SSH for $GHE_HOST..."
+bash "$SCRIPT_DIR/setup-ssh.sh"
+
+# ── 3. GitHub authentication ───────────────────────────────────────────────
 
 info "Checking authentication for $GHE_HOST..."
 
 if gh auth status --hostname "$GHE_HOST" &>/dev/null; then
   ok "Already authenticated to $GHE_HOST"
 else
-  info "Not authenticated — starting login for $GHE_HOST..."
-  gh auth login --hostname "$GHE_HOST" --web --git-protocol https
+  info "Not authenticated — starting login for $GHE_HOST (git protocol: $GIT_PROTOCOL)..."
+  gh auth login --hostname "$GHE_HOST" --web --git-protocol "$GIT_PROTOCOL"
   if gh auth status --hostname "$GHE_HOST" &>/dev/null; then
     ok "Authenticated to $GHE_HOST"
   else
@@ -48,7 +55,7 @@ else
   fi
 fi
 
-# ── 3. GITHUB_TOKEN environment variable ─────────────────────────────────────
+# ── 4. GITHUB_TOKEN environment variable ─────────────────────────────────────
 
 info "Checking GITHUB_TOKEN..."
 
@@ -65,7 +72,7 @@ else
   echo ""
 fi
 
-# ── 4. APM ───────────────────────────────────────────────────────────────────
+# ── 5. APM ───────────────────────────────────────────────────────────────────
 
 info "Checking APM..."
 
@@ -76,14 +83,30 @@ else
   warn "APM not found — install with: brew tap microsoft/apm && brew install apm"
 fi
 
+# ── 6. Global DevCrew install ───────────────────────────────────────────────
+
+info "Checking global DevCrew install..."
+
+GLOBAL_MODULES="$HOME/.apm/apm_modules/praveenkumarsaravanan/devcrew"
+if [[ -d "$GLOBAL_MODULES" ]] && grep -q "praveenkumarsaravanan/devcrew" "$HOME/.apm/apm.yml" 2>/dev/null; then
+  ok "DevCrew installed globally (~/.apm/apm_modules/)"
+else
+  warn "DevCrew not installed globally yet"
+  echo ""
+  echo "  Run from this repo:"
+  echo "    apm run install-global"
+  echo ""
+fi
+
 # ── Summary ──────────────────────────────────────────────────────────────────
 
 echo ""
-info "Setup complete. Run 'apm install' to install package dependencies."
+info "Setup complete."
+echo "  Project install:  apm install && apm run postinstall"
+echo "  Global install:   apm run install-global"
+echo "  Release:          apm run release -- --dry-run --ticket ISSUE-XXX"
 
-# ── 5. Bootstrap project-level files ─────────────────────────────────────────
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# ── 7. Bootstrap project-level files ─────────────────────────────────────────
 
 info "Bootstrapping project context and memory files..."
 

@@ -1,6 +1,6 @@
 ---
 name: coding-standards
-description: Universal coding principles and discipline routing to java-standards or react-standards
+description: Universal coding principles and discipline routing to java-standards, react-standards, or typescript-node-standards
 applyTo: "**/*.{ts,tsx,js,jsx,java,sql,css,scss}"
 ---
 
@@ -11,12 +11,13 @@ For discipline-specific standards, activate the appropriate skill below.
 
 ## Discipline Routing
 
-| Project type   | Activate skill     |
-|----------------|--------------------|
-| Java backend   | `java-standards`   |
-| React frontend | `react-standards`  |
-| Fullstack      | Both skills        |
-| Other (Go, Python, Node.js, Angular, Vue, etc.) | No discipline-specific skill yet — apply the universal principles below |
+| Project type | Activate skill |
+|--------------|----------------|
+| Java backend | `java-standards` |
+| TypeScript/Node backend | `typescript-node-standards` |
+| React frontend | `react-standards` |
+| Fullstack | Activate the applicable backend and frontend skills |
+| Other (Go, Python, Angular, Vue, etc.) | No discipline-specific skill yet; apply the universal principles below |
 
 Use `project-detection` when the discipline is unclear.
 

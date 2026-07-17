@@ -1,10 +1,15 @@
 name: devcrew
 version: "1.5.1"
-description: "PROSE-aligned AI engineering team — skills, agents, instructions, prompts, hooks, and project lifecycle for Cursor and GitHub Copilot"
-target: [copilot, cursor, claude]
+description: "PROSE-aligned DevCrew Engineering Flow — skills, agents, instructions, prompts, hooks, and project lifecycle for Cursor, GitHub Copilot, Claude Code, and Codex CLI"
+target: [copilot, cursor, claude, codex]
 scripts:
   setup: "bash scripts/setup.sh"
   postinstall: "bash scripts/post-install.sh"
+  install-global: "bash scripts/install-global.sh"
+  codex-hooks: "bash scripts/setup-codex-hooks.sh"
   release: "bash .apm/skills/git-release-tag/scripts/release.sh"
   init-context: "bash scripts/init-context.sh"
   init-memory: "bash scripts/init-memory.sh"
+  triage-setup: "bash scripts/triage-setup.sh"
+  fhir-ai-bundle-setup: "bash scripts/fhir-ai-bundle-setup.sh"
+  verify-commands: "bash scripts/verify-commands.sh"

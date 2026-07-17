@@ -17,3 +17,5 @@ apm_modules/
 # Logs
 *.log
 apm.lock.yaml
+# Dependencies
+node_modules/

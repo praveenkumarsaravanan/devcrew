@@ -1,0 +1,3 @@
+# HL7 AI bundles can be large — regenerate with: apm run fhir-ai-bundle-setup
+ai-bundles/*/markdown/
+ai-bundles/*/*.zip

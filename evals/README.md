@@ -11,7 +11,12 @@ Structured evaluation framework for measuring whether DevCrew's AI engineering t
 | **Memory** | Context persists and loads across sessions | Session 2 loads Session 1's values without re-asking |
 | **Governance** | Risk classification triggers correct autonomy | Auth changes → high risk, docs → low risk, 100% accuracy on critical path |
 | **Consistency** | Same task produces similar results across runs | Classification matches in ≥90% of runs, output quality σ < 1.0 on rubric |
+| **Contracts** | External and cross-team contracts preserve compatibility | Breaking changes require versioning, deprecation, migration, tests, and observability |
+| **Regulated data** | Sensitive data is classified and protected | Raw sensitive data is not logged or used in fixtures; audit and retention are required |
+| **Release evidence** | Medium/high-risk release decisions are evidence-backed | Missing rollback, security, IaC, data, contract, or monitoring evidence blocks readiness |
 | **Skill output** | Individual skills produce correct, complete output | Criteria accuracy ≥ 0.70 across 13 skill-specific scenarios (SO-001 through SO-013) |
+| **Advisor mode** | Responses challenge flawed premises and confirm sound ones without sycophancy or manufactured contrarianism | Correct direction on 100% of scenarios; zero sycophancy on flawed premises and zero manufactured disagreement on sound ones |
+| **Triage** | Triage finds the true root cause via disciplined investigation (artifact-first, whole-function read, data-lifecycle tracing) — not symptom-anchored or red-herring guesses | Correct root cause with traced data lifecycle; zero confident-wrong diagnoses and zero red-herring root causes |
 
 ## Evaluation Tiers
 
@@ -44,6 +49,11 @@ evals/
     memory/                # Persistence across sessions
     governance/            # Risk classification accuracy
     consistency/           # Multi-run stability
+    contracts/             # Contract compatibility scenarios
+    regulated-data/        # Sensitive data handling scenarios
+    release-evidence/      # Delivery readiness evidence scenarios
+    advisor-mode/          # Challenge-vs-confirm calibration (no sycophancy or contrarianism)
+    triage/                # Root-cause discipline — data-lifecycle tracing, no red-herring guesses
     skill-output/          # Individual skill correctness (SO-001 through SO-013)
   judges/                  # LLM-as-judge prompt templates
   rubrics/                 # Scoring criteria and standard metrics

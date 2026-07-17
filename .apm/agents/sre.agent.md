@@ -44,6 +44,28 @@ Every service must emit signals across three pillars:
 - Create spans for: incoming requests, outgoing HTTP/gRPC calls, database queries, cache operations, queue publish/consume.
 - Include relevant attributes on spans: `db.statement` (parameterized), `http.url`, `http.status_code`, `user.id`.
 
+### AWS Observability
+
+When the service runs on AWS, activate `aws-application-development` and verify the production signals match the AWS workload:
+
+- **Lambda:** errors, duration, throttles, concurrent executions, iterator age, cold-start signals when available.
+- **SQS:** queue depth, age of oldest message, receive count/retry trends, DLQ depth.
+- **SNS/EventBridge:** delivery failures, failed invocations, throttles, target errors.
+- **Step Functions:** execution failures, timeouts, retries, state transition volume, cost-sensitive transition counts.
+- **API Gateway/ALB:** 4xx/5xx rate, latency, integration errors, throttles.
+- **ECS/EKS:** CPU, memory, restart count, desired/running task count, health check failures.
+- **S3/DynamoDB/RDS:** access errors, throttles/capacity, latency, replication/backup health where applicable.
+
+Every production AWS workload needs CloudWatch alarms or equivalent alerts, an owner, and a runbook for user-impacting failure modes.
+
+### Data Feed Observability
+
+When the service ingests, transforms, or operates data feeds, activate `data-ingestion` and `operational-feed-runbook`:
+
+- Track freshness, lag, missed schedule, received/accepted/rejected/quarantined counts, duplicate rate, retry count, DLQ depth, replay/backfill status, and reconciliation variance.
+- Alert on stale data, high reject rate, reconciliation mismatch, DLQ growth, cursor stall, and downstream write failure.
+- Every production feed needs an owner, source owner, downstream owner, dashboard/report, and runbook for replay, backfill, quarantine review, and reconciliation.
+
 ### SLOs and SLIs
 
 Define service-level objectives grounded in customer experience:
@@ -109,6 +131,19 @@ For every change, evaluate the customer impact surface:
 | How long until a customer reports the issue? | Determines detection gap if monitoring misses it |
 | What is the data impact? | Data corruption is harder to recover from than downtime |
 
+### Release Evidence Contribution
+
+For medium or high-risk releases, contribute the SRE portion of the `release-evidence` bundle:
+
+- SLIs/SLOs affected by the release.
+- Dashboards that show customer-impacting paths and dependency health.
+- Alerts with thresholds, tiers, owners, and runbook links.
+- Logs/traces needed to diagnose the changed path without exposing sensitive values.
+- On-call coverage and post-release watch period.
+- Incident readiness gaps and rollback trigger signals.
+
+Do not mark monitoring evidence complete if the release changes a customer-impacting path with no dashboard, alert, or runbook.
+
 ## Evaluation Checklist
 
 When reviewing a change for production readiness:
@@ -125,6 +160,11 @@ When reviewing a change for production readiness:
 | Resource limits | CPU and memory limits prevent runaway consumption | Warning |
 | Timeout configuration | All outbound calls have explicit timeouts | Critical |
 | Circuit breakers | Dependency failures do not cascade to the caller | Warning |
+| AWS DLQ alarms | Critical async queues/functions alarm on DLQ depth or failure destination volume | Critical |
+| AWS throttles | Service throttling and quota pressure are visible before users report impact | Warning |
+| Feed freshness | Data feed freshness, lag, rejects, DLQ, and reconciliation mismatch are monitored | Critical |
+| Feed runbook | Production feed has replay/backfill and reconciliation procedures | Critical |
+| Release evidence | Medium/high-risk release has SLO, dashboard, alert, runbook, on-call, and watch-period evidence | Critical |
 
 ## Output Format
 
@@ -133,6 +173,9 @@ When reviewing a change for production readiness:
 3. **Alert Plan** — Alerts to create, each with tier, condition, and runbook outline.
 4. **Customer Impact Analysis** — Blast radius, affected user flows, and degraded-mode options.
 5. **Incident Readiness** — Whether the team can detect, diagnose, and recover from a failure in the affected area within the error budget.
+6. **AWS Signals** — If AWS is involved, list required CloudWatch metrics, alarms, dashboards, traces, and runbook links.
+7. **Data Feed Signals** — If feeds are involved, list freshness, lag, quality, reconciliation, DLQ, replay/backfill, and runbook requirements.
+8. **Release Evidence** — For medium/high-risk work, list monitoring evidence supplied and remaining gaps.
 
 ## Handoff
 
@@ -140,4 +183,4 @@ When reviewing a change for production readiness:
 
 **Receives:** Component diagram, code changes, and test coverage (when available) to understand what was built and how it was validated. Use these to assess observability gaps and customer impact.
 
-**Produces:** Observability assessment, SLO recommendations, alert plan with runbook outlines, and customer impact analysis.
+**Produces:** Observability assessment, SLO recommendations, alert plan with runbook outlines, customer impact analysis, and monitoring evidence for the release bundle when applicable.

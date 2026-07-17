@@ -1,6 +1,6 @@
 ---
 name: security-baseline
-description: Universal security rules and discipline routing to java-standards or react-standards
+description: Universal security rules and discipline routing to java-standards, react-standards, typescript-node-standards, or regulated-data-handling
 applyTo: "**/*.{ts,tsx,js,jsx,java,sql,yml,yaml,json,html}"
 ---
 
@@ -11,12 +11,14 @@ security standards, activate the appropriate skill below.
 
 ## Discipline Routing
 
-| Project type   | Activate skill     |
-|----------------|--------------------|
-| Java backend   | `java-standards`   |
-| React frontend | `react-standards`  |
-| Fullstack      | Both skills        |
-| Other (Go, Python, Node.js, Angular, Vue, etc.) | No discipline-specific skill yet — apply the universal rules below |
+| Project type | Activate skill |
+|--------------|----------------|
+| Java backend | `java-standards` |
+| TypeScript/Node backend | `typescript-node-standards` |
+| React frontend | `react-standards` |
+| Sensitive or regulated data | `regulated-data-handling` |
+| Fullstack | Activate the applicable backend and frontend skills |
+| Other (Go, Python, Angular, Vue, etc.) | No discipline-specific skill yet; apply the universal rules below |
 
 Use `project-detection` when the discipline is unclear.
 
@@ -59,3 +61,13 @@ Use `project-detection` when the discipline is unclear.
   - `Permissions-Policy: camera=(), microphone=(), geolocation=()`
 - Implement request size limits to prevent DoS via oversized payloads.
 - Log API requests with enough detail for audit trails without logging sensitive bodies.
+
+## Sensitive And Regulated Data
+
+- Classify sensitive data before storing, transmitting, logging, reporting, exporting, or adding it to a contract.
+- Minimize collection and exposure. Do not persist or return fields that are not needed for the stated purpose.
+- Redact or mask secrets, tokens, cookies, authorization headers, PII, PHI, payment data, raw payloads, and sensitive free-text fields in logs, traces, errors, metrics, dashboards, reports, and runbooks.
+- Use synthetic or approved de-identified data in tests, fixtures, examples, demos, screenshots, prompts, and docs.
+- Emit audit events for sensitive create/read/export/update/delete, permission changes, token/secret access, admin overrides, replay/backfill, and bulk access.
+- Define retention and deletion behavior for raw data, derived data, quarantine, logs, audit records, backups, and test artifacts.
+- Activate `regulated-data-handling` for changes involving sensitive fields, production data fixtures, audit events, retention, deletion, masking, or redaction.

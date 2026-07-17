@@ -5,11 +5,17 @@ description: Orientation guide — maps common tasks to the right skill or promp
 
 # Quickstart
 
-Welcome to devcrew. Describe what you want to do and the system routes to the right skill, right-sizes the workflow, and brings in the right agents automatically.
+Welcome to DevCrew. Use `/engineering-flow` when you want DevCrew to take a request through planning, implementation, review, and testing. The Council Chair opens the flow, right-sizes the work, and brings in the right agents automatically.
 
 ## Just Describe Your Task
 
-You don't need to pick a workflow. `team-workflow` accepts any task and right-sizes itself:
+You can invoke DevCrew Engineering Flow directly:
+
+```text
+/engineering-flow Add validation to the booking form
+```
+
+Engineering Flow accepts any build/fix/change task and right-sizes itself:
 
 | You say... | System classifies as | Phases that run |
 |---|---|---|
@@ -17,7 +23,9 @@ You don't need to pick a workflow. `team-workflow` accepts any task and right-si
 | "Add validation to the booking form" | Standard change | Detect → Light requirements → Implement → Review → Tests |
 | "Build a notification service" | Full feature | Detect → Requirements → Architecture → Implement → Review → Test strategy → Tests |
 
-You confirm the classification at the start and can override it at any time ("run the full workflow" or "skip to implementation").
+You confirm the classification, risk, and council depth at the start. You can override at any time: "run the full workflow", "skip to implementation", or "run deep council".
+
+Use `/convene-council` when you want planning and trade-offs only, without implementation.
 
 ## Project Lifecycle
 
@@ -28,12 +36,14 @@ Start here when setting up or onboarding a project:
 | Scaffold a new project from scratch | `/new-project` | Prompt |
 | Set up project standards and governance | `/constitution` | Prompt |
 | Migrate a legacy codebase to AI-native dev | `/legacy-migrate` | Prompt |
+| Plan options before implementation | `/convene-council` | Prompt |
 | Decompose a spec into tracker tasks | `/spec-to-issues` | Prompt |
+| Review a contract change | `/contract-review` | Prompt |
 | Create a team standards package | `/new-team-package` | Prompt |
 
 ## Specialized Skills
 
-For tasks that have a dedicated skill, use it directly instead of `team-workflow`:
+For tasks that have a dedicated skill, use it directly instead of Engineering Flow:
 
 | I want to... | Use this | Type |
 |---|---|---|
@@ -41,6 +51,11 @@ For tasks that have a dedicated skill, use it directly instead of `team-workflow
 | Write tests for existing code | `testing` | Skill |
 | Debug an error in dev/staging | `debugging` | Skill |
 | Design an API | `api-design` | Skill |
+| Review interoperability contracts | `interoperability-contracts` | Skill |
+| Build a FHIR / HL7 API or resource | `fhir-health-interop` | Skill |
+| Review FHIR conformance before merge | `/fhir-review` | Prompt |
+| Fetch HL7 AI-ready IG bundle (once per IG; re-run to refresh from HL7) | `apm run fhir-ai-bundle-setup` | Script |
+| Handle sensitive or regulated data | `regulated-data-handling` | Skill |
 | Create a git branch | `branch-creation` | Skill |
 | Commit my changes | `commit-message` | Skill |
 | Open a pull request | `pull-request` | Skill |
@@ -62,6 +77,7 @@ These are never automatic. Invoke them when you're ready:
 | I want to... | Use this | Type |
 |---|---|---|
 | Plan a deployment strategy | `/devops-plan` | Prompt |
+| Build release evidence | `/release-evidence` | Prompt |
 | Check if a release is ready | `/release-readiness` | Prompt |
 | Design monitoring and alerts | `/monitoring-plan` | Prompt |
 | Triage a production incident | `/incident-response` | Prompt |
@@ -73,19 +89,24 @@ These are never automatic. Invoke them when you're ready:
 
 **Skills** activate automatically when you describe a task:
 
-- "Fix the login bug" → `team-workflow` (quick fix)
-- "Build a new search feature" → `team-workflow` (full feature)
+- "Fix the login bug" → DevCrew Engineering Flow (quick fix)
+- "Build a new search feature" → DevCrew Engineering Flow (full feature)
 - "Review this PR" → `code-review` (standalone)
 - "Write tests for the user service" → `testing` (standalone)
 
 **Prompts** are invoked via slash commands (Cmd+/ in Cursor):
 
 - `/new-project` — scaffold a new project with DevCrew wired in
+- `/engineering-flow` — run the right-sized engineering lifecycle
+- `/convene-council` — compare options and trade-offs before implementation
 - `/constitution` — set up project standards and persistent context
 - `/legacy-migrate` — onboard a legacy codebase
 - `/spec-to-issues` — decompose a spec into tracker tasks
 - `/new-team-package` — scaffold a team standards package
+- `/contract-review` — review contract compatibility, versioning, migration, and tests
+- `/fhir-review` — audit FHIR resources, profiles, and IG conformance before merge (build work → `fhir-health-interop` skill instead)
 - `/devops-plan` — deployment planning
+- `/release-evidence` — build or review evidence for medium/high-risk releases
 - `/release-readiness` — go/no-go checklist
 - `/monitoring-plan` — SLOs, alerts, and runbooks
 
@@ -96,21 +117,21 @@ These are never automatic. Invoke them when you're ready:
 ### New project (full lifecycle)
 
 ```
-/new-project → /constitution → team-workflow → commit-message → pull-request
+/new-project → /constitution → /engineering-flow → commit-message → pull-request
 ```
 
 ### Any task (system right-sizes automatically)
 
 ```
-branch-creation → team-workflow → commit-message → pull-request
+branch-creation → /engineering-flow → commit-message → pull-request
 ```
 
-`team-workflow` detects the discipline and task size, then runs only the phases that add value.
+DevCrew Engineering Flow detects the discipline, task size, risk, and council depth, then runs only the phases that add value. The internal skill id remains `team-workflow` for compatibility.
 
 ### Post-merge operations (human-initiated)
 
 ```
-pull-request (merged) → /devops-plan → /release-readiness → git-release-tag → /monitoring-plan
+pull-request (merged) → /devops-plan → /release-evidence → /release-readiness → git-release-tag → /monitoring-plan
 ```
 
 Each step is optional. The developer chooses which post-merge prompts to run.
@@ -134,6 +155,12 @@ Every phase pauses for your confirmation before advancing. You always control th
 | `junior-developer` | Implementation following codebase patterns |
 | `senior-developer` | Scalability, performance, rollout safety review |
 | `backend-reviewer` | Backend code review (security, performance, quality) |
+| `aws-platform-reviewer` | AWS security, reliability, observability, cost, quotas, and deployment safety |
+| `infrastructure-reviewer` | IaC and image-build review for state, plans, scans, secrets, parity, and rollback |
+| `data-platform-reviewer` | Data ingestion, mapping, replay, reconciliation, quality, and feed runbook review |
+| `interoperability-reviewer` | External and cross-team contract compatibility, versioning, migration, and contract test review |
+| `regulated-data-reviewer` | Sensitive data classification, redaction, synthetic data, audit, retention, and access control review |
+| `release-evidence-reviewer` | Release evidence completeness, rollback, monitoring, waiver, and readiness review |
 | `frontend-reviewer` | Frontend code review (accessibility, performance, design system) |
 | `qa-lead` | Test strategy design and quality go/no-go decisions |
 | `test-engineer` | Test code implementation from test plans |

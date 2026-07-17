@@ -1,0 +1,45 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "hooks/security-pre-tool.sh",
+            "statusMessage": "DevCrew: checking command for secret writes",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "name": "lint-check",
+        "type": "prompt",
+        "prompt": "Check if the edited file follows the project's coding standards defined in .apm/instructions/coding-standards.instructions.md. If there are violations, list them with specific line numbers and suggest fixes.",
+        "matchers": {
+          "filePattern": "\\.(ts|js|py|go|java)$"
+        },
+        "_apm_source": "_local/devcrew"
+      },
+      {
+        "name": "apm-eval-reminder",
+        "type": "prompt",
+        "prompt": "Check whether the file just edited is under .apm/ (skills, agents, instructions, prompts, or hooks). If it is NOT under .apm/, ignore this hook entirely and take no action. If it IS an APM artifact, remind the user after completing all edits to run the relevant eval scenario to check for regressions. Suggest: 1) Run validation: bash .apm/skills/apm-authoring/scripts/validate.sh, 2) Recompile: apm compile, 3) Run the matching eval scenario (e.g., 'Run eval SO-007' for a java-standards change, or 'Check for regressions' for a full regression check). Do NOT block the edit \u2014 this is an advisory reminder only.",
+        "_apm_source": "_local/devcrew"
+      }
+    ],
+    "preToolUse": [
+      {
+        "name": "security-guard",
+        "type": "prompt",
+        "prompt": "Before executing this tool, verify that no secrets, API keys, tokens, or credentials are being written to any file. If detected, block the action and warn the user.",
+        "matchers": {
+          "toolName": "^(write|str_replace|edit|Write|StrReplace|EditNotebook)$"
+        },
+        "_apm_source": "_local/devcrew"
+      }
+    ]
+  }
+}

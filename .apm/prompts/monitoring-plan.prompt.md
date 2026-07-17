@@ -28,4 +28,10 @@ Design the observability and monitoring strategy for a service or a recent chang
 
 5. **Incident readiness** — Can the team detect, diagnose, and recover within the error budget? Identify gaps.
 
+6. **AWS observability** — If AWS resources are involved, activate `aws-application-development` and define CloudWatch logs, metrics, alarms, dashboards, traces, DLQ/failure alarms, throttling/quota signals, and runbook links for the affected services.
+
+7. **Data feed observability** — If data feeds are involved, activate `data-ingestion` and `operational-feed-runbook`. Define freshness, lag, reject/quarantine rate, duplicate rate, retry/DLQ depth, replay/backfill status, reconciliation mismatch, data quality report, and runbook links.
+
+8. **Release evidence handoff** — For medium/high-risk work, activate `release-evidence` and summarize the monitoring evidence supplied: SLOs/SLIs, dashboards, alerts, logs/traces, runbooks, on-call coverage, watch period, and remaining gaps.
+
 Flag anti-patterns: alerts without runbooks, static thresholds instead of burn-rate, alerting on causes instead of symptoms, and alert fatigue.

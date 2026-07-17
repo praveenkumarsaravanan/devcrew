@@ -13,7 +13,7 @@ Every code change carries a risk level that determines the agent's autonomy boun
 |------------|-------|----------------|------------|
 | **Low** | Documentation, tests, UI polish, linting fixes, dependency bumps (non-breaking), config formatting | Full autonomy — agent implements and self-reviews | Post-review only (PR approval) |
 | **Medium** | Business logic, API endpoints, database queries, service integrations, state management, error handling | Agent implements with mandatory human review | PR approval required before merge |
-| **High** | Authentication, authorization, encryption, PII handling, payment processing, credential management, data deletion, security configurations | Human-guided assistance only — agent proposes, human decides | Human must approve each step before execution |
+| **High** | Authentication, authorization, encryption, PII/sensitive data handling, payment processing, credential management, data deletion, sensitive exports, audit/retention controls, breaking external contracts, backfill/replay, IAM, network exposure, public storage, production infrastructure, security configurations | Human-guided assistance only — agent proposes, human decides | Human must approve each step before execution |
 
 ## Risk Classification Signals
 
@@ -27,7 +27,16 @@ Use these signals to classify files and changes:
 - File performs: data deletion (hard or soft), bulk mutations, privilege escalation
 - Change modifies: CORS configuration, CSP headers, rate limiting rules, firewall rules
 - Change touches: environment variable definitions for secrets, credential rotation logic
+- Change modifies: IAM policies/roles, KMS keys/key policies, security groups, public load balancers, VPC routing, S3 bucket policies/ACLs/public-access-block settings
+- Change creates or changes: production AWS infrastructure, async retry/DLQ behavior, destructive infrastructure actions, cross-account access, or public data exposure
+- Change creates or changes: production data feeds, source contracts, mapping semantics, replay/backfill scripts, reconciliation logic, reject/quarantine behavior, or data quality thresholds
+- Change creates or changes: public, partner, or cross-team contracts, OpenAPI/AsyncAPI specs, webhooks, protobuf schemas, file/feed contracts, versioning, deprecation, or consumer migration paths
+- Change creates or changes: sensitive data classification, masking/redaction, synthetic/de-identified test data, audit events, sensitive exports, retention/deletion, or bulk access controls
 - References `security-baseline` instruction patterns
+- References `aws-baseline` instruction patterns
+- References `infrastructure-baseline` instruction patterns
+- References `data-platform-baseline` instruction patterns
+- References `regulated-data-baseline` instruction patterns
 
 ### Medium Risk — Default for most application code:
 
@@ -35,8 +44,12 @@ Use these signals to classify files and changes:
 - API endpoint handlers and middleware
 - Database schema changes and migration scripts
 - Service-to-service integration code
+- Additive contract changes with documented compatibility and low sensitivity
 - State management (Redux, Zustand, Context, etc.)
 - Error handling and retry logic
+- Non-production AWS configuration, routine tag updates, and low-blast-radius cloud configuration changes
+- Data mapping or ingestion changes that do not affect sensitive data, production replay/backfill, or externally visible contracts
+- Internal contract or schema cleanup that does not affect existing consumers
 
 ### Low Risk — Changes with minimal blast radius:
 
@@ -93,5 +106,9 @@ Never downgrade risk without explicit user approval.
 ## See Also
 
 - **`security-baseline`** — Defines the security rules that high-risk changes must satisfy.
+- **`aws-baseline`** — Defines AWS-specific safety rules for IAM, public exposure, encryption, async failure handling, observability, and secrets.
+- **`infrastructure-baseline`** — Defines IaC and image-build safety rules for state, plan evidence, drift, secrets, scans, promotion, and rollback.
+- **`data-platform-baseline`** — Defines data ingestion, mapping, replay, reconciliation, and feed operation safety rules.
+- **`regulated-data-baseline`** — Defines regulated data classification, redaction, synthetic test data, audit, and retention safety rules.
 - **`coding-standards`** — Defines commit message format and PR requirements referenced by audit trail rules.
 - **`team-workflow`** — Applies governance at Phase 3 (implementation autonomy) and Phase 4 (review depth).

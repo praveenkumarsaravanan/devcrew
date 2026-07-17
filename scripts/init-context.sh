@@ -164,4 +164,4 @@ EOF
 
 echo ""
 ok "Created $CONTEXT_FILE"
-info "The AI agent will enrich this file with additional detail on the next team-workflow run."
+info "The AI agent will enrich this file with additional detail on the next Engineering Flow run."

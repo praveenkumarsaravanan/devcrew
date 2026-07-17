@@ -4,7 +4,7 @@ set -euo pipefail
 # Bootstraps an empty .memory.md with domain section headers and the
 # .memory/ directory for overflow and archives.
 # Runs during `apm install` (via scripts.setup) or manually.
-# The AI agent appends learnings after each team-workflow run.
+# The AI agent appends learnings after each Engineering Flow run.
 
 MEMORY_FILE=".memory.md"
 MEMORY_DIR=".memory"
@@ -50,7 +50,7 @@ cat > "$MEMORY_FILE" <<'EOF'
 # Project Memory
 
 Accumulated learnings across development sessions. Entries are appended
-automatically after each `team-workflow` completion and can be added
+automatically after each Engineering Flow completion and can be added
 manually at any time. Committed to version control so the entire team
 (and future AI sessions) benefit from past experience.
 
@@ -97,5 +97,5 @@ EOF
 
 ok "Created $MEMORY_FILE with domain section headers"
 ok "Created $MEMORY_DIR/ for overflow and $ARCHIVE_DIR/ for quarterly archives"
-info "The AI agent will append learnings here after each team-workflow run."
+info "The AI agent will append learnings here after each Engineering Flow run."
 info "When this file exceeds ~150 lines, older entries rotate to .memory/<domain>.md automatically."

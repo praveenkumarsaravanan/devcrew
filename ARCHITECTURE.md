@@ -20,15 +20,23 @@ Most teams hit the same walls:
 
 DevCrew is an AI engineering team packaged as a single installable dependency. It gives your AI assistant the roles, processes, standards, and memory that a real engineering team provides — distributed via [Microsoft APM](https://microsoft.github.io/apm/) and usable across Cursor, GitHub Copilot, and Claude Code.
 
-Instead of one general-purpose assistant, you get eleven specialized agents that collaborate through a structured workflow:
+Instead of one general-purpose assistant, you get specialized agents that collaborate through DevCrew Engineering Flow:
 
 | Role | What it does |
 |------|-------------|
+| Council Chair | Explains classification, council routing, trade-offs, risks, checkpoints, and next steps |
 | Product Analyst | Clarifies requirements, defines acceptance criteria, identifies edge cases |
 | Architect | Evaluates design trade-offs, selects patterns, ensures scalability |
 | Senior Developer | Guides implementation, catches anti-patterns, validates test coverage |
 | Junior Developer | Writes the code following codebase conventions |
 | Backend Reviewer | Reviews for security, performance, and correctness |
+| TypeScript Node Reviewer | Reviews Node APIs, workers, jobs, runtime validation, async safety, logging, outbound calls, and idempotency |
+| AWS Platform Reviewer | Reviews AWS IAM, encryption, S3 exposure, event failure handling, observability, cost, quotas, and deployment safety |
+| Infrastructure Reviewer | Reviews IaC and image builds for state safety, plan evidence, secrets, scans, environment parity, and rollback |
+| Data Platform Reviewer | Reviews ingestion, mapping, validation, replay, reconciliation, data quality, and feed operations |
+| Interoperability Reviewer | Reviews external and cross-team contracts for compatibility, versioning, deprecation, consumer migration, and contract tests |
+| Regulated Data Reviewer | Reviews sensitive data classification, minimization, redaction, synthetic fixtures, audit events, retention, and access controls |
+| Release Evidence Reviewer | Reviews evidence bundles for scope, tests, security, IaC/image, data, contracts, rollback, monitoring, approvals, and go/no-go readiness |
 | Frontend Reviewer | Reviews for accessibility, UX consistency, and design system adherence |
 | QA Lead | Designs test strategy, validates coverage, makes quality go/no-go |
 | Test Engineer | Implements the test plan — unit, integration, e2e |
@@ -36,7 +44,7 @@ Instead of one general-purpose assistant, you get eleven specialized agents that
 | Release Manager | Manages release readiness, rollback plans, change management |
 | SRE | Defines SLOs, alerting, runbooks, and assesses customer impact |
 
-These agents don't run independently. They're orchestrated by a **team-workflow** skill that acts as a project manager — sizing the task, activating only the phases that add value, and enforcing quality gates between each handoff.
+These agents don't run independently. They're orchestrated by **DevCrew Engineering Flow** (internal skill id: `team-workflow`) — sizing the task, activating only the phases and councils that add value, and enforcing quality gates between each handoff.
 
 ## Why It's Built This Way
 
@@ -48,11 +56,11 @@ Every primitive in DevCrew — agents, skills, instructions, prompts, hooks — 
 2. **The AI understands everything natively.** Markdown is the language models' native format. No serialization layer, no abstraction leaks.
 3. **It works across IDEs.** APM compiles the same `.apm/` source directory into the right format for Cursor, Copilot, and Claude Code. One source, three targets.
 
-### The workflow right-sizes itself
+### Engineering Flow right-sizes itself
 
 Most tasks don't need a full development lifecycle. A null pointer fix shouldn't go through architecture review. A typo fix shouldn't require a test strategy.
 
-DevCrew's Phase 0 assesses every task and classifies it as a **quick fix**, **standard change**, or **full feature**, then activates only the phases that add value:
+DevCrew's Phase 0 assesses every task and classifies it as a **quick fix**, **standard change**, or **full feature**. It also assigns risk and council depth, then activates only the phases and councils that add value:
 
 | Classification | What runs |
 |---------------|-----------|
@@ -60,7 +68,15 @@ DevCrew's Phase 0 assesses every task and classifies it as a **quick fix**, **st
 | Standard change | Detect → Light requirements → Implement → Review → Tests |
 | Full feature | Detect → Requirements → Architecture → Implement → Review → Test strategy → Tests |
 
-The developer confirms the classification and can override it at any point. This means the process never gets in the way of small tasks, but full features get the rigor they need.
+Council depth keeps deliberation proportional:
+
+| Council depth | What it means |
+|---------------|---------------|
+| Light | One-line Chair note for quick fixes |
+| Standard | Concise Council Brief and compact decision notes |
+| Deep | Options, trade-off matrix, recommendation, and user checkpoint before implementation |
+
+The developer confirms the classification and can override it at any point. This means the process never gets in the way of small tasks, but full features and high-risk decisions get the rigor they need.
 
 ### Subagent isolation prevents self-agreement
 
@@ -124,13 +140,13 @@ This makes it practical to bring real projects into the system, not just greenfi
 
 ## What's In the Box
 
-### 19 Skills
+### 30 Skills
 
 Skills are the core building blocks — structured instructions that the AI follows to perform specific tasks:
 
 | Skill | Purpose |
 |-------|---------|
-| `team-workflow` | Orchestrates the full development lifecycle with scope-adaptive phases |
+| `team-workflow` | Internal skill id for DevCrew Engineering Flow; orchestrates the full lifecycle with scope-adaptive phases |
 | `project-detection` | Classifies projects and detects platform configuration |
 | `memory-management` | Manages persistent context and tiered memory |
 | `project-bootstrap` | Scaffolds new projects with stack-specific starters |
@@ -141,6 +157,8 @@ Skills are the core building blocks — structured instructions that the AI foll
 | `testing` | Writes tests matching project conventions |
 | `debugging` | Systematic error investigation with root cause analysis |
 | `api-design` | REST/gRPC design guidance and validation |
+| `interoperability-contracts` | OpenAPI, AsyncAPI, webhook, event, protobuf, GraphQL, SDK, and file/feed contract compatibility guidance |
+| `regulated-data-handling` | Sensitive and regulated data classification, redaction, synthetic test data, audit, and retention guidance |
 | `commit-message` | Commit messages matching org conventions |
 | `branch-creation` | Branch naming with ticket traceability |
 | `pull-request` | PR creation with ticket validation and discrepancy detection |
@@ -148,19 +166,28 @@ Skills are the core building blocks — structured instructions that the AI foll
 | `git-release-tag` | Versioned releases with changelog generation |
 | `apm-authoring` | Create and maintain APM artifacts |
 | `java-standards` | Java/Spring Boot coding standards and security baseline |
+| `typescript-node-standards` | TypeScript/Node backend standards for APIs, workers, jobs, runtime validation, logging, outbound calls, and idempotency |
 | `react-standards` | React/TypeScript coding standards and security baseline |
+| `aws-application-development` | AWS application standards for IAM, KMS/encryption, S3, event-driven failure handling, observability, cost, quotas, and safe IaC |
+| `infrastructure-as-code` | IaC standards for Terraform/OpenTofu, CDK, CloudFormation, Pulumi, Helm, Kubernetes, remote state, plan review, drift, and rollback |
+| `image-build` | Container and AMI build standards for scanning, baked-secret prevention, provenance, and immutable promotion |
+| `data-ingestion` | Data feed standards for source contracts, landing, validation, quarantine, idempotency, replay, reconciliation, and runbooks |
+| `data-mapping-validation` | Data mapping standards for transform rules, schema validation, golden-file tests, and quality reports |
+| `operational-feed-runbook` | Operational feed runbook standards for alerts, diagnosis, replay/backfill, reconciliation, and escalation |
+| `release-evidence` | Release evidence bundles for scope, tests, security, IaC/image, data, contracts, rollback, monitoring, and approvals |
+| `eval` | Guidance for creating and running eval scenarios after APM primitive changes |
 
-### 11 Agents
+### 19 Agents
 
 Each agent has a defined persona, expertise area, and interaction style.
 
-### 13 Prompts
+### 24 Prompts
 
-Entry points for specific workflows — `/new-project`, `/constitution`, `/legacy-migrate`, `/spec-to-issues`, `/new-team-package`, plus operational prompts for DevOps, release, monitoring, incident response, architecture decisions, design review, and dependency audit.
+Entry points for specific workflows — `/engineering-flow`, `/convene-council`, `/new-project`, `/constitution`, `/legacy-migrate`, `/spec-to-issues`, `/new-team-package`, plus operational prompts for DevOps, release evidence, release readiness, monitoring, incident response, architecture decisions, AWS architecture review, IaC review, data ingestion design, mapping review, feed runbooks, data quality planning, contract review, design review, and dependency audit.
 
-### 4 Instructions
+### 9 Instructions
 
-Always-on rules that apply to every interaction: coding standards, security baseline, governance, and migration standards.
+Always-on rules that apply to every interaction: coding standards, security baseline, TypeScript/Node baseline, AWS baseline, infrastructure baseline, data platform baseline, regulated data baseline, governance, and migration standards.
 
 ### 1 Hook
 
@@ -193,10 +220,18 @@ The agent assesses what's there, identifies gaps, and produces a phased plan to 
 Just describe what you want to build. The system classifies, orchestrates, implements, reviews, and tests — pausing at each checkpoint for your confirmation. It remembers what it learned and loads that context next time.
 
 ```
-"Build a notification service that sends emails when orders ship"
+"/engineering-flow Build a notification service that sends emails when orders ship"
 ```
 
-Phase 0 detects it's a full feature, loads project context and memory, and runs the complete lifecycle with the right agents for your stack.
+Phase 0 detects it's a full feature, loads project context and memory, opens with a Council Brief, and runs the complete lifecycle with the right agents for your stack.
+
+For planning-only deliberation:
+
+```
+/convene-council Compare options for retry handling in the notification worker
+```
+
+This produces options, trade-offs, a recommendation, risks, and next steps without implementing changes unless you explicitly proceed.
 
 ### What it doesn't do
 
@@ -210,6 +245,6 @@ DevCrew follows the **PROSE** specification for AI-native development:
 |-----------|----------------------|
 | **Progressive Disclosure** | Workflow right-sizes itself. Quick fixes get minimal process. Full features get full rigor. Memory loads on-demand. |
 | **Reduced Scope** | Each agent has a single responsibility. Each skill does one thing. Subagents get only the handoff artifact they need. |
-| **Orchestrated Composition** | `team-workflow` composes agents, skills, and phases into a coherent process. No agent acts in isolation. |
+| **Orchestrated Composition** | DevCrew Engineering Flow (`team-workflow`) composes agents, skills, councils, and phases into a coherent process. No agent acts in isolation. |
 | **Safety Boundaries** | Governance instruction classifies risk. High-risk changes require human approval at each step. Security rules are always enforced. |
 | **Explicit Hierarchy** | Three-tier distribution (DevCrew → Team → Project). Lower tiers override higher ones. Project memory is project-scoped. |
